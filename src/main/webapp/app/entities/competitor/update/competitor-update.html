@@ -1,0 +1,156 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-competitor-heading"
+        data-cy="CompetitorCreateUpdateHeading"
+        jhiTranslate="cIjhipsterApp.competitor.home.createOrEditLabel"
+      >
+        Create or edit a Competitor
+      </h2>
+
+      <div>
+        <jhi-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+          </div>
+        }
+
+        @let competitorNameRef = editForm.get('competitorName')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_competitorName" jhiTranslate="cIjhipsterApp.competitor.competitorName"
+            >Competitor Name</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="competitorName"
+            id="field_competitorName"
+            data-cy="competitorName"
+            formControlName="competitorName"
+          />
+          @if (competitorNameRef.invalid && (competitorNameRef.dirty || competitorNameRef.touched)) {
+            <div>
+              @if (editForm.get('competitorName')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (editForm.get('competitorName')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >This field cannot be longer than 255 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let websiteUrlRef = editForm.get('websiteUrl')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_websiteUrl" jhiTranslate="cIjhipsterApp.competitor.websiteUrl">Website Url</label>
+          <input
+            type="text"
+            class="form-control"
+            name="websiteUrl"
+            id="field_websiteUrl"
+            data-cy="websiteUrl"
+            formControlName="websiteUrl"
+          />
+          @if (websiteUrlRef.invalid && (websiteUrlRef.dirty || websiteUrlRef.touched)) {
+            <div>
+              @if (editForm.get('websiteUrl')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '500' }"
+                  >This field cannot be longer than 500 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let industryRef = editForm.get('industry')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_industry" jhiTranslate="cIjhipsterApp.competitor.industry">Industry</label>
+          <input type="text" class="form-control" name="industry" id="field_industry" data-cy="industry" formControlName="industry" />
+          @if (industryRef.invalid && (industryRef.dirty || industryRef.touched)) {
+            <div>
+              @if (editForm.get('industry')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >This field cannot be longer than 255 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let descriptionRef = editForm.get('description')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_description" jhiTranslate="cIjhipsterApp.competitor.description">Description</label>
+          <input
+            type="text"
+            class="form-control"
+            name="description"
+            id="field_description"
+            data-cy="description"
+            formControlName="description"
+          />
+          @if (descriptionRef.invalid && (descriptionRef.dirty || descriptionRef.touched)) {
+            <div>
+              @if (editForm.get('description')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '2000' }"
+                  >This field cannot be longer than 2000 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let isActiveRef = editForm.get('isActive')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_isActive" jhiTranslate="cIjhipsterApp.competitor.isActive">Is Active</label>
+          <input type="checkbox" class="form-check" name="isActive" id="field_isActive" data-cy="isActive" formControlName="isActive" />
+          @if (isActiveRef.invalid && (isActiveRef.dirty || isActiveRef.touched)) {
+            <div>
+              @if (editForm.get('isActive')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label for="field_analystProfileses" jhiTranslate="cIjhipsterApp.competitor.analystProfiles">Analyst Profiles</label>
+          <select
+            class="form-control"
+            id="field_analystProfileses"
+            data-cy="analystProfiles"
+            multiple
+            name="analystProfileses"
+            formControlName="analystProfileses"
+            [compareWith]="compareAnalystProfile"
+          >
+            @for (analystProfileOption of analystProfilesSharedCollection(); track $index) {
+              <option [ngValue]="analystProfileOption">{{ analystProfileOption.displayName }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

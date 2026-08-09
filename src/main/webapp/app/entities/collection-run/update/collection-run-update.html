@@ -1,0 +1,150 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-collection-run-heading"
+        data-cy="CollectionRunCreateUpdateHeading"
+        jhiTranslate="cIjhipsterApp.collectionRun.home.createOrEditLabel"
+      >
+        Create or edit a Collection Run
+      </h2>
+
+      <div>
+        <jhi-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+          </div>
+        }
+
+        @let startedAtRef = editForm.get('startedAt')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_startedAt" jhiTranslate="cIjhipsterApp.collectionRun.startedAt">Started At</label>
+          <div class="d-flex">
+            <input
+              id="field_startedAt"
+              data-cy="startedAt"
+              type="datetime-local"
+              class="form-control"
+              name="startedAt"
+              formControlName="startedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          @if (startedAtRef.invalid && (startedAtRef.dirty || startedAtRef.touched)) {
+            <div>
+              @if (editForm.get('startedAt')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+              <small
+                class="form-text text-danger"
+                [hidden]="!editForm.get('startedAt')?.errors?.datetimelocal"
+                jhiTranslate="entity.validation.datetimelocal"
+                >This field should be a date and time.</small
+              >
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_finishedAt" jhiTranslate="cIjhipsterApp.collectionRun.finishedAt">Finished At</label>
+          <div class="d-flex">
+            <input
+              id="field_finishedAt"
+              data-cy="finishedAt"
+              type="datetime-local"
+              class="form-control"
+              name="finishedAt"
+              formControlName="finishedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        @let statusRef = editForm.get('status')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_status" jhiTranslate="cIjhipsterApp.collectionRun.status">Status</label>
+          <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
+            <option [ngValue]="null">{{ 'cIjhipsterApp.RunStatus.null' | translate }}</option>
+            @for (runStatus of runStatusValues; track $index) {
+              <option [value]="runStatus">{{ 'cIjhipsterApp.RunStatus.' + runStatus | translate }}</option>
+            }
+          </select>
+          @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
+            <div>
+              @if (editForm.get('status')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_foundCount" jhiTranslate="cIjhipsterApp.collectionRun.foundCount">Found Count</label>
+          <input
+            type="number"
+            class="form-control"
+            name="foundCount"
+            id="field_foundCount"
+            data-cy="foundCount"
+            formControlName="foundCount"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_processedCount" jhiTranslate="cIjhipsterApp.collectionRun.processedCount"
+            >Processed Count</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="processedCount"
+            id="field_processedCount"
+            data-cy="processedCount"
+            formControlName="processedCount"
+          />
+        </div>
+
+        @let errorMessageRef = editForm.get('errorMessage')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_errorMessage" jhiTranslate="cIjhipsterApp.collectionRun.errorMessage">Error Message</label>
+          <input
+            type="text"
+            class="form-control"
+            name="errorMessage"
+            id="field_errorMessage"
+            data-cy="errorMessage"
+            formControlName="errorMessage"
+          />
+          @if (errorMessageRef.invalid && (errorMessageRef.dirty || errorMessageRef.touched)) {
+            <div>
+              @if (editForm.get('errorMessage')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '4000' }"
+                  >This field cannot be longer than 4000 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

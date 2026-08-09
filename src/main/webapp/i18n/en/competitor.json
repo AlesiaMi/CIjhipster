@@ -1,0 +1,29 @@
+{
+  "cIjhipsterApp": {
+    "competitor": {
+      "home": {
+        "title": "Competitors",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Competitor",
+        "createOrEditLabel": "Create or edit a Competitor",
+        "notFound": "No Competitors found"
+      },
+      "created": "A new Competitor is created with identifier {{ param }}",
+      "updated": "A Competitor is updated with identifier {{ param }}",
+      "deleted": "A Competitor is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Competitor {{ id }}?"
+      },
+      "detail": {
+        "title": "Competitor"
+      },
+      "id": "ID",
+      "competitorName": "Competitor Name",
+      "websiteUrl": "Website Url",
+      "industry": "Industry",
+      "description": "Description",
+      "isActive": "Is Active",
+      "analystProfiles": "Analyst Profiles"
+    }
+  }
+}

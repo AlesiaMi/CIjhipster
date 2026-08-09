@@ -1,0 +1,10 @@
+{
+  "cIjhipsterApp": {
+    "SourceType": {
+      "null": "",
+      "RSS": "RSS",
+      "WEBSITE": "WEBSITE",
+      "API": "API"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "cIjhipsterApp": {
+    "ciAlert": {
+      "home": {
+        "title": "Ci Alerts",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Ci Alert",
+        "createOrEditLabel": "Create or edit a Ci Alert",
+        "notFound": "No Ci Alerts found"
+      },
+      "created": "A new Ci Alert is created with identifier {{ param }}",
+      "updated": "A Ci Alert is updated with identifier {{ param }}",
+      "deleted": "A Ci Alert is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Ci Alert {{ id }}?"
+      },
+      "detail": {
+        "title": "Ci Alert"
+      },
+      "id": "ID",
+      "title": "Title",
+      "message": "Message",
+      "severity": "Severity",
+      "status": "Status",
+      "createdAt": "Created At",
+      "readAt": "Read At",
+      "analysisResult": "Analysis Result",
+      "analystProfile": "Analyst Profile"
+    }
+  }
+}

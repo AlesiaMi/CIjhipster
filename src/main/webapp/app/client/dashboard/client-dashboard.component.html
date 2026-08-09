@@ -1,0 +1,264 @@
+<div class="container-fluid mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>📊 Competitive Intelligence Dashboard</h2>
+      <small class="text-muted"> Мониторинг новостей, AI-анализ и уведомления </small>
+    </div>
+
+    <button class="btn btn-primary" (click)="refresh()">🔄 Обновить</button>
+  </div>
+
+  <!-- KPI -->
+
+  <div class="row g-3">
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h6 class="text-muted">Новости</h6>
+          <h2>{{ getNewsCount() }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h6 class="text-muted">AI анализов</h6>
+          <h2>{{ getAnalysisCount() }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h6 class="text-muted">Активные Alerts</h6>
+          <h2>{{ getAlertsCount() }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h6 class="text-muted">Высокий риск</h6>
+          <h2>{{ getHighAlertsCount() }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-1">
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 bg-success text-white">
+        <div class="card-body">
+          <h6>Positive</h6>
+          <h2>{{ getPositiveCount() }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 bg-warning">
+        <div class="card-body">
+          <h6>Neutral</h6>
+          <h2>{{ getNeutralCount() }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 bg-danger text-white">
+        <div class="card-body">
+          <h6>Negative</h6>
+          <h2>{{ getNegativeCount() }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 bg-info text-white">
+        <div class="card-body">
+          <h6>Источники</h6>
+          <h2>{{ getSourcesCount() }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Последний запуск -->
+
+  <div class="card mt-4 shadow-sm">
+    <div class="card-header">
+      <strong>Последний запуск Collection</strong>
+    </div>
+
+    <div class="card-body" *ngIf="getLastRun()">
+      <div class="row">
+        <div class="col-md-3">
+          <b>Status</b>
+
+          <p>{{ getLastRun().status }}</p>
+        </div>
+
+        <div class="col-md-3">
+          <b>Found</b>
+
+          <p>{{ getLastRun().foundCount }}</p>
+        </div>
+
+        <div class="col-md-3">
+          <b>Processed</b>
+
+          <p>{{ getLastRun().processedCount }}</p>
+        </div>
+
+        <div class="col-md-3">
+          <b>Finished</b>
+
+          <p>{{ getLastRun().finishedAt }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Sentiment -->
+
+  <div class="card mt-4 shadow-sm">
+    <div class="card-header">
+      <strong>AI Sentiment</strong>
+    </div>
+
+    <div class="card-body">
+      <div class="mb-3">
+        <div class="d-flex justify-content-between">
+          <span>Positive</span>
+
+          <span>{{ getPositivePercent() }}%</span>
+        </div>
+
+        <div class="progress">
+          <div class="progress-bar bg-success" [style.width.%]="getPositivePercent()"></div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="d-flex justify-content-between">
+          <span>Neutral</span>
+
+          <span>{{ getNeutralPercent() }}%</span>
+        </div>
+
+        <div class="progress">
+          <div class="progress-bar bg-warning" [style.width.%]="getNeutralPercent()"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="d-flex justify-content-between">
+          <span>Negative</span>
+
+          <span>{{ getNegativePercent() }}%</span>
+        </div>
+
+        <div class="progress">
+          <div class="progress-bar bg-danger" [style.width.%]="getNegativePercent()"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Новости -->
+
+  <div class="card mt-4 shadow-sm">
+    <div class="card-header">
+      <strong>Последние новости</strong>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Дата</th>
+
+            <th>Заголовок</th>
+
+            <th>Источник</th>
+
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let item of getLatestNews()">
+            <td>{{ item.publishedAt }}</td>
+
+            <td>{{ item.title }}</td>
+
+            <td>{{ item.dataSource?.sourceName }}</td>
+
+            <td>
+              <a *ngIf="item.url" [target]="'_blank'" [href]="item.url" class="btn btn-sm btn-outline-primary"> Открыть </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- AI -->
+
+  <div class="card mt-4 shadow-sm">
+    <div class="card-header">
+      <strong>Последние AI анализы</strong>
+    </div>
+
+    <div class="card-body">
+      <div class="border rounded p-3 mb-3" *ngFor="let result of getLatestAnalysis()">
+        <div class="d-flex justify-content-between">
+          <h6>{{ result.topic || 'Без темы' }}</h6>
+
+          <span class="badge" [ngClass]="sentimentClass(result.sentiment)">
+            {{ result.sentiment }}
+          </span>
+        </div>
+
+        <p class="mt-2">
+          {{ result.summary || 'Нет описания' }}
+        </p>
+
+        <small class="text-muted">
+          {{ result.modelName }}
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+
+  <div class="card mt-4 shadow-sm mb-5">
+    <div class="card-header">
+      <strong>Последние Alerts</strong>
+    </div>
+
+    <div class="card-body">
+      <div class="border rounded p-3 mb-3" *ngFor="let alert of getLatestAlerts()">
+        <div class="d-flex justify-content-between">
+          <h5>{{ alert.title }}</h5>
+
+          <span class="badge" [ngClass]="severityClass(alert.severity)">
+            {{ alert.severity }}
+          </span>
+        </div>
+
+        <p>
+          {{ alert.message }}
+        </p>
+
+        <small>
+          {{ alert.status }}
+        </small>
+      </div>
+    </div>
+  </div>
+</div>

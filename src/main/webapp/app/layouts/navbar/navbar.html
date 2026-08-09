@@ -27,11 +27,17 @@
             </span>
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
+            <span>Дашборд</span>
+          </a>
+        </li>
         @if (account() !== null) {
           <li
             ngbDropdown
             class="nav-item dropdown pointer"
             display="dynamic"
+            *jhiHasAnyAuthority="'ROLE_ADMIN'"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }"
             data-cy="entity"
@@ -43,6 +49,102 @@
               </span>
             </a>
             <ul class="dropdown-menu" ngbDropdownMenu aria-labelledby="entity-menu">
+              <li>
+                <a
+                  class="dropdown-item"
+                  routerLink="/competitor"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  (click)="collapseNavbar()"
+                >
+                  <fa-icon icon="asterisk" [fixedWidth]="true" />
+                  <span jhiTranslate="global.menu.entities.competitor">Competitor</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  routerLink="/data-source"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  (click)="collapseNavbar()"
+                >
+                  <fa-icon icon="asterisk" [fixedWidth]="true" />
+                  <span jhiTranslate="global.menu.entities.dataSource">Data Source</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  routerLink="/keyword"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  (click)="collapseNavbar()"
+                >
+                  <fa-icon icon="asterisk" [fixedWidth]="true" />
+                  <span jhiTranslate="global.menu.entities.keyword">Keyword</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  routerLink="/collection-run"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  (click)="collapseNavbar()"
+                >
+                  <fa-icon icon="asterisk" [fixedWidth]="true" />
+                  <span jhiTranslate="global.menu.entities.collectionRun">Collection Run</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  routerLink="/news-item"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  (click)="collapseNavbar()"
+                >
+                  <fa-icon icon="asterisk" [fixedWidth]="true" />
+                  <span jhiTranslate="global.menu.entities.newsItem">News Item</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  routerLink="/analysis-result"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  (click)="collapseNavbar()"
+                >
+                  <fa-icon icon="asterisk" [fixedWidth]="true" />
+                  <span jhiTranslate="global.menu.entities.analysisResult">Analysis Result</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  routerLink="/ci-alert"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  (click)="collapseNavbar()"
+                >
+                  <fa-icon icon="asterisk" [fixedWidth]="true" />
+                  <span jhiTranslate="global.menu.entities.ciAlert">Ci Alert</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  routerLink="/analyst-profile"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  (click)="collapseNavbar()"
+                >
+                  <fa-icon icon="asterisk" [fixedWidth]="true" />
+                  <span jhiTranslate="global.menu.entities.analystProfile">Analyst Profile</span>
+                </a>
+              </li>
               <!-- jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here -->
             </ul>
           </li>

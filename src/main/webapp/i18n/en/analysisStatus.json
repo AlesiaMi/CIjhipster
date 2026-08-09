@@ -1,0 +1,10 @@
+{
+  "cIjhipsterApp": {
+    "AnalysisStatus": {
+      "null": "",
+      "PENDING": "PENDING",
+      "SUCCESS": "SUCCESS",
+      "FAILED": "FAILED"
+    }
+  }
+}

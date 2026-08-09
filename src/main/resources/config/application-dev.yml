@@ -32,13 +32,13 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://localhost:5432/CIjhipster
+    url: jdbc:postgresql://localhost:5434/CIjhipster
     hikari:
       poolName: Hikari
       auto-commit: false
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
-    contexts: dev, faker
+    contexts: dev
   mail:
     host: localhost
     port: 25
@@ -48,7 +48,7 @@ spring:
     cache: false
 
 server:
-  port: 8080
+  port: 8081
   # make sure requests the proxy uri instead of the server one
   forward-headers-strategy: native
 
@@ -94,4 +94,6 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+gemini:
+  api-key: AQ.Ab8RN6LYgIGyvtSui6kFDlfTmgyeyPDcflhL0Wpv8tNfsxaLtg
+  model: gemini-2.5-flash

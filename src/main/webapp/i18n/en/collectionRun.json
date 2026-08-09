@@ -1,0 +1,29 @@
+{
+  "cIjhipsterApp": {
+    "collectionRun": {
+      "home": {
+        "title": "Collection Runs",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Collection Run",
+        "createOrEditLabel": "Create or edit a Collection Run",
+        "notFound": "No Collection Runs found"
+      },
+      "created": "A new Collection Run is created with identifier {{ param }}",
+      "updated": "A Collection Run is updated with identifier {{ param }}",
+      "deleted": "A Collection Run is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Collection Run {{ id }}?"
+      },
+      "detail": {
+        "title": "Collection Run"
+      },
+      "id": "ID",
+      "startedAt": "Started At",
+      "finishedAt": "Finished At",
+      "status": "Status",
+      "foundCount": "Found Count",
+      "processedCount": "Processed Count",
+      "errorMessage": "Error Message"
+    }
+  }
+}

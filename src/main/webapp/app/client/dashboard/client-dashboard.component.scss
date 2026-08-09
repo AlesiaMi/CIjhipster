@@ -1,0 +1,127 @@
+:host {
+  display: block;
+}
+
+.container-fluid {
+  padding: 24px;
+  background: #f5f7fb;
+  min-height: 100vh;
+}
+
+h2 {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.card {
+  border: none;
+  border-radius: 14px;
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+  background: white;
+  border-bottom: 1px solid #ececec;
+  font-weight: 600;
+}
+
+.card-body h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table thead {
+  background: #f8f9fa;
+}
+
+.table th {
+  font-weight: 600;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.progress {
+  height: 18px;
+  border-radius: 30px;
+  background: #e9ecef;
+}
+
+.progress-bar {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.8rem;
+  padding: 7px 10px;
+}
+
+.border.rounded {
+  transition: 0.2s;
+}
+
+.border.rounded:hover {
+  background: #fafafa;
+}
+
+.btn-primary {
+  border-radius: 10px;
+  padding: 8px 20px;
+}
+
+.btn-outline-primary {
+  border-radius: 8px;
+}
+
+small {
+  color: #777;
+}
+
+.bg-success {
+  color: white;
+}
+
+.bg-danger {
+  color: white;
+}
+
+.bg-info {
+  color: white;
+}
+
+.card.bg-warning h2,
+.card.bg-warning h6 {
+  color: #222;
+}
+
+.card.bg-success,
+.card.bg-danger,
+.card.bg-info {
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 15px;
+  }
+
+  .card-body h2 {
+    font-size: 1.6rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+}

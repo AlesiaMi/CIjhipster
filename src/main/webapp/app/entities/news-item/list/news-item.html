@@ -1,0 +1,192 @@
+<div>
+  <h2 id="page-heading" data-cy="NewsItemHeading">
+    <span jhiTranslate="cIjhipsterApp.newsItem.home.title">News Items</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span jhiTranslate="cIjhipsterApp.newsItem.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-news-item"
+        [routerLink]="['/news-item/new']"
+      >
+        <fa-icon icon="plus" />
+        <span jhiTranslate="cIjhipsterApp.newsItem.home.createLabel">Create a new News Item</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+
+  <jhi-alert />
+
+  <jhi-filter [filters]="filters" />
+
+  @if (newsItems().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span jhiTranslate="cIjhipsterApp.newsItem.home.notFound">No News Items found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex">
+                <span jhiTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="externalId">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.newsItem.externalId">External Id</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="title">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.newsItem.title">Title</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="url">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.newsItem.url">Url</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="originalText">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.newsItem.originalText">Original Text</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="publishedAt">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.newsItem.publishedAt">Published At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="collectedAt">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.newsItem.collectedAt">Collected At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="isDuplicate">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.newsItem.isDuplicate">Is Duplicate</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="dataSource.sourceName">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.newsItem.dataSource">Data Source</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="competitor.competitorName">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.newsItem.competitor">Competitor</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="collectionRun.id">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.newsItem.collectionRun">Collection Run</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (newsItem of newsItems(); track trackId(newsItem)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/news-item', newsItem.id, 'view']">{{ newsItem.id }}</a>
+              </td>
+              <td>{{ newsItem.externalId }}</td>
+              <td>{{ newsItem.title }}</td>
+              <td>{{ newsItem.url }}</td>
+              <td>{{ newsItem.originalText }}</td>
+              <td>{{ newsItem.publishedAt | formatMediumDatetime }}</td>
+              <td>{{ newsItem.collectedAt | formatMediumDatetime }}</td>
+              <td>{{ newsItem.isDuplicate }}</td>
+              <td>
+                @if (newsItem.dataSource) {
+                  <div>
+                    <a [routerLink]="['/data-source', newsItem.dataSource.id, 'view']">{{ newsItem.dataSource.sourceName }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (newsItem.competitor) {
+                  <div>
+                    <a [routerLink]="['/competitor', newsItem.competitor.id, 'view']">{{ newsItem.competitor.competitorName }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (newsItem.collectionRun) {
+                  <div>
+                    <a [routerLink]="['/collection-run', newsItem.collectionRun.id, 'view']">{{ newsItem.collectionRun.id }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/news-item', newsItem.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/news-item', newsItem.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(newsItem)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (newsItems().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,10 @@
+{
+  "cIjhipsterApp": {
+    "RunStatus": {
+      "null": "",
+      "RUNNING": "RUNNING",
+      "SUCCESS": "SUCCESS",
+      "FAILED": "FAILED"
+    }
+  }
+}

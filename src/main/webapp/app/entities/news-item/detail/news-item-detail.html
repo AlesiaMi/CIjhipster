@@ -1,0 +1,82 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (newsItem(); as newsItemRef) {
+      <div>
+        <h2 data-cy="newsItemDetailsHeading"><span jhiTranslate="cIjhipsterApp.newsItem.detail.title">News Item</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ newsItemRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.newsItem.externalId">External Id</span></dt>
+          <dd>
+            <span>{{ newsItemRef.externalId }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.newsItem.title">Title</span></dt>
+          <dd>
+            <span>{{ newsItemRef.title }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.newsItem.url">Url</span></dt>
+          <dd>
+            <span>{{ newsItemRef.url }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.newsItem.originalText">Original Text</span></dt>
+          <dd>
+            <span>{{ newsItemRef.originalText }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.newsItem.publishedAt">Published At</span></dt>
+          <dd>
+            <span>{{ newsItemRef.publishedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.newsItem.collectedAt">Collected At</span></dt>
+          <dd>
+            <span>{{ newsItemRef.collectedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.newsItem.isDuplicate">Is Duplicate</span></dt>
+          <dd>
+            <span>{{ newsItemRef.isDuplicate }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.newsItem.dataSource">Data Source</span></dt>
+          <dd>
+            @if (newsItem()!.dataSource) {
+              <div>
+                <a [routerLink]="['/data-source', newsItem()!.dataSource?.id, 'view']">{{ newsItemRef.dataSource?.sourceName }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.newsItem.competitor">Competitor</span></dt>
+          <dd>
+            @if (newsItem()!.competitor) {
+              <div>
+                <a [routerLink]="['/competitor', newsItem()!.competitor?.id, 'view']">{{ newsItemRef.competitor?.competitorName }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.newsItem.collectionRun">Collection Run</span></dt>
+          <dd>
+            @if (newsItem()!.collectionRun) {
+              <div>
+                <a [routerLink]="['/collection-run', newsItem()!.collectionRun?.id, 'view']">{{ newsItemRef.collectionRun?.id }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/news-item', newsItemRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

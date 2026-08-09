@@ -1,0 +1,53 @@
+{
+  "annotations": {
+    "changelogDate": "20260622204709"
+  },
+  "applications": ["*"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "competitorName",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "websiteUrl",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
+    },
+    {
+      "fieldName": "industry",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "2000"
+    },
+    {
+      "fieldName": "isActive",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Competitor",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "displayName",
+      "otherEntityName": "analystProfile",
+      "otherEntityRelationshipName": "competitors",
+      "relationshipName": "analystProfiles",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-many"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

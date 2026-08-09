@@ -1,0 +1,56 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (collectionRun(); as collectionRunRef) {
+      <div>
+        <h2 data-cy="collectionRunDetailsHeading"><span jhiTranslate="cIjhipsterApp.collectionRun.detail.title">Collection Run</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ collectionRunRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.collectionRun.startedAt">Started At</span></dt>
+          <dd>
+            <span>{{ collectionRunRef.startedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.collectionRun.finishedAt">Finished At</span></dt>
+          <dd>
+            <span>{{ collectionRunRef.finishedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.collectionRun.status">Status</span></dt>
+          <dd>
+            <span [jhiTranslate]="'cIjhipsterApp.RunStatus.' + (collectionRunRef.status ?? 'null')">{{
+              { null: '', RUNNING: 'RUNNING', SUCCESS: 'SUCCESS', FAILED: 'FAILED' }[collectionRunRef.status ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.collectionRun.foundCount">Found Count</span></dt>
+          <dd>
+            <span>{{ collectionRunRef.foundCount }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.collectionRun.processedCount">Processed Count</span></dt>
+          <dd>
+            <span>{{ collectionRunRef.processedCount }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.collectionRun.errorMessage">Error Message</span></dt>
+          <dd>
+            <span>{{ collectionRunRef.errorMessage }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/collection-run', collectionRunRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

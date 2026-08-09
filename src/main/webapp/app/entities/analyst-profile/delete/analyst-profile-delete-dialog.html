@@ -1,0 +1,28 @@
+@if (analystProfile) {
+  <form name="deleteForm" (ngSubmit)="confirmDelete(analystProfile.id!)">
+    <div class="modal-header">
+      <h4 class="modal-title" data-cy="analystProfileDeleteDialogHeading" jhiTranslate="entity.delete.title">Confirm delete operation</h4>
+    </div>
+
+    <div class="modal-body">
+      <jhi-alert-error />
+      <p
+        id="jhi-delete-analystProfile-heading"
+        jhiTranslate="cIjhipsterApp.analystProfile.delete.question"
+        [translateValues]="{ id: analystProfile.id }"
+      >
+        Are you sure you want to delete Analyst Profile {{ analystProfile.id }}?
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="cancel()">
+        <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+      </button>
+
+      <button id="jhi-confirm-delete-analystProfile" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-danger">
+        <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.delete">Delete</span>
+      </button>
+    </div>
+  </form>
+}

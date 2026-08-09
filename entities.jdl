@@ -1,0 +1,133 @@
+enum SourceType {
+  RSS,
+  WEBSITE,
+  API
+}
+
+enum RunStatus {
+  RUNNING,
+  SUCCESS,
+  FAILED
+}
+
+enum Sentiment {
+  POSITIVE,
+  NEGATIVE,
+  NEUTRAL,
+  UNKNOWN
+}
+
+enum AnalysisStatus {
+  PENDING,
+  SUCCESS,
+  FAILED
+}
+
+enum Severity {
+  LOW,
+  MEDIUM,
+  HIGH,
+  CRITICAL
+}
+
+enum AlertStatus {
+  NEW,
+  READ,
+  ARCHIVED
+}
+
+entity Competitor {
+  competitorName String required maxlength(255)
+  websiteUrl String maxlength(500)
+  industry String maxlength(255)
+  description String maxlength(2000)
+  isActive Boolean required
+}
+
+entity DataSource {
+  sourceName String required maxlength(255)
+  url String required maxlength(1000)
+  sourceType SourceType required
+  isActive Boolean required
+  lastCheckedAt Instant
+  createdAt Instant required
+}
+
+entity Keyword {
+  value String required maxlength(255)
+  isActive Boolean required
+  createdAt Instant required
+}
+
+entity CollectionRun {
+  startedAt Instant required
+  finishedAt Instant
+  status RunStatus required
+  foundCount Integer
+  processedCount Integer
+  errorMessage String maxlength(4000)
+}
+
+entity NewsItem {
+  externalId String maxlength(255)
+  title String required maxlength(500)
+  url String required maxlength(1000)
+  originalText String maxlength(10000)
+  publishedAt Instant
+  collectedAt Instant required
+  isDuplicate Boolean required
+}
+
+entity AnalysisResult {
+  summary String maxlength(4000)
+  sentiment Sentiment required
+  topic String maxlength(255)
+  entities String maxlength(4000)
+  riskSource String maxlength(255)
+  status AnalysisStatus required
+  modelName String maxlength(100)
+  analyzedAt Instant
+  errorMessage String maxlength(4000)
+}
+
+entity CiAlert {
+  title String required maxlength(255)
+  message String required maxlength(4000)
+  severity Severity required
+  status AlertStatus required
+  createdAt Instant required
+  readAt Instant
+}
+
+entity AnalystProfile {
+  displayName String required maxlength(255)
+  telegramChatId String maxlength(100)
+  notificationEnabled Boolean required
+  createdAt Instant required
+}
+
+relationship ManyToOne {
+  DataSource{competitor(competitorName) required} to Competitor
+  Keyword{competitor(competitorName) required} to Competitor
+
+  NewsItem{dataSource(sourceName) required} to DataSource
+  NewsItem{competitor(competitorName) required} to Competitor
+  NewsItem{collectionRun(id)} to CollectionRun
+
+  CiAlert{analysisResult(id) required} to AnalysisResult
+  CiAlert{analystProfile(displayName) required} to AnalystProfile
+}
+
+relationship OneToOne {
+  AnalysisResult{newsItem(title) required} to NewsItem
+  AnalystProfile{user(login) required} to User with builtInEntity
+}
+
+relationship ManyToMany {
+  AnalystProfile{competitors(competitorName)} to Competitor{analystProfiles(displayName)}
+}
+
+paginate * with pagination
+service * with serviceClass
+dto * with mapstruct
+filter *

@@ -1,0 +1,44 @@
+{
+  "annotations": {
+    "changelogDate": "20260622204712"
+  },
+  "applications": ["*"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "startedAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "finishedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "RunStatus",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "RUNNING,SUCCESS,FAILED"
+    },
+    {
+      "fieldName": "foundCount",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "processedCount",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "errorMessage",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "4000"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "CollectionRun",
+  "pagination": "pagination",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

@@ -1,0 +1,10 @@
+{
+  "cIjhipsterApp": {
+    "AlertStatus": {
+      "null": "",
+      "NEW": "NEW",
+      "READ": "READ",
+      "ARCHIVED": "ARCHIVED"
+    }
+  }
+}

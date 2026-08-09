@@ -1,0 +1,175 @@
+<div>
+  <h2 id="page-heading" data-cy="CiAlertHeading">
+    <span jhiTranslate="cIjhipsterApp.ciAlert.home.title">Ci Alerts</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span jhiTranslate="cIjhipsterApp.ciAlert.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-ci-alert"
+        [routerLink]="['/ci-alert/new']"
+      >
+        <fa-icon icon="plus" />
+        <span jhiTranslate="cIjhipsterApp.ciAlert.home.createLabel">Create a new Ci Alert</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+
+  <jhi-alert />
+
+  <jhi-filter [filters]="filters" />
+
+  @if (ciAlerts().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span jhiTranslate="cIjhipsterApp.ciAlert.home.notFound">No Ci Alerts found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex">
+                <span jhiTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="title">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.ciAlert.title">Title</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="message">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.ciAlert.message">Message</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="severity">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.ciAlert.severity">Severity</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="status">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.ciAlert.status">Status</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="createdAt">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.ciAlert.createdAt">Created At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="readAt">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.ciAlert.readAt">Read At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="analysisResult.id">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.ciAlert.analysisResult">Analysis Result</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="analystProfile.displayName">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.ciAlert.analystProfile">Analyst Profile</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ciAlert of ciAlerts(); track trackId(ciAlert)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/ci-alert', ciAlert.id, 'view']">{{ ciAlert.id }}</a>
+              </td>
+              <td>{{ ciAlert.title }}</td>
+              <td>{{ ciAlert.message }}</td>
+              <td [jhiTranslate]="'cIjhipsterApp.Severity.' + (ciAlert.severity ?? 'null')">
+                {{ { null: '', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH', CRITICAL: 'CRITICAL' }[ciAlert.severity ?? 'null'] }}
+              </td>
+              <td [jhiTranslate]="'cIjhipsterApp.AlertStatus.' + (ciAlert.status ?? 'null')">
+                {{ { null: '', NEW: 'NEW', READ: 'READ', ARCHIVED: 'ARCHIVED' }[ciAlert.status ?? 'null'] }}
+              </td>
+              <td>{{ ciAlert.createdAt | formatMediumDatetime }}</td>
+              <td>{{ ciAlert.readAt | formatMediumDatetime }}</td>
+              <td>
+                @if (ciAlert.analysisResult) {
+                  <div>
+                    <a [routerLink]="['/analysis-result', ciAlert.analysisResult.id, 'view']">{{ ciAlert.analysisResult.id }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (ciAlert.analystProfile) {
+                  <div>
+                    <a [routerLink]="['/analyst-profile', ciAlert.analystProfile.id, 'view']">{{ ciAlert.analystProfile.displayName }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/ci-alert', ciAlert.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/ci-alert', ciAlert.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(ciAlert)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (ciAlerts().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

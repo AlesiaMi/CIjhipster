@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <!--
+        Added the constraints for entity NewsItem.
+    -->
+    <changeSet id="20260622204713-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="data_source_id"
+                                 baseTableName="news_item"
+                                 constraintName="fk_news_item__data_source_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="data_source"
+                                 />
+
+        <addForeignKeyConstraint baseColumnNames="competitor_id"
+                                 baseTableName="news_item"
+                                 constraintName="fk_news_item__competitor_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="competitor"
+                                 />
+
+        <addForeignKeyConstraint baseColumnNames="collection_run_id"
+                                 baseTableName="news_item"
+                                 constraintName="fk_news_item__collection_run_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="collection_run"
+                                 />
+    </changeSet>
+</databaseChangeLog>

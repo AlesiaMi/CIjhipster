@@ -1,0 +1,64 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (dataSource(); as dataSourceRef) {
+      <div>
+        <h2 data-cy="dataSourceDetailsHeading"><span jhiTranslate="cIjhipsterApp.dataSource.detail.title">Data Source</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ dataSourceRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.dataSource.sourceName">Source Name</span></dt>
+          <dd>
+            <span>{{ dataSourceRef.sourceName }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.dataSource.url">Url</span></dt>
+          <dd>
+            <span>{{ dataSourceRef.url }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.dataSource.sourceType">Source Type</span></dt>
+          <dd>
+            <span [jhiTranslate]="'cIjhipsterApp.SourceType.' + (dataSourceRef.sourceType ?? 'null')">{{
+              { null: '', RSS: 'RSS', WEBSITE: 'WEBSITE', API: 'API' }[dataSourceRef.sourceType ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.dataSource.isActive">Is Active</span></dt>
+          <dd>
+            <span>{{ dataSourceRef.isActive }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.dataSource.lastCheckedAt">Last Checked At</span></dt>
+          <dd>
+            <span>{{ dataSourceRef.lastCheckedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.dataSource.createdAt">Created At</span></dt>
+          <dd>
+            <span>{{ dataSourceRef.createdAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.dataSource.competitor">Competitor</span></dt>
+          <dd>
+            @if (dataSource()!.competitor) {
+              <div>
+                <a [routerLink]="['/competitor', dataSource()!.competitor?.id, 'view']">{{ dataSourceRef.competitor?.competitorName }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/data-source', dataSourceRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,76 @@
+{
+  "annotations": {
+    "changelogDate": "20260622204714"
+  },
+  "applications": ["*"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "summary",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "4000"
+    },
+    {
+      "fieldName": "sentiment",
+      "fieldType": "Sentiment",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "POSITIVE,NEGATIVE,NEUTRAL,UNKNOWN"
+    },
+    {
+      "fieldName": "topic",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "entities",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "4000"
+    },
+    {
+      "fieldName": "riskSource",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "AnalysisStatus",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "PENDING,SUCCESS,FAILED"
+    },
+    {
+      "fieldName": "modelName",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "analyzedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "errorMessage",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "4000"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "AnalysisResult",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "title",
+      "otherEntityName": "newsItem",
+      "relationshipName": "newsItem",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

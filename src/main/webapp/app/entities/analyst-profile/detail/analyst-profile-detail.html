@@ -1,0 +1,61 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (analystProfile(); as analystProfileRef) {
+      <div>
+        <h2 data-cy="analystProfileDetailsHeading">
+          <span jhiTranslate="cIjhipsterApp.analystProfile.detail.title">Analyst Profile</span>
+        </h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ analystProfileRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analystProfile.displayName">Display Name</span></dt>
+          <dd>
+            <span>{{ analystProfileRef.displayName }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analystProfile.telegramChatId">Telegram Chat Id</span></dt>
+          <dd>
+            <span>{{ analystProfileRef.telegramChatId }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analystProfile.notificationEnabled">Notification Enabled</span></dt>
+          <dd>
+            <span>{{ analystProfileRef.notificationEnabled }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analystProfile.createdAt">Created At</span></dt>
+          <dd>
+            <span>{{ analystProfileRef.createdAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analystProfile.user">User</span></dt>
+          <dd>
+            <span>{{ analystProfileRef.user?.login }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analystProfile.competitors">Competitors</span></dt>
+          <dd>
+            @for (competitors of analystProfileRef.competitorses; track $index; let last = $last) {
+              <span>
+                <a [routerLink]="['/competitor', competitors.id, 'view']">{{ competitors?.competitorName }}</a
+                >{{ last ? '' : ', ' }}
+              </span>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/analyst-profile', analystProfileRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,55 @@
+{
+  "annotations": {
+    "changelogDate": "20260622204716"
+  },
+  "applications": ["*"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "displayName",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "telegramChatId",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "notificationEnabled",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "AnalystProfile",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "login",
+      "otherEntityName": "user",
+      "relationshipName": "user",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one",
+      "relationshipValidateRules": "required",
+      "relationshipWithBuiltInEntity": true
+    },
+    {
+      "otherEntityField": "competitorName",
+      "otherEntityName": "competitor",
+      "otherEntityRelationshipName": "analystProfiles",
+      "relationshipName": "competitors",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-many"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

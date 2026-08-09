@@ -8,7 +8,15 @@
       "entities": {
         "main": "Entities",
         "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)",
-        "adminAuthority": "Authority"
+        "adminAuthority": "Authority",
+        "competitor": "Competitor",
+        "dataSource": "Data Source",
+        "keyword": "Keyword",
+        "collectionRun": "Collection Run",
+        "newsItem": "News Item",
+        "analysisResult": "Analysis Result",
+        "ciAlert": "Ci Alert",
+        "analystProfile": "Analyst Profile"
       },
       "account": {
         "main": "Account",

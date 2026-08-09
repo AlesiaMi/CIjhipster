@@ -1,0 +1,152 @@
+<div>
+  <h2 id="page-heading" data-cy="CollectionRunHeading">
+    <span jhiTranslate="cIjhipsterApp.collectionRun.home.title">Collection Runs</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span jhiTranslate="cIjhipsterApp.collectionRun.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button class="btn btn-success me-2" (click)="runCollection()" [disabled]="isLoading()">
+        <fa-icon icon="play"></fa-icon>
+        <span>Собрать новости</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-collection-run"
+        [routerLink]="['/collection-run/new']"
+      >
+        <fa-icon icon="plus" />
+        <span jhiTranslate="cIjhipsterApp.collectionRun.home.createLabel">Create a new Collection Run</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+
+  <jhi-alert />
+
+  <jhi-filter [filters]="filters" />
+
+  @if (collectionRuns().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span jhiTranslate="cIjhipsterApp.collectionRun.home.notFound">No Collection Runs found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex">
+                <span jhiTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="startedAt">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.collectionRun.startedAt">Started At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="finishedAt">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.collectionRun.finishedAt">Finished At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="status">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.collectionRun.status">Status</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="foundCount">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.collectionRun.foundCount">Found Count</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="processedCount">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.collectionRun.processedCount">Processed Count</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="errorMessage">
+              <div class="d-flex">
+                <span jhiTranslate="cIjhipsterApp.collectionRun.errorMessage">Error Message</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (collectionRun of collectionRuns(); track trackId(collectionRun)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/collection-run', collectionRun.id, 'view']">{{ collectionRun.id }}</a>
+              </td>
+              <td>{{ collectionRun.startedAt | formatMediumDatetime }}</td>
+              <td>{{ collectionRun.finishedAt | formatMediumDatetime }}</td>
+              <td [jhiTranslate]="'cIjhipsterApp.RunStatus.' + (collectionRun.status ?? 'null')">
+                {{ { null: '', RUNNING: 'RUNNING', SUCCESS: 'SUCCESS', FAILED: 'FAILED' }[collectionRun.status ?? 'null'] }}
+              </td>
+              <td>{{ collectionRun.foundCount }}</td>
+              <td>{{ collectionRun.processedCount }}</td>
+              <td>{{ collectionRun.errorMessage }}</td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/collection-run', collectionRun.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a [routerLink]="['/collection-run', collectionRun.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(collectionRun)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (collectionRuns().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

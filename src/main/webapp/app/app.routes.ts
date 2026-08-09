@@ -37,6 +37,15 @@ const routes: Routes = [
     path: '',
     loadChildren: () => import('./entities/entity.routes'),
   },
+
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./client/dashboard/client-dashboard.component').then(m => m.ClientDashboardComponent),
+    data: {
+      authorities: ['ROLE_USER', 'ROLE_ADMIN'],
+      pageTitle: 'Дашборд конкурентной разведки',
+    },
+  },
   ...errorRoute,
 ];
 
