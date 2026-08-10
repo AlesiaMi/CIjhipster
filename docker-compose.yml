@@ -1,0 +1,57 @@
+services:
+  database:
+    image: postgres:17.5
+    container_name: cijhipster-database
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: CIjhipster
+      POSTGRES_USER: CIjhipster
+      POSTGRES_PASSWORD: CIjhipster
+
+    volumes:
+      - cijhipster_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U CIjhipster -d CIjhipster']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+
+    container_name: cijhipster-backend
+    restart: unless-stopped
+
+    environment:
+      SPRING_PROFILES_ACTIVE: prod,secret-samples
+
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/CIjhipster
+      SPRING_DATASOURCE_USERNAME: CIjhipster
+      SPRING_DATASOURCE_PASSWORD: CIjhipster
+
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+
+    depends_on:
+      database:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+
+    container_name: cijhipster-frontend
+    restart: unless-stopped
+
+    ports:
+      - '8088:80'
+
+    depends_on:
+      - backend
+
+volumes:
+  cijhipster_postgres_data:

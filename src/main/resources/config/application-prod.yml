@@ -108,3 +108,6 @@ jhipster:
 # ===================================================================
 
 # application:
+openrouter:
+  api-key: ${OPENROUTER_API_KEY}
+  model: openrouter/free

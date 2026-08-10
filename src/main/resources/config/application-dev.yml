@@ -94,6 +94,6 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-gemini:
-  api-key: AQ.Ab8RN6LYgIGyvtSui6kFDlfTmgyeyPDcflhL0Wpv8tNfsxaLtg
-  model: gemini-2.5-flash
+openrouter:
+  api-key: ${OPENROUTER_API_KEY}
+  model: openrouter/free

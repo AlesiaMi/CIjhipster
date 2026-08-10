@@ -18,16 +18,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class GeminiAnalysisService {
 
-    @Value("${gemini.api-key}")
+    @Value("${openrouter.api-key}")
     private String apiKey;
 
-    @Value("${gemini.model}")
+    @Value("${openrouter.model}")
     private String model;
 
     private final AnalysisResultRepository analysisResultRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     public GeminiAnalysisService(AnalysisResultRepository analysisResultRepository) {
@@ -41,7 +40,7 @@ public class GeminiAnalysisService {
 
                 Проанализируй новость.
 
-                Верни JSON следующего вида.
+                Верни JSON следующего вида:
 
                 {
                   "summary":"краткое содержание",
@@ -65,54 +64,63 @@ public class GeminiAnalysisService {
 
             String requestBody = """
                 {
-                  "contents": [
+                  "model": %s,
+                  "messages": [
                     {
-                      "parts": [
-                        {
-                          "text": %s
-                        }
-                      ]
+                      "role": "user",
+                      "content": %s
                     }
                   ],
-                  "generationConfig": {
-                    "temperature": 0.2,
-                    "responseMimeType": "application/json"
+                  "temperature": 0.2,
+                  "response_format": {
+                    "type": "json_object"
                   }
                 }
-                """.formatted(objectMapper.writeValueAsString(prompt));
+                """.formatted(objectMapper.writeValueAsString(model), objectMapper.writeValueAsString(prompt));
 
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey))
+                .uri(URI.create("https://openrouter.ai/api/v1/chat/completions"))
+                .header("Authorization", "Bearer " + apiKey)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            System.out.println("========== GEMINI RESPONSE ==========");
+            System.out.println("========== OPENROUTER RESPONSE ==========");
+            System.out.println("HTTP status: " + response.statusCode());
             System.out.println(response.body());
-            System.out.println("====================================");
+            System.out.println("=========================================");
 
             JsonNode root = objectMapper.readTree(response.body());
 
-            if (root.has("error")) {
+            if (response.statusCode() < 200 || response.statusCode() >= 300 || root.has("error")) {
                 AnalysisResult result = new AnalysisResult();
 
                 result.setNewsItem(newsItem);
                 result.setStatus(AnalysisStatus.FAILED);
                 result.setSentiment(Sentiment.UNKNOWN);
                 result.setAnalyzedAt(Instant.now());
-                result.setErrorMessage(root.path("error").path("message").asText());
+
+                String errorMessage = root.path("error").path("message").asText();
+
+                if (errorMessage == null || errorMessage.isBlank()) {
+                    errorMessage = "OpenRouter HTTP error " + response.statusCode();
+                }
+
+                result.setErrorMessage(errorMessage);
 
                 analysisResultRepository.save(result);
                 return;
             }
 
-            JsonNode candidate = root.path("candidates").get(0);
+            JsonNode message = root.path("choices").path(0).path("message");
 
-            JsonNode part = candidate.path("content").path("parts").get(0);
+            String json = message.path("content").asText();
 
-            String json = part.path("text").asText();
+            if (json == null || json.isBlank()) {
+                throw new IllegalStateException("OpenRouter returned empty content");
+            }
 
             JsonNode ai = objectMapper.readTree(json);
 
@@ -129,7 +137,7 @@ public class GeminiAnalysisService {
             result.setRiskSource(ai.path("riskSource").asText());
 
             try {
-                result.setSentiment(Sentiment.valueOf(ai.path("sentiment").asText("NEUTRAL")));
+                result.setSentiment(Sentiment.valueOf(ai.path("sentiment").asText("NEUTRAL").toUpperCase()));
             } catch (Exception ex) {
                 result.setSentiment(Sentiment.NEUTRAL);
             }
