@@ -6,12 +6,22 @@ COPY . .
 
 RUN chmod +x mvnw
 
-RUN ./mvnw -ntp \
-    -Dmaven.wagon.http.retryHandler.count=5 \
-    -Dmaven.wagon.httpconnectionManager.ttlSeconds=30 \
-    -Dmaven.test.skip=true \
-    -Pno-liquibase \
-    package
+RUN --mount=type=cache,target=/root/.m2 \
+    sh -c '\
+      for i in 1 2 3 4 5; do \
+        echo "Maven build attempt $i/5"; \
+        ./mvnw -ntp \
+          -Dmaven.wagon.http.retryHandler.count=5 \
+          -Dmaven.wagon.httpconnectionManager.ttlSeconds=30 \
+          -Dmaven.test.skip=true \
+          -Pno-liquibase \
+          package \
+        && exit 0; \
+        echo "Maven build failed. Waiting before retry..."; \
+        sleep 15; \
+      done; \
+      exit 1'
+
 
 FROM eclipse-temurin:21-jre
 

@@ -7,6 +7,7 @@ import com.mycompany.myapp.domain.NewsItem;
 import com.mycompany.myapp.domain.enumeration.AnalysisStatus;
 import com.mycompany.myapp.domain.enumeration.Sentiment;
 import com.mycompany.myapp.repository.AnalysisResultRepository;
+import com.mycompany.myapp.repository.NewsItemRepository;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -29,8 +30,19 @@ public class GeminiAnalysisService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
-    public GeminiAnalysisService(AnalysisResultRepository analysisResultRepository) {
+    private final NewsItemRepository newsItemRepository;
+
+    public GeminiAnalysisService(AnalysisResultRepository analysisResultRepository, NewsItemRepository newsItemRepository) {
         this.analysisResultRepository = analysisResultRepository;
+        this.newsItemRepository = newsItemRepository;
+    }
+
+    public void analyzeNewsById(Long newsItemId) {
+        NewsItem newsItem = newsItemRepository
+            .findById(newsItemId)
+            .orElseThrow(() -> new IllegalArgumentException("NewsItem not found: " + newsItemId));
+
+        analyzeNews(newsItem);
     }
 
     public void analyzeNews(NewsItem newsItem) {

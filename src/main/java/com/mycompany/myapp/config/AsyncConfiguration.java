@@ -41,6 +41,20 @@ public class AsyncConfiguration implements AsyncConfigurer {
         return new ExceptionHandlingAsyncTaskExecutor(executor);
     }
 
+    @Bean(name = "analysisExecutor")
+    public Executor analysisExecutor() {
+        var executor = new ThreadPoolTaskExecutor();
+
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(1);
+        executor.setQueueCapacity(500);
+        executor.setThreadNamePrefix("analysis-");
+
+        executor.initialize();
+
+        return executor;
+    }
+
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new SimpleAsyncUncaughtExceptionHandler();

@@ -10,14 +10,14 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./client-dashboard.component.scss'],
 })
 export class ClientDashboardComponent implements OnInit {
-  private http = inject(HttpClient);
-
   newsItems: any[] = [];
   analysisResults: any[] = [];
   alerts: any[] = [];
   collectionRuns: any[] = [];
 
   loading = true;
+
+  private http = inject(HttpClient);
 
   ngOnInit(): void {
     this.loadDashboard();
@@ -79,14 +79,38 @@ export class ClientDashboardComponent implements OnInit {
     return this.alerts.filter(a => a.severity === 'HIGH' || a.severity === 'CRITICAL').length;
   }
 
-  getSourcesCount(): number {
+  /* getSourcesCount(): number {
     const set = new Set(this.newsItems.map(n => n.dataSource?.id).filter(x => x != null));
+
+    return set.size;
+  }*/
+
+  getSourcesCount(): number {
+    const set = new Set<number>();
+
+    this.newsItems.forEach(item => {
+      if (item.dataSource?.id != null) {
+        set.add(Number(item.dataSource.id));
+      }
+    });
 
     return set.size;
   }
 
-  getCompetitorsCount(): number {
+  /* getCompetitorsCount(): number {
     const set = new Set(this.newsItems.map(n => n.competitor?.id).filter(x => x != null));
+
+    return set.size;
+  }*/
+
+  getCompetitorsCount(): number {
+    const set = new Set<number>();
+
+    this.newsItems.forEach(item => {
+      if (item.competitor?.id != null) {
+        set.add(Number(item.competitor.id));
+      }
+    });
 
     return set.size;
   }

@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
-import { faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faPencilAlt, faPlay, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, of } from 'rxjs';
@@ -62,7 +62,7 @@ describe('CollectionRun Management Component', () => {
     routerNavigateSpy = vitest.spyOn(comp.router, 'navigate');
 
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes);
+    library.addIcons(faEye, faPencilAlt, faPlay, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes);
     httpMock = TestBed.inject(HttpTestingController);
   });
 

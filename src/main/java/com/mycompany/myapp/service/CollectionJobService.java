@@ -11,30 +11,38 @@ import com.mycompany.myapp.repository.NewsItemRepository;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+//import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
+//@Transactional
 public class CollectionJobService {
 
     private final DataSourceRepository dataSourceRepository;
     private final CollectionRunRepository collectionRunRepository;
     private final NewsItemRepository newsItemRepository;
     private final RssReaderService rssReaderService;
-    private final GeminiAnalysisService geminiAnalysisService;
+    //private final GeminiAnalysisService geminiAnalysisService;
+
+    private final AnalysisJobService analysisJobService;
+    private final NewsItemPersistenceService newsItemPersistenceService;
 
     public CollectionJobService(
         DataSourceRepository dataSourceRepository,
         CollectionRunRepository collectionRunRepository,
         NewsItemRepository newsItemRepository,
         RssReaderService rssReaderService,
-        GeminiAnalysisService geminiAnalysisService
-    ) {
+        AnalysisJobService analysisJobService,
+        NewsItemPersistenceService newsItemPersistenceService
+    ) //GeminiAnalysisService geminiAnalysisService
+    {
         this.dataSourceRepository = dataSourceRepository;
         this.collectionRunRepository = collectionRunRepository;
         this.newsItemRepository = newsItemRepository;
         this.rssReaderService = rssReaderService;
-        this.geminiAnalysisService = geminiAnalysisService;
+        //this.geminiAnalysisService = geminiAnalysisService;
+        this.analysisJobService = analysisJobService;
+        this.newsItemPersistenceService = newsItemPersistenceService;
     }
 
     public CollectionJobResult runRssCollection() {
@@ -83,13 +91,17 @@ public class CollectionJobService {
                     newsItem.setCompetitor(source.getCompetitor());
                     newsItem.setCollectionRun(run);
 
-                    newsItemRepository.save(newsItem);
+                    /* newsItemRepository.save(newsItem);
                     geminiAnalysisService.analyzeNews(newsItem);
                     try {
                         Thread.sleep(15000);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }
+                    processedCount++;*/
+
+                    Long newsItemId = newsItemPersistenceService.save(newsItem);
+                    analysisJobService.analyzeAsync(newsItemId);
                     processedCount++;
                 }
 

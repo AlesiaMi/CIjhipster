@@ -112,7 +112,7 @@ export class CollectionRun implements OnInit {
     this.queryBackend();
   }
 
-  runCollection(): void {
+  /* runCollection(): void {
     this.collectionRunService.runCollection().subscribe({
       next: result => {
         console.log(result);
@@ -133,6 +133,21 @@ export class CollectionRun implements OnInit {
       },
 
       error: err => {
+        console.error(err);
+
+        alert('Ошибка при запуске сбора.');
+      },
+    });
+  }*/
+  runCollection(): void {
+    this.collectionRunService.runCollection().subscribe({
+      next: () => {
+        alert('Сбор новостей запущен в фоновом режиме.');
+
+        this.load();
+      },
+
+      error(err) {
         console.error(err);
 
         alert('Ошибка при запуске сбора.');
