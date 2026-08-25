@@ -96,4 +96,4 @@ jhipster:
 
 openrouter:
   api-key: ${OPENROUTER_API_KEY}
-  model: openrouter/free
+  model: nvidia/nemotron-nano-9b-v2:free

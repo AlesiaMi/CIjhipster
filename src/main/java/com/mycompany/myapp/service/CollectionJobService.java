@@ -9,6 +9,7 @@ import com.mycompany.myapp.repository.CollectionRunRepository;
 import com.mycompany.myapp.repository.DataSourceRepository;
 import com.mycompany.myapp.repository.NewsItemRepository;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -33,9 +34,8 @@ public class CollectionJobService {
         NewsItemRepository newsItemRepository,
         RssReaderService rssReaderService,
         AnalysisJobService analysisJobService,
-        NewsItemPersistenceService newsItemPersistenceService
-    ) //GeminiAnalysisService geminiAnalysisService
-    {
+        NewsItemPersistenceService newsItemPersistenceService //GeminiAnalysisService geminiAnalysisService
+    ) {
         this.dataSourceRepository = dataSourceRepository;
         this.collectionRunRepository = collectionRunRepository;
         this.newsItemRepository = newsItemRepository;
@@ -57,6 +57,8 @@ public class CollectionJobService {
         int processedCount = 0;
         int duplicateCount = 0;
         int errorCount = 0;
+
+        List<Long> newsItemIdsForAnalysis = new ArrayList<>();
 
         StringBuilder errors = new StringBuilder();
 
@@ -100,8 +102,12 @@ public class CollectionJobService {
                     }
                     processedCount++;*/
 
-                    Long newsItemId = newsItemPersistenceService.save(newsItem);
+                    /*  Long newsItemId = newsItemPersistenceService.save(newsItem);
                     analysisJobService.analyzeAsync(newsItemId);
+                    processedCount++;*/
+
+                    Long newsItemId = newsItemPersistenceService.save(newsItem);
+                    newsItemIdsForAnalysis.add(newsItemId);
                     processedCount++;
                 }
 
@@ -126,6 +132,10 @@ public class CollectionJobService {
         }
 
         collectionRunRepository.save(run);
+
+        if (!newsItemIdsForAnalysis.isEmpty()) {
+            analysisJobService.analyzeBatchAsync(List.copyOf(newsItemIdsForAnalysis));
+        }
 
         return new CollectionJobResult(foundCount, processedCount, duplicateCount, errorCount);
     }
