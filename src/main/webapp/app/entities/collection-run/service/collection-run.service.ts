@@ -9,13 +9,6 @@ import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
 import { ICollectionRun, NewCollectionRun } from '../collection-run.model';
 
-export interface CollectionJobResult {
-  foundCount: number;
-  processedCount: number;
-  duplicateCount: number;
-  errorCount: number;
-}
-
 export type PartialUpdateCollectionRun = Partial<ICollectionRun> & Pick<ICollectionRun, 'id'>;
 
 type RestOf<T extends ICollectionRun | NewCollectionRun> = Omit<T, 'startedAt' | 'finishedAt'> & {
@@ -41,10 +34,7 @@ export class CollectionRunsService {
     }
     return { url: this.resourceUrl, params };
   });
-  /**
-   * This signal holds the list of collectionRun that have been fetched. It is updated when the collectionRunsResource emits a new value.
-   * In case of error while fetching the collectionRuns, the signal is set to an empty array.
-   */
+
   readonly collectionRuns = computed(() =>
     (this.collectionRunsResource.hasValue() ? this.collectionRunsResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
@@ -100,8 +90,8 @@ export class CollectionRunService extends CollectionRunsService {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  runCollection(): Observable<CollectionJobResult> {
-    return this.http.post<CollectionJobResult>(`${this.resourceUrl}/run`, {});
+  runCollection(): Observable<void> {
+    return this.http.post<void>(`${this.resourceUrl}/run`, {});
   }
 
   getCollectionRunIdentifier(collectionRun: Pick<ICollectionRun, 'id'>): number {

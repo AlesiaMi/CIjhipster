@@ -17,13 +17,4 @@ public class AnalysisJobService {
     public void analyzeBatchAsync(List<Long> newsItemIds) {
         geminiAnalysisService.analyzeNewsBatch(newsItemIds);
     }
-
-    /*
-     * Пока оставляем старый метод.
-     * Может использоваться где-нибудь ещё в приложении.
-     */
-    @Async("analysisExecutor")
-    public void analyzeAsync(Long newsItemId) {
-        geminiAnalysisService.analyzeNewsById(newsItemId);
-    }
 }

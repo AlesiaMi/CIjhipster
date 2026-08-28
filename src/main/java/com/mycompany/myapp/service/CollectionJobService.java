@@ -13,18 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
-//import org.springframework.transaction.annotation.Transactional;
-
 @Service
-//@Transactional
 public class CollectionJobService {
 
+    private static final int ANALYSIS_BATCH_SIZE = 20;
     private final DataSourceRepository dataSourceRepository;
     private final CollectionRunRepository collectionRunRepository;
     private final NewsItemRepository newsItemRepository;
     private final RssReaderService rssReaderService;
-    //private final GeminiAnalysisService geminiAnalysisService;
-
     private final AnalysisJobService analysisJobService;
     private final NewsItemPersistenceService newsItemPersistenceService;
 
@@ -34,13 +30,12 @@ public class CollectionJobService {
         NewsItemRepository newsItemRepository,
         RssReaderService rssReaderService,
         AnalysisJobService analysisJobService,
-        NewsItemPersistenceService newsItemPersistenceService //GeminiAnalysisService geminiAnalysisService
+        NewsItemPersistenceService newsItemPersistenceService
     ) {
         this.dataSourceRepository = dataSourceRepository;
         this.collectionRunRepository = collectionRunRepository;
         this.newsItemRepository = newsItemRepository;
         this.rssReaderService = rssReaderService;
-        //this.geminiAnalysisService = geminiAnalysisService;
         this.analysisJobService = analysisJobService;
         this.newsItemPersistenceService = newsItemPersistenceService;
     }
@@ -74,7 +69,6 @@ public class CollectionJobService {
                 List<RssReaderService.RssItem> rssItems = rssReaderService.read(source.getUrl());
 
                 foundCount += rssItems.size();
-
                 for (RssReaderService.RssItem rssItem : rssItems) {
                     if (isDuplicate(rssItem)) {
                         duplicateCount++;
@@ -85,28 +79,23 @@ public class CollectionJobService {
                     newsItem.setExternalId(truncate(rssItem.guid(), 255));
                     newsItem.setTitle(truncate(rssItem.title(), 500));
                     newsItem.setUrl(truncate(rssItem.link(), 1000));
+
                     newsItem.setOriginalText(truncate(rssItem.description(), 10000));
+
                     newsItem.setPublishedAt(rssItem.publishedAt());
+
                     newsItem.setCollectedAt(Instant.now());
+
                     newsItem.setIsDuplicate(false);
+
                     newsItem.setDataSource(source);
+
                     newsItem.setCompetitor(source.getCompetitor());
+
                     newsItem.setCollectionRun(run);
 
-                    /* newsItemRepository.save(newsItem);
-                    geminiAnalysisService.analyzeNews(newsItem);
-                    try {
-                        Thread.sleep(15000);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                    processedCount++;*/
-
-                    /*  Long newsItemId = newsItemPersistenceService.save(newsItem);
-                    analysisJobService.analyzeAsync(newsItemId);
-                    processedCount++;*/
-
                     Long newsItemId = newsItemPersistenceService.save(newsItem);
+
                     newsItemIdsForAnalysis.add(newsItemId);
                     processedCount++;
                 }
@@ -115,13 +104,14 @@ public class CollectionJobService {
                 dataSourceRepository.save(source);
             } catch (Exception e) {
                 errorCount++;
-
                 errors.append("Источник: ").append(source.getSourceName()).append(" — ").append(e.getMessage()).append("; ");
             }
         }
 
         run.setFinishedAt(Instant.now());
+
         run.setFoundCount(foundCount);
+
         run.setProcessedCount(processedCount);
 
         if (errorCount > 0) {
@@ -130,13 +120,14 @@ public class CollectionJobService {
         } else {
             run.setStatus(RunStatus.SUCCESS);
         }
-
         collectionRunRepository.save(run);
 
-        if (!newsItemIdsForAnalysis.isEmpty()) {
-            analysisJobService.analyzeBatchAsync(List.copyOf(newsItemIdsForAnalysis));
+        for (int from = 0; from < newsItemIdsForAnalysis.size(); from += ANALYSIS_BATCH_SIZE) {
+            int to = Math.min(from + ANALYSIS_BATCH_SIZE, newsItemIdsForAnalysis.size());
+            List<Long> batchIds = List.copyOf(newsItemIdsForAnalysis.subList(from, to));
+            System.out.println("Sending TOON analysis batch: " + batchIds.size() + " news, IDs: " + batchIds);
+            analysisJobService.analyzeBatchAsync(batchIds);
         }
-
         return new CollectionJobResult(foundCount, processedCount, duplicateCount, errorCount);
     }
 
@@ -145,7 +136,7 @@ public class CollectionJobService {
             return true;
         }
 
-        return rssItem.guid() != null && !rssItem.guid().isBlank() && newsItemRepository.existsByExternalId(rssItem.guid());
+        return (rssItem.guid() != null && !rssItem.guid().isBlank() && newsItemRepository.existsByExternalId(rssItem.guid()));
     }
 
     private String truncate(String value, int maxLength) {

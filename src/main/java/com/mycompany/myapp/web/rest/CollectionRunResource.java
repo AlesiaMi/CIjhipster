@@ -1,7 +1,7 @@
 package com.mycompany.myapp.web.rest;
 
 import com.mycompany.myapp.repository.CollectionRunRepository;
-import com.mycompany.myapp.service.CollectionJobService;
+import com.mycompany.myapp.service.CollectionJobAsyncService;
 import com.mycompany.myapp.service.CollectionRunQueryService;
 import com.mycompany.myapp.service.CollectionRunService;
 import com.mycompany.myapp.service.criteria.CollectionRunCriteria;
@@ -48,18 +48,18 @@ public class CollectionRunResource {
 
     private final CollectionRunQueryService collectionRunQueryService;
 
-    private final CollectionJobService collectionJobService;
+    private final CollectionJobAsyncService collectionJobAsyncService;
 
     public CollectionRunResource(
         CollectionRunService collectionRunService,
         CollectionRunRepository collectionRunRepository,
         CollectionRunQueryService collectionRunQueryService,
-        CollectionJobService collectionJobService
+        CollectionJobAsyncService collectionJobAsyncService
     ) {
         this.collectionRunService = collectionRunService;
         this.collectionRunRepository = collectionRunRepository;
         this.collectionRunQueryService = collectionRunQueryService;
-        this.collectionJobService = collectionJobService;
+        this.collectionJobAsyncService = collectionJobAsyncService;
     }
 
     /**
@@ -216,11 +216,11 @@ public class CollectionRunResource {
 
     @PostMapping("/run")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<CollectionJobService.CollectionJobResult> runCollection() {
-        LOG.debug("REST request to run RSS collection");
+    public ResponseEntity<Void> runCollection() {
+        LOG.debug("REST request to start RSS collection asynchronously");
 
-        CollectionJobService.CollectionJobResult result = collectionJobService.runRssCollection();
+        collectionJobAsyncService.runAsync();
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.accepted().build();
     }
 }

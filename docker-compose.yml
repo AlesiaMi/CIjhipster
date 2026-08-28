@@ -9,6 +9,9 @@ services:
       POSTGRES_USER: CIjhipster
       POSTGRES_PASSWORD: CIjhipster
 
+    ports:
+      - '5434:5432'
+
     volumes:
       - cijhipster_postgres_data:/var/lib/postgresql/data
 

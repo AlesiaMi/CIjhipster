@@ -144,10 +144,12 @@ export class CollectionRun implements OnInit {
       next: () => {
         alert('Сбор новостей запущен в фоновом режиме.');
 
-        this.load();
+        setTimeout(() => {
+          this.load();
+        }, 500);
       },
 
-      error(err) {
+      error: err => {
         console.error(err);
 
         alert('Ошибка при запуске сбора.');

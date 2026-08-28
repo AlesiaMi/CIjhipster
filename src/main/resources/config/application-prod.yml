@@ -110,4 +110,4 @@ jhipster:
 # application:
 openrouter:
   api-key: ${OPENROUTER_API_KEY}
-  model: nvidia/nemotron-nano-9b-v2:free
+  model: dots-studio/dots-3-note-preview:free
