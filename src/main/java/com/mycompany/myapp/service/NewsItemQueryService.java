@@ -16,12 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.service.QueryService;
 
-/**
- * Service for executing complex queries for {@link NewsItem} entities in the database.
- * The main input is a {@link NewsItemCriteria} which gets converted to {@link Specification},
- * in a way that all the filters must apply.
- * It returns a {@link Page} of {@link NewsItemDTO} which fulfills the criteria.
- */
 @Service
 @Transactional(readOnly = true)
 public class NewsItemQueryService extends QueryService<NewsItem> {
@@ -37,12 +31,6 @@ public class NewsItemQueryService extends QueryService<NewsItem> {
         this.newsItemMapper = newsItemMapper;
     }
 
-    /**
-     * Return a {@link Page} of {@link NewsItemDTO} which matches the criteria from the database.
-     * @param criteria The object which holds all the filters, which the entities should match.
-     * @param page The page, which should be returned.
-     * @return the matching entities.
-     */
     @Transactional(readOnly = true)
     public Page<NewsItemDTO> findByCriteria(NewsItemCriteria criteria, Pageable page) {
         LOG.debug("find by criteria : {}, page: {}", criteria, page);
@@ -50,11 +38,6 @@ public class NewsItemQueryService extends QueryService<NewsItem> {
         return newsItemRepository.findAll(specification, page).map(newsItemMapper::toDto);
     }
 
-    /**
-     * Return the number of matching entities in the database.
-     * @param criteria The object which holds all the filters, which the entities should match.
-     * @return the number of matching entities.
-     */
     @Transactional(readOnly = true)
     public long countByCriteria(NewsItemCriteria criteria) {
         LOG.debug("count by criteria : {}", criteria);
@@ -62,11 +45,6 @@ public class NewsItemQueryService extends QueryService<NewsItem> {
         return newsItemRepository.count(specification);
     }
 
-    /**
-     * Function to convert {@link NewsItemCriteria} to a {@link Specification}
-     * @param criteria The object which holds all the filters, which the entities should match.
-     * @return the matching {@link Specification} of the entity.
-     */
     protected Specification<NewsItem> createSpecification(NewsItemCriteria criteria) {
         Specification<NewsItem> specification = Specification.unrestricted();
         specification = specification.and((root, query, builder) -> {

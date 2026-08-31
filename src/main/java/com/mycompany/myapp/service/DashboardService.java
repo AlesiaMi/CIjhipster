@@ -9,6 +9,8 @@ import com.mycompany.myapp.repository.CompetitorRepository;
 import com.mycompany.myapp.repository.DataSourceRepository;
 import com.mycompany.myapp.repository.NewsItemRepository;
 import com.mycompany.myapp.service.dto.DashboardDTO;
+import com.mycompany.myapp.service.dto.NewsItemDTO;
+import com.mycompany.myapp.service.mapper.NewsItemMapper;
 import jakarta.persistence.EntityManager;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -25,19 +27,22 @@ public class DashboardService {
     private final CompetitorRepository competitorRepository;
     private final DataSourceRepository dataSourceRepository;
     private final EntityManager entityManager;
+    private final NewsItemMapper newsItemMapper;
 
     public DashboardService(
         NewsItemRepository newsItemRepository,
         AnalysisResultRepository analysisResultRepository,
         CompetitorRepository competitorRepository,
         DataSourceRepository dataSourceRepository,
-        EntityManager entityManager
+        EntityManager entityManager,
+        NewsItemMapper newsItemMapper
     ) {
         this.newsItemRepository = newsItemRepository;
         this.analysisResultRepository = analysisResultRepository;
         this.competitorRepository = competitorRepository;
         this.dataSourceRepository = dataSourceRepository;
         this.entityManager = entityManager;
+        this.newsItemMapper = newsItemMapper;
     }
 
     public DashboardDTO getDashboard() {
@@ -63,6 +68,43 @@ public class DashboardService {
         dto.latestNews = loadLatestNews();
 
         return dto;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<NewsItemDTO> getLatestFiveNews() {
+        long start = System.nanoTime();
+        List<NewsItem> latestNews = entityManager
+            .createNativeQuery(
+                """
+                SELECT *
+                FROM news_item
+                ORDER BY collected_at DESC
+                LIMIT 5
+                """,
+                NewsItem.class
+            )
+            .getResultList();
+
+        long end = System.nanoTime();
+
+        double timeMs = (end - start) / 1_000_000.0;
+
+        System.out.println("Latest 5 news SQL time: " + timeMs + " ms");
+
+        return latestNews.stream().map(newsItemMapper::toDto).toList();
+    }
+
+    public long getNewsCount() {
+        Number count = (Number) entityManager
+            .createNativeQuery(
+                """
+                SELECT COUNT(*)
+                FROM news_item
+                """
+            )
+            .getSingleResult();
+
+        return count.longValue();
     }
 
     private long countBySentiment(Sentiment sentiment) {

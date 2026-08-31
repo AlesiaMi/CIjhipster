@@ -11,9 +11,12 @@ import { HttpClient } from '@angular/common/http';
 })
 export class ClientDashboardComponent implements OnInit {
   newsItems: any[] = [];
+  latestNewsItems: any[] = [];
   analysisResults: any[] = [];
   alerts: any[] = [];
   collectionRuns: any[] = [];
+
+  newsCount = 0;
 
   loading = true;
 
@@ -28,6 +31,20 @@ export class ClientDashboardComponent implements OnInit {
 
     this.http.get<any[]>('/api/news-items?size=1000').subscribe(data => {
       this.newsItems = data;
+    });
+
+    this.http.get<number>('/api/dashboard/news-count').subscribe(data => {
+      this.newsCount = data;
+    });
+
+    const start = performance.now();
+
+    this.http.get<any[]>('/api/dashboard/latest-news').subscribe(data => {
+      this.latestNewsItems = data;
+
+      const end = performance.now();
+
+      console.log(`Latest news request time: ${(end - start).toFixed(2)} ms`);
     });
 
     this.http.get<any[]>('/api/analysis-results?size=1000').subscribe(data => {
@@ -47,12 +64,10 @@ export class ClientDashboardComponent implements OnInit {
     });
   }
 
-  // =======================
   // KPI
-  // =======================
 
   getNewsCount(): number {
-    return this.newsItems.length;
+    return this.newsCount;
   }
 
   getAnalysisCount(): number {
@@ -115,12 +130,10 @@ export class ClientDashboardComponent implements OnInit {
     return set.size;
   }
 
-  // =======================
   // Последние записи
-  // =======================
 
   getLatestNews(): any[] {
-    return [...this.newsItems].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()).slice(0, 5);
+    return this.latestNewsItems;
   }
 
   getLatestAnalysis(): any[] {
@@ -139,9 +152,7 @@ export class ClientDashboardComponent implements OnInit {
     return [...this.collectionRuns].reverse()[0];
   }
 
-  // =======================
   // Проценты для диаграммы
-  // =======================
 
   getPositivePercent(): number {
     if (!this.analysisResults.length) return 0;
@@ -161,9 +172,7 @@ export class ClientDashboardComponent implements OnInit {
     return Math.round((this.getNegativeCount() / this.analysisResults.length) * 100);
   }
 
-  // =======================
   // Цвет тональности
-  // =======================
 
   sentimentClass(sentiment: string): string {
     switch (sentiment) {
@@ -181,9 +190,7 @@ export class ClientDashboardComponent implements OnInit {
     }
   }
 
-  // =======================
   // Цвет Alert
-  // =======================
 
   severityClass(severity: string): string {
     switch (severity) {
