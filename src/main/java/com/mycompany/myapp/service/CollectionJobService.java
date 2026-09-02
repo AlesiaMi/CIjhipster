@@ -11,6 +11,8 @@ import com.mycompany.myapp.repository.NewsItemRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,6 +25,7 @@ public class CollectionJobService {
     private final RssReaderService rssReaderService;
     private final AnalysisJobService analysisJobService;
     private final NewsItemPersistenceService newsItemPersistenceService;
+    private final CacheManager cacheManager;
 
     public CollectionJobService(
         DataSourceRepository dataSourceRepository,
@@ -30,7 +33,8 @@ public class CollectionJobService {
         NewsItemRepository newsItemRepository,
         RssReaderService rssReaderService,
         AnalysisJobService analysisJobService,
-        NewsItemPersistenceService newsItemPersistenceService
+        NewsItemPersistenceService newsItemPersistenceService,
+        CacheManager cacheManager
     ) {
         this.dataSourceRepository = dataSourceRepository;
         this.collectionRunRepository = collectionRunRepository;
@@ -38,6 +42,7 @@ public class CollectionJobService {
         this.rssReaderService = rssReaderService;
         this.analysisJobService = analysisJobService;
         this.newsItemPersistenceService = newsItemPersistenceService;
+        this.cacheManager = cacheManager;
     }
 
     public CollectionJobResult runRssCollection() {
@@ -121,6 +126,15 @@ public class CollectionJobService {
             run.setStatus(RunStatus.SUCCESS);
         }
         collectionRunRepository.save(run);
+
+        if (processedCount > 0) {
+            Cache newsItemsCache = cacheManager.getCache("newsItemsPages");
+
+            if (newsItemsCache != null) {
+                newsItemsCache.clear();
+                System.out.println("Redis cache 'newsItemsPages' cleared after RSS collection");
+            }
+        }
 
         for (int from = 0; from < newsItemIdsForAnalysis.size(); from += ANALYSIS_BATCH_SIZE) {
             int to = Math.min(from + ANALYSIS_BATCH_SIZE, newsItemIdsForAnalysis.size());

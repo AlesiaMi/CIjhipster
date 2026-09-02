@@ -21,6 +21,20 @@ services:
       timeout: 5s
       retries: 20
 
+  redis:
+    image: redis:7.4-alpine
+    container_name: cijhipster-redis
+    restart: unless-stopped
+
+    ports:
+      - '127.0.0.1:6379:6379'
+
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   backend:
     build:
       context: .
@@ -36,10 +50,15 @@ services:
       SPRING_DATASOURCE_USERNAME: CIjhipster
       SPRING_DATASOURCE_PASSWORD: CIjhipster
 
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
 
     depends_on:
       database:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   frontend:

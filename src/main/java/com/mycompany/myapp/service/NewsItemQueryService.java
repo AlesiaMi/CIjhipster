@@ -1,7 +1,6 @@
 package com.mycompany.myapp.service;
 
 import com.mycompany.myapp.domain.*; // for static metamodels
-import com.mycompany.myapp.domain.NewsItem;
 import com.mycompany.myapp.repository.NewsItemRepository;
 import com.mycompany.myapp.service.criteria.NewsItemCriteria;
 import com.mycompany.myapp.service.dto.NewsItemDTO;
@@ -9,6 +8,7 @@ import com.mycompany.myapp.service.mapper.NewsItemMapper;
 import jakarta.persistence.criteria.JoinType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,6 +31,10 @@ public class NewsItemQueryService extends QueryService<NewsItem> {
         this.newsItemMapper = newsItemMapper;
     }
 
+    @Cacheable(
+        cacheNames = "newsItemsPages",
+        key = "#criteria.toString() + '|' + " + "#page.pageNumber + '|' + " + "#page.pageSize + '|' + " + "#page.sort.toString()"
+    )
     @Transactional(readOnly = true)
     public Page<NewsItemDTO> findByCriteria(NewsItemCriteria criteria, Pageable page) {
         LOG.debug("find by criteria : {}, page: {}", criteria, page);
