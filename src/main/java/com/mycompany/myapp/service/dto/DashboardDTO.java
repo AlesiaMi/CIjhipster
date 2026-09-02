@@ -9,6 +9,9 @@ public class DashboardDTO {
     public long analysisCount;
     public long competitorCount;
     public long rssCount;
+    public long alertsCount;
+    public long highAlertsCount;
+    public long sourcesCount;
 
     public long positiveCount;
     public long negativeCount;
@@ -18,6 +21,8 @@ public class DashboardDTO {
     public List<TopCompetitorDTO> topCompetitors;
     public List<NewsByDayDTO> newsByDay;
     public List<LatestNewsDTO> latestNews;
+    public List<LatestAnalysisDTO> latestAnalysis;
+    public List<LatestAlertDTO> latestAlerts;
 
     public static class TopCompetitorDTO {
 
@@ -73,6 +78,40 @@ public class DashboardDTO {
             this.topic = topic;
             this.entities = entities;
             this.publishedAt = publishedAt;
+        }
+    }
+
+    public static class LatestAnalysisDTO {
+
+        public Long id;
+        public String topic;
+        public String summary;
+        public String sentiment;
+        public String modelName;
+
+        public LatestAnalysisDTO(Long id, String topic, String summary, String sentiment, String modelName) {
+            this.id = id;
+            this.topic = topic;
+            this.summary = summary;
+            this.sentiment = sentiment;
+            this.modelName = modelName;
+        }
+    }
+
+    public static class LatestAlertDTO {
+
+        public Long id;
+        public String title;
+        public String message;
+        public String severity;
+        public String status;
+
+        public LatestAlertDTO(Long id, String title, String message, String severity, String status) {
+            this.id = id;
+            this.title = title;
+            this.message = message;
+            this.severity = severity;
+            this.status = status;
         }
     }
 }

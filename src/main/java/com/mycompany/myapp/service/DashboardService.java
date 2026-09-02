@@ -1,10 +1,12 @@
 package com.mycompany.myapp.service;
 
 import com.mycompany.myapp.domain.AnalysisResult;
+import com.mycompany.myapp.domain.CiAlert;
 import com.mycompany.myapp.domain.NewsItem;
 import com.mycompany.myapp.domain.enumeration.Sentiment;
 import com.mycompany.myapp.domain.enumeration.SourceType;
 import com.mycompany.myapp.repository.AnalysisResultRepository;
+import com.mycompany.myapp.repository.CiAlertRepository;
 import com.mycompany.myapp.repository.CompetitorRepository;
 import com.mycompany.myapp.repository.DataSourceRepository;
 import com.mycompany.myapp.repository.NewsItemRepository;
@@ -12,8 +14,6 @@ import com.mycompany.myapp.service.dto.DashboardDTO;
 import com.mycompany.myapp.service.dto.NewsItemDTO;
 import com.mycompany.myapp.service.mapper.NewsItemMapper;
 import jakarta.persistence.EntityManager;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +28,7 @@ public class DashboardService {
     private final DataSourceRepository dataSourceRepository;
     private final EntityManager entityManager;
     private final NewsItemMapper newsItemMapper;
+    private final CiAlertRepository ciAlertRepository;
 
     public DashboardService(
         NewsItemRepository newsItemRepository,
@@ -35,7 +36,8 @@ public class DashboardService {
         CompetitorRepository competitorRepository,
         DataSourceRepository dataSourceRepository,
         EntityManager entityManager,
-        NewsItemMapper newsItemMapper
+        NewsItemMapper newsItemMapper,
+        CiAlertRepository ciAlertRepository
     ) {
         this.newsItemRepository = newsItemRepository;
         this.analysisResultRepository = analysisResultRepository;
@@ -43,6 +45,7 @@ public class DashboardService {
         this.dataSourceRepository = dataSourceRepository;
         this.entityManager = entityManager;
         this.newsItemMapper = newsItemMapper;
+        this.ciAlertRepository = ciAlertRepository;
     }
 
     public DashboardDTO getDashboard() {
@@ -51,6 +54,9 @@ public class DashboardService {
         dto.newsCount = newsItemRepository.count();
         dto.analysisCount = analysisResultRepository.count();
         dto.competitorCount = competitorRepository.count();
+        dto.alertsCount = ciAlertRepository.count();
+        dto.highAlertsCount = countHighAlerts();
+        dto.sourcesCount = countSources();
 
         dto.rssCount = dataSourceRepository
             .findAll()
@@ -66,6 +72,8 @@ public class DashboardService {
         dto.topCompetitors = loadTopCompetitors();
         dto.newsByDay = loadNewsByDay();
         dto.latestNews = loadLatestNews();
+        dto.latestAnalysis = loadLatestAnalysis();
+        dto.latestAlerts = loadLatestAlerts();
 
         return dto;
     }
@@ -107,6 +115,88 @@ public class DashboardService {
         return count.longValue();
     }
 
+    private long countSources() {
+        Number count = (Number) entityManager
+            .createNativeQuery(
+                """
+                SELECT COUNT(DISTINCT data_source_id)
+                FROM news_item
+                WHERE data_source_id IS NOT NULL
+                """
+            )
+            .getSingleResult();
+        return count.longValue();
+    }
+
+    private long countHighAlerts() {
+        Number count = (Number) entityManager
+            .createNativeQuery(
+                """
+                SELECT COUNT(*)
+                FROM ci_alert
+                WHERE severity IN ('HIGH', 'CRITICAL')
+                    """
+            )
+            .getSingleResult();
+        return count.longValue();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<DashboardDTO.LatestAnalysisDTO> loadLatestAnalysis() {
+        List<AnalysisResult> results = entityManager
+            .createNativeQuery(
+                """
+                SELECT *
+                FROM analysis_result
+                ORDER BY analyzed_at DESC NULLS LAST, id DESC
+                LIMIT 5
+                    """,
+                AnalysisResult.class
+            )
+            .getResultList();
+
+        return results
+            .stream()
+            .map(analysis ->
+                new DashboardDTO.LatestAnalysisDTO(
+                    analysis.getId(),
+                    analysis.getTopic(),
+                    analysis.getSummary(),
+                    analysis.getSentiment() != null ? analysis.getSentiment().name() : "",
+                    analysis.getModelName()
+                )
+            )
+            .toList();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<DashboardDTO.LatestAlertDTO> loadLatestAlerts() {
+        List<CiAlert> alerts = entityManager
+            .createNativeQuery(
+                """
+                SELECT *
+                FROM ci_alert
+                ORDER BY created_at DESC, id DESC
+                LIMIT 5
+                """,
+                CiAlert.class
+            )
+            .getResultList();
+
+        return alerts
+            .stream()
+            .map(alert ->
+                new DashboardDTO.LatestAlertDTO(
+                    alert.getId(),
+                    alert.getTitle(),
+                    alert.getMessage(),
+                    alert.getSeverity() != null ? alert.getSeverity().name() : "",
+                    alert.getStatus() != null ? alert.getStatus().name() : ""
+                )
+            )
+            .toList();
+    }
+
     private long countBySentiment(Sentiment sentiment) {
         return entityManager
             .createQuery("select count(a) from AnalysisResult a where a.sentiment = :sentiment", Long.class)
@@ -119,12 +209,12 @@ public class DashboardService {
             .createQuery(
                 """
                 select new com.mycompany.myapp.service.dto.DashboardDTO$TopCompetitorDTO(
-                    c.name,
+                    c.competitorName,
                     count(n)
                 )
                 from NewsItem n
                 join n.competitor c
-                group by c.name
+                group by c.competitorName
                 order by count(n) desc
                 """,
                 DashboardDTO.TopCompetitorDTO.class
@@ -133,33 +223,30 @@ public class DashboardService {
             .getResultList();
     }
 
+    @SuppressWarnings("unchecked")
     private List<DashboardDTO.NewsByDayDTO> loadNewsByDay() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM").withZone(ZoneId.systemDefault());
-
-        List<NewsItem> news = entityManager
-            .createQuery(
+        List<Object[]> rows = entityManager
+            .createNativeQuery(
                 """
-                select n
-                from NewsItem n
-                order by n.publishedAt asc
-                """,
-                NewsItem.class
+                SELECT
+                    TO_CHAR(published_at, 'DD.MM') AS day,
+                    COUNT(*) AS news_count
+                FROM news_item
+                WHERE published_at IS NOT NULL
+                GROUP BY
+                    TO_CHAR(published_at, 'DD.MM'),
+                    EXTRACT(MONTH FROM published_at),
+                    EXTRACT(DAY FROM published_at)
+                ORDER BY
+                    EXTRACT(MONTH FROM published_at),
+                    EXTRACT(DAY FROM published_at)
+                """
             )
             .getResultList();
 
-        return news
+        return rows
             .stream()
-            .filter(n -> n.getPublishedAt() != null)
-            .collect(
-                java.util.stream.Collectors.groupingBy(
-                    n -> formatter.format(n.getPublishedAt()),
-                    java.util.LinkedHashMap::new,
-                    java.util.stream.Collectors.counting()
-                )
-            )
-            .entrySet()
-            .stream()
-            .map(e -> new DashboardDTO.NewsByDayDTO(e.getKey(), e.getValue()))
+            .map(row -> new DashboardDTO.NewsByDayDTO((String) row[0], ((Number) row[1]).longValue()))
             .toList();
     }
 

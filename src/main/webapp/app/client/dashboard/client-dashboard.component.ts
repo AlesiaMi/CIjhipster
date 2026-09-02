@@ -10,13 +10,25 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./client-dashboard.component.scss'],
 })
 export class ClientDashboardComponent implements OnInit {
-  newsItems: any[] = [];
-  latestNewsItems: any[] = [];
-  analysisResults: any[] = [];
-  alerts: any[] = [];
-  collectionRuns: any[] = [];
+  dashboard: any = {
+    newsCount: 0,
+    analysisCount: 0,
+    competitorCount: 0,
+    alertsCount: 0,
+    highAlertsCount: 0,
+    sourcesCount: 0,
 
-  newsCount = 0;
+    positiveCount: 0,
+    negativeCount: 0,
+    neutralCount: 0,
+    unknownCount: 0,
+
+    latestAnalysis: [],
+    latestAlerts: [],
+  };
+
+  latestNewsItems: any[] = [];
+  collectionRuns: any[] = [];
 
   loading = true;
 
@@ -29,69 +41,58 @@ export class ClientDashboardComponent implements OnInit {
   loadDashboard(): void {
     this.loading = true;
 
-    this.http.get<any[]>('/api/news-items?size=1000').subscribe(data => {
-      this.newsItems = data;
+    this.http.get<any>('/api/dashboard').subscribe({
+      next: data => {
+        this.dashboard = data;
+      },
+      error: () => {
+        this.loading = false;
+      },
     });
-
-    this.http.get<number>('/api/dashboard/news-count').subscribe(data => {
-      this.newsCount = data;
-    });
-
-    const start = performance.now();
 
     this.http.get<any[]>('/api/dashboard/latest-news').subscribe(data => {
       this.latestNewsItems = data;
-
-      const end = performance.now();
-
-      console.log(`Latest news request time: ${(end - start).toFixed(2)} ms`);
     });
 
-    this.http.get<any[]>('/api/analysis-results?size=1000').subscribe(data => {
-      this.analysisResults = data;
-    });
-
-    this.http.get<any[]>('/api/ci-alerts?size=1000').subscribe(data => {
-      this.alerts = data;
-    });
-
-    this.http.get<any[]>('/api/collection-runs?size=100').subscribe({
+    this.http.get<any[]>('/api/collection-runs?size=1&sort=startedAt,desc').subscribe({
       next: data => {
         this.collectionRuns = data;
         this.loading = false;
       },
-      error: () => (this.loading = false),
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 
   // KPI
 
   getNewsCount(): number {
-    return this.newsCount;
+    return this.dashboard.newsCount ?? 0;
   }
 
   getAnalysisCount(): number {
-    return this.analysisResults.length;
+    return this.dashboard.analysisCount ?? 0;
   }
 
   getAlertsCount(): number {
-    return this.alerts.length;
+    return this.dashboard.alertsCount ?? 0;
   }
 
   getNegativeCount(): number {
-    return this.analysisResults.filter(a => a.sentiment === 'NEGATIVE').length;
+    return this.dashboard.negativeCount ?? 0;
   }
 
   getPositiveCount(): number {
-    return this.analysisResults.filter(a => a.sentiment === 'POSITIVE').length;
+    return this.dashboard.positiveCount ?? 0;
   }
 
   getNeutralCount(): number {
-    return this.analysisResults.filter(a => a.sentiment === 'NEUTRAL').length;
+    return this.dashboard.neutralCount ?? 0;
   }
 
   getHighAlertsCount(): number {
-    return this.alerts.filter(a => a.severity === 'HIGH' || a.severity === 'CRITICAL').length;
+    return this.dashboard.highAlertsCount ?? 0;
   }
 
   /* getSourcesCount(): number {
@@ -101,15 +102,7 @@ export class ClientDashboardComponent implements OnInit {
   }*/
 
   getSourcesCount(): number {
-    const set = new Set<number>();
-
-    this.newsItems.forEach(item => {
-      if (item.dataSource?.id != null) {
-        set.add(Number(item.dataSource.id));
-      }
-    });
-
-    return set.size;
+    return this.dashboard.sourceCount ?? 0;
   }
 
   /* getCompetitorsCount(): number {
@@ -119,15 +112,7 @@ export class ClientDashboardComponent implements OnInit {
   }*/
 
   getCompetitorsCount(): number {
-    const set = new Set<number>();
-
-    this.newsItems.forEach(item => {
-      if (item.competitor?.id != null) {
-        set.add(Number(item.competitor.id));
-      }
-    });
-
-    return set.size;
+    return this.dashboard.competitorCount ?? 0;
   }
 
   // Последние записи
@@ -137,41 +122,48 @@ export class ClientDashboardComponent implements OnInit {
   }
 
   getLatestAnalysis(): any[] {
-    return [...this.analysisResults].reverse().slice(0, 5);
+    return this.dashboard.latestAnalysis ?? [];
   }
 
   getLatestAlerts(): any[] {
-    return [...this.alerts].reverse().slice(0, 5);
+    return this.dashboard.latestAlerts ?? [];
   }
 
   getLastRun(): any {
-    if (!this.collectionRuns.length) {
-      return null;
-    }
-
-    return [...this.collectionRuns].reverse()[0];
+    return this.collectionRuns.length ? this.collectionRuns[0] : null;
   }
 
   // Проценты для диаграммы
 
   getPositivePercent(): number {
-    if (!this.analysisResults.length) return 0;
+    const total = this.getAnalysisCount();
 
-    return Math.round((this.getPositiveCount() / this.analysisResults.length) * 100);
+    if (!total) {
+      return 0;
+    }
+
+    return Math.round((this.getPositiveCount() / total) * 100);
   }
 
   getNeutralPercent(): number {
-    if (!this.analysisResults.length) return 0;
+    const total = this.getAnalysisCount();
 
-    return Math.round((this.getNeutralCount() / this.analysisResults.length) * 100);
+    if (!total) {
+      return 0;
+    }
+
+    return Math.round((this.getNeutralCount() / total) * 100);
   }
 
   getNegativePercent(): number {
-    if (!this.analysisResults.length) return 0;
+    const total = this.getAnalysisCount();
 
-    return Math.round((this.getNegativeCount() / this.analysisResults.length) * 100);
+    if (!total) {
+      return 0;
+    }
+
+    return Math.round((this.getNegativeCount() / total) * 100);
   }
-
   // Цвет тональности
 
   sentimentClass(sentiment: string): string {
