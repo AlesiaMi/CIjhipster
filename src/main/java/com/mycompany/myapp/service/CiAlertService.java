@@ -12,9 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Service Implementation for managing {@link com.mycompany.myapp.domain.CiAlert}.
- */
 @Service
 @Transactional
 public class CiAlertService {
@@ -30,12 +27,6 @@ public class CiAlertService {
         this.ciAlertMapper = ciAlertMapper;
     }
 
-    /**
-     * Save a ciAlert.
-     *
-     * @param ciAlertDTO the entity to save.
-     * @return the persisted entity.
-     */
     public CiAlertDTO save(CiAlertDTO ciAlertDTO) {
         LOG.debug("Request to save CiAlert : {}", ciAlertDTO);
         CiAlert ciAlert = ciAlertMapper.toEntity(ciAlertDTO);
@@ -43,12 +34,6 @@ public class CiAlertService {
         return ciAlertMapper.toDto(ciAlert);
     }
 
-    /**
-     * Update a ciAlert.
-     *
-     * @param ciAlertDTO the entity to save.
-     * @return the persisted entity.
-     */
     public CiAlertDTO update(CiAlertDTO ciAlertDTO) {
         LOG.debug("Request to update CiAlert : {}", ciAlertDTO);
         CiAlert ciAlert = ciAlertMapper.toEntity(ciAlertDTO);
@@ -56,12 +41,6 @@ public class CiAlertService {
         return ciAlertMapper.toDto(ciAlert);
     }
 
-    /**
-     * Partially update a ciAlert.
-     *
-     * @param ciAlertDTO the entity to update partially.
-     * @return the persisted entity.
-     */
     public Optional<CiAlertDTO> partialUpdate(CiAlertDTO ciAlertDTO) {
         LOG.debug("Request to partially update CiAlert : {}", ciAlertDTO);
 
@@ -76,32 +55,16 @@ public class CiAlertService {
             .map(ciAlertMapper::toDto);
     }
 
-    /**
-     * Get all the ciAlerts with eager load of many-to-many relationships.
-     *
-     * @return the list of entities.
-     */
     public Page<CiAlertDTO> findAllWithEagerRelationships(Pageable pageable) {
         return ciAlertRepository.findAllWithEagerRelationships(pageable).map(ciAlertMapper::toDto);
     }
 
-    /**
-     * Get one ciAlert by id.
-     *
-     * @param id the id of the entity.
-     * @return the entity.
-     */
     @Transactional(readOnly = true)
     public Optional<CiAlertDTO> findOne(Long id) {
         LOG.debug("Request to get CiAlert : {}", id);
         return ciAlertRepository.findOneWithEagerRelationships(id).map(ciAlertMapper::toDto);
     }
 
-    /**
-     * Delete the ciAlert by id.
-     *
-     * @param id the id of the entity.
-     */
     public void delete(Long id) {
         LOG.debug("Request to delete CiAlert : {}", id);
         ciAlertRepository.deleteById(id);

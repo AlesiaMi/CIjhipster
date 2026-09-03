@@ -151,7 +151,8 @@ public class NewsItemResource {
     /**
      * {@code GET  /news-items} : get all the News Items.
      *
-     * @param pageable the pagination information.
+     * @p    SELECT COUNT(*)
+                    FROM news_itemaram pageable the pagination information.
      * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of News Items in body.
      */

@@ -57,6 +57,7 @@ public class CollectionJobService {
         int processedCount = 0;
         int duplicateCount = 0;
         int errorCount = 0;
+        boolean dataSourceChanged = false;
 
         List<Long> newsItemIdsForAnalysis = new ArrayList<>();
 
@@ -107,6 +108,7 @@ public class CollectionJobService {
 
                 source.setLastCheckedAt(Instant.now());
                 dataSourceRepository.save(source);
+                dataSourceChanged = true;
             } catch (Exception e) {
                 errorCount++;
                 errors.append("Источник: ").append(source.getSourceName()).append(" — ").append(e.getMessage()).append("; ");
@@ -127,12 +129,21 @@ public class CollectionJobService {
         }
         collectionRunRepository.save(run);
 
-        if (processedCount > 0) {
+        if (processedCount > 0 || dataSourceChanged) {
             Cache newsItemsCache = cacheManager.getCache("newsItemsPages");
 
             if (newsItemsCache != null) {
                 newsItemsCache.clear();
                 System.out.println("Redis cache 'newsItemsPages' cleared after RSS collection");
+            }
+        }
+
+        if (dataSourceChanged) {
+            Cache dataSourcesCache = cacheManager.getCache("dataSourcesPages");
+
+            if (dataSourcesCache != null) {
+                dataSourcesCache.clear();
+                System.out.println("Redis cache 'dataSourcesPages' cleared after RSS collection");
             }
         }
 

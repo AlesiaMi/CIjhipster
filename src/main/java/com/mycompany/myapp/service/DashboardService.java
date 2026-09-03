@@ -106,8 +106,8 @@ public class DashboardService {
         Number count = (Number) entityManager
             .createNativeQuery(
                 """
-                SELECT COUNT(*)
-                FROM news_item
+                    SELECT COUNT(*)
+                    FROM news_item
                 """
             )
             .getSingleResult();

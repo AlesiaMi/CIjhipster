@@ -133,19 +133,35 @@ public class CiAlertDTO implements Serializable {
         return Objects.hash(this.id);
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
-        return "CiAlertDTO{" +
-            "id=" + getId() +
-            ", title='" + getTitle() + "'" +
-            ", message='" + getMessage() + "'" +
-            ", severity='" + getSeverity() + "'" +
-            ", status='" + getStatus() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", readAt='" + getReadAt() + "'" +
-            ", analysisResult=" + getAnalysisResult() +
-            ", analystProfile=" + getAnalystProfile() +
-            "}";
+        return (
+            "CiAlertDTO{" +
+            "id=" +
+            getId() +
+            ", title='" +
+            getTitle() +
+            "'" +
+            ", message='" +
+            getMessage() +
+            "'" +
+            ", severity='" +
+            getSeverity() +
+            "'" +
+            ", status='" +
+            getStatus() +
+            "'" +
+            ", createdAt='" +
+            getCreatedAt() +
+            "'" +
+            ", readAt='" +
+            getReadAt() +
+            "'" +
+            ", analysisResult=" +
+            getAnalysisResult() +
+            ", analystProfile=" +
+            getAnalystProfile() +
+            "}"
+        );
     }
 }

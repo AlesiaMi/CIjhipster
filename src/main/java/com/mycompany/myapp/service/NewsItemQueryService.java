@@ -4,12 +4,15 @@ import com.mycompany.myapp.domain.*; // for static metamodels
 import com.mycompany.myapp.repository.NewsItemRepository;
 import com.mycompany.myapp.service.criteria.NewsItemCriteria;
 import com.mycompany.myapp.service.dto.NewsItemDTO;
+import com.mycompany.myapp.service.dto.NewsItemPageCacheDTO;
 import com.mycompany.myapp.service.mapper.NewsItemMapper;
 import jakarta.persistence.criteria.JoinType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -26,20 +29,56 @@ public class NewsItemQueryService extends QueryService<NewsItem> {
 
     private final NewsItemMapper newsItemMapper;
 
-    public NewsItemQueryService(NewsItemRepository newsItemRepository, NewsItemMapper newsItemMapper) {
+    private final CacheManager cacheManager;
+
+    public NewsItemQueryService(NewsItemRepository newsItemRepository, NewsItemMapper newsItemMapper, CacheManager cacheManager) {
         this.newsItemRepository = newsItemRepository;
         this.newsItemMapper = newsItemMapper;
+        this.cacheManager = cacheManager;
     }
 
-    @Cacheable(
-        cacheNames = "newsItemsPages",
-        key = "#criteria.toString() + '|' + " + "#page.pageNumber + '|' + " + "#page.pageSize + '|' + " + "#page.sort.toString()"
-    )
     @Transactional(readOnly = true)
     public Page<NewsItemDTO> findByCriteria(NewsItemCriteria criteria, Pageable page) {
         LOG.debug("find by criteria : {}, page: {}", criteria, page);
+
+        String cacheKey = buildCacheKey(criteria, page);
+
+        Cache cache = cacheManager.getCache("newsItemsPages");
+
+        if (cache != null) {
+            NewsItemPageCacheDTO cachedPage = cache.get(cacheKey, NewsItemPageCacheDTO.class);
+
+            if (cachedPage != null) {
+                LOG.debug("Redis CACHE HIT for NewsItem page: {}", cacheKey);
+
+                return new PageImpl<>(cachedPage.getContent(), page, cachedPage.getTotalElements());
+            }
+        }
+
+        LOG.debug("Redis CACHE MISS for NewsItem page: {}", cacheKey);
+
         final Specification<NewsItem> specification = createSpecification(criteria);
-        return newsItemRepository.findAll(specification, page).map(newsItemMapper::toDto);
+
+        Page<NewsItemDTO> result = newsItemRepository.findAll(specification, page).map(newsItemMapper::toDto);
+
+        if (cache != null) {
+            NewsItemPageCacheDTO cacheValue = new NewsItemPageCacheDTO(
+                result.getContent(),
+                page.getPageNumber(),
+                page.getPageSize(),
+                result.getTotalElements()
+            );
+
+            cache.put(cacheKey, cacheValue);
+        }
+
+        return result;
+    }
+
+    private String buildCacheKey(NewsItemCriteria criteria, Pageable page) {
+        String criteriaKey = criteria != null ? criteria.toString() : "null";
+
+        return criteriaKey + "|" + page.getPageNumber() + "|" + page.getPageSize() + "|" + page.getSort();
     }
 
     @Transactional(readOnly = true)
@@ -60,7 +99,6 @@ public class NewsItemQueryService extends QueryService<NewsItem> {
             return null;
         });
         if (criteria != null) {
-            // This has to be called first, because the distinct method returns null
             specification = specification.and(
                 Specification.allOf(
                     Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : Specification.unrestricted(),

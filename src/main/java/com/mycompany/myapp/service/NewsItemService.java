@@ -11,14 +11,12 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Service Implementation for managing {@link com.mycompany.myapp.domain.NewsItem}.
- */
 @Service
 @Transactional
 public class NewsItemService {
@@ -34,12 +32,7 @@ public class NewsItemService {
         this.newsItemMapper = newsItemMapper;
     }
 
-    /**
-     * Save a newsItem.
-     *
-     * @param newsItemDTO the entity to save.
-     * @return the persisted entity.
-     */
+    @CacheEvict(cacheNames = "newsItemsPages", allEntries = true)
     public NewsItemDTO save(NewsItemDTO newsItemDTO) {
         LOG.debug("Request to save NewsItem : {}", newsItemDTO);
         NewsItem newsItem = newsItemMapper.toEntity(newsItemDTO);
@@ -47,12 +40,7 @@ public class NewsItemService {
         return newsItemMapper.toDto(newsItem);
     }
 
-    /**
-     * Update a newsItem.
-     *
-     * @param newsItemDTO the entity to save.
-     * @return the persisted entity.
-     */
+    @CacheEvict(cacheNames = "newsItemsPages", allEntries = true)
     public NewsItemDTO update(NewsItemDTO newsItemDTO) {
         LOG.debug("Request to update NewsItem : {}", newsItemDTO);
         NewsItem newsItem = newsItemMapper.toEntity(newsItemDTO);
@@ -60,12 +48,7 @@ public class NewsItemService {
         return newsItemMapper.toDto(newsItem);
     }
 
-    /**
-     * Partially update a newsItem.
-     *
-     * @param newsItemDTO the entity to update partially.
-     * @return the persisted entity.
-     */
+    @CacheEvict(cacheNames = "newsItemsPages", allEntries = true)
     public Optional<NewsItemDTO> partialUpdate(NewsItemDTO newsItemDTO) {
         LOG.debug("Request to partially update NewsItem : {}", newsItemDTO);
 
@@ -73,26 +56,16 @@ public class NewsItemService {
             .findById(newsItemDTO.getId())
             .map(existingNewsItem -> {
                 newsItemMapper.partialUpdate(existingNewsItem, newsItemDTO);
-
                 return existingNewsItem;
             })
             .map(newsItemRepository::save)
             .map(newsItemMapper::toDto);
     }
 
-    /**
-     * Get all the newsItems with eager load of many-to-many relationships.
-     *
-     * @return the list of entities.
-     */
     public Page<NewsItemDTO> findAllWithEagerRelationships(Pageable pageable) {
         return newsItemRepository.findAllWithEagerRelationships(pageable).map(newsItemMapper::toDto);
     }
 
-    /**
-     *  Get all the newsItems where AnalysisResult is {@code null}.
-     *  @return the list of entities.
-     */
     @Transactional(readOnly = true)
     public List<NewsItemDTO> findAllWhereAnalysisResultIsNull() {
         LOG.debug("Request to get all newsItems where AnalysisResult is null");
@@ -102,23 +75,13 @@ public class NewsItemService {
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    /**
-     * Get one newsItem by id.
-     *
-     * @param id the id of the entity.
-     * @return the entity.
-     */
     @Transactional(readOnly = true)
     public Optional<NewsItemDTO> findOne(Long id) {
         LOG.debug("Request to get NewsItem : {}", id);
         return newsItemRepository.findOneWithEagerRelationships(id).map(newsItemMapper::toDto);
     }
 
-    /**
-     * Delete the newsItem by id.
-     *
-     * @param id the id of the entity.
-     */
+    @CacheEvict(cacheNames = "newsItemsPages", allEntries = true)
     public void delete(Long id) {
         LOG.debug("Request to delete NewsItem : {}", id);
         newsItemRepository.deleteById(id);

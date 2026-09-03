@@ -78,7 +78,6 @@ export class CollectionRun implements OnInit {
       const filterOptions = this.filterOptions();
       if (filterOptions) {
         untracked(() => {
-          // Only watch for filter changes. Other signals should be ignored.
           this.handleNavigation(1, this.sortState(), filterOptions);
         });
       }
@@ -99,7 +98,6 @@ export class CollectionRun implements OnInit {
   delete(collectionRun: ICollectionRun): void {
     const modalRef = this.modalService.open(CollectionRunDeleteDialog, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.collectionRun = collectionRun;
-    // unsubscribe not needed because closed completes on modal close
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
@@ -112,33 +110,6 @@ export class CollectionRun implements OnInit {
     this.queryBackend();
   }
 
-  /* runCollection(): void {
-    this.collectionRunService.runCollection().subscribe({
-      next: result => {
-        console.log(result);
-
-        this.load();
-
-        alert(
-          `Сбор завершён!
-
-Найдено: ${result.foundCount}
-
-Обработано: ${result.processedCount}
-
-Дубликатов: ${result.duplicateCount}
-
-Ошибок: ${result.errorCount}`,
-        );
-      },
-
-      error: err => {
-        console.error(err);
-
-        alert('Ошибка при запуске сбора.');
-      },
-    });
-  }*/
   runCollection(): void {
     this.collectionRunService.runCollection().subscribe({
       next: () => {

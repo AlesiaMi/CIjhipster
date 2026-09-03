@@ -95,21 +95,9 @@ export class ClientDashboardComponent implements OnInit {
     return this.dashboard.highAlertsCount ?? 0;
   }
 
-  /* getSourcesCount(): number {
-    const set = new Set(this.newsItems.map(n => n.dataSource?.id).filter(x => x != null));
-
-    return set.size;
-  }*/
-
   getSourcesCount(): number {
     return this.dashboard.sourceCount ?? 0;
   }
-
-  /* getCompetitorsCount(): number {
-    const set = new Set(this.newsItems.map(n => n.competitor?.id).filter(x => x != null));
-
-    return set.size;
-  }*/
 
   getCompetitorsCount(): number {
     return this.dashboard.competitorCount ?? 0;

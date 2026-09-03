@@ -1,27 +1,24 @@
 package com.mycompany.myapp.service;
 
 import com.mycompany.myapp.domain.*; // for static metamodels
-import com.mycompany.myapp.domain.DataSource;
 import com.mycompany.myapp.repository.DataSourceRepository;
 import com.mycompany.myapp.service.criteria.DataSourceCriteria;
 import com.mycompany.myapp.service.dto.DataSourceDTO;
+import com.mycompany.myapp.service.dto.DataSourcePageCacheDTO;
 import com.mycompany.myapp.service.mapper.DataSourceMapper;
 import jakarta.persistence.criteria.JoinType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.service.QueryService;
 
-/**
- * Service for executing complex queries for {@link DataSource} entities in the database.
- * The main input is a {@link DataSourceCriteria} which gets converted to {@link Specification},
- * in a way that all the filters must apply.
- * It returns a {@link Page} of {@link DataSourceDTO} which fulfills the criteria.
- */
 @Service
 @Transactional(readOnly = true)
 public class DataSourceQueryService extends QueryService<DataSource> {
@@ -32,29 +29,57 @@ public class DataSourceQueryService extends QueryService<DataSource> {
 
     private final DataSourceMapper dataSourceMapper;
 
-    public DataSourceQueryService(DataSourceRepository dataSourceRepository, DataSourceMapper dataSourceMapper) {
+    private final CacheManager cacheManager;
+
+    public DataSourceQueryService(DataSourceRepository dataSourceRepository, DataSourceMapper dataSourceMapper, CacheManager cacheManager) {
         this.dataSourceRepository = dataSourceRepository;
         this.dataSourceMapper = dataSourceMapper;
+        this.cacheManager = cacheManager;
     }
 
-    /**
-     * Return a {@link Page} of {@link DataSourceDTO} which matches the criteria from the database.
-     * @param criteria The object which holds all the filters, which the entities should match.
-     * @param page The page, which should be returned.
-     * @return the matching entities.
-     */
     @Transactional(readOnly = true)
     public Page<DataSourceDTO> findByCriteria(DataSourceCriteria criteria, Pageable page) {
         LOG.debug("find by criteria : {}, page: {}", criteria, page);
+
+        String cacheKey = buildCacheKey(criteria, page);
+
+        Cache cache = cacheManager.getCache("dataSourcesPages");
+
+        if (cache != null) {
+            DataSourcePageCacheDTO cachedPage = cache.get(cacheKey, DataSourcePageCacheDTO.class);
+
+            if (cachedPage != null) {
+                LOG.debug("Redis CACHE HIT for DataSource page: {}", cacheKey);
+
+                return new PageImpl<>(cachedPage.getContent(), page, cachedPage.getTotalElements());
+            }
+        }
+
+        LOG.debug("Redis CACHE MISS for DataSource page: {}", cacheKey);
+
         final Specification<DataSource> specification = createSpecification(criteria);
-        return dataSourceRepository.findAll(specification, page).map(dataSourceMapper::toDto);
+
+        Page<DataSourceDTO> result = dataSourceRepository.findAll(specification, page).map(dataSourceMapper::toDto);
+
+        if (cache != null) {
+            DataSourcePageCacheDTO cacheValue = new DataSourcePageCacheDTO(
+                result.getContent(),
+                page.getPageNumber(),
+                page.getPageSize(),
+                result.getTotalElements()
+            );
+
+            cache.put(cacheKey, cacheValue);
+        }
+
+        return result;
     }
 
-    /**
-     * Return the number of matching entities in the database.
-     * @param criteria The object which holds all the filters, which the entities should match.
-     * @return the number of matching entities.
-     */
+    private String buildCacheKey(DataSourceCriteria criteria, Pageable page) {
+        String criteriaKey = criteria != null ? criteria.toString() : "null";
+        return criteriaKey + "|" + page.getPageNumber() + "|" + page.getPageSize() + "|" + page.getSort();
+    }
+
     @Transactional(readOnly = true)
     public long countByCriteria(DataSourceCriteria criteria) {
         LOG.debug("count by criteria : {}", criteria);
@@ -62,11 +87,6 @@ public class DataSourceQueryService extends QueryService<DataSource> {
         return dataSourceRepository.count(specification);
     }
 
-    /**
-     * Function to convert {@link DataSourceCriteria} to a {@link Specification}
-     * @param criteria The object which holds all the filters, which the entities should match.
-     * @return the matching {@link Specification} of the entity.
-     */
     protected Specification<DataSource> createSpecification(DataSourceCriteria criteria) {
         Specification<DataSource> specification = Specification.unrestricted();
         specification = specification.and((root, query, builder) -> {
@@ -76,7 +96,6 @@ public class DataSourceQueryService extends QueryService<DataSource> {
             return null;
         });
         if (criteria != null) {
-            // This has to be called first, because the distinct method returns null
             specification = specification.and(
                 Specification.allOf(
                     Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : Specification.unrestricted(),
