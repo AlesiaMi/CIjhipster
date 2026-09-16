@@ -27,17 +27,16 @@
             </span>
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
-            <span>Дашборд</span>
-          </a>
-        </li>
         @if (account() !== null) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/dashboard" routerLinkActive="active" (click)="collapseNavbar()">
+              <span>Дашборд</span>
+            </a>
+          </li>
           <li
             ngbDropdown
             class="nav-item dropdown pointer"
             display="dynamic"
-            *jhiHasAnyAuthority="'ROLE_ADMIN'"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }"
             data-cy="entity"
@@ -76,18 +75,6 @@
               <li>
                 <a
                   class="dropdown-item"
-                  routerLink="/keyword"
-                  routerLinkActive="active"
-                  [routerLinkActiveOptions]="{ exact: true }"
-                  (click)="collapseNavbar()"
-                >
-                  <fa-icon icon="asterisk" [fixedWidth]="true" />
-                  <span jhiTranslate="global.menu.entities.keyword">Keyword</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  class="dropdown-item"
                   routerLink="/collection-run"
                   routerLinkActive="active"
                   [routerLinkActiveOptions]="{ exact: true }"
@@ -97,54 +84,34 @@
                   <span jhiTranslate="global.menu.entities.collectionRun">Collection Run</span>
                 </a>
               </li>
-              <li>
-                <a
-                  class="dropdown-item"
-                  routerLink="/news-item"
-                  routerLinkActive="active"
-                  [routerLinkActiveOptions]="{ exact: true }"
-                  (click)="collapseNavbar()"
-                >
-                  <fa-icon icon="asterisk" [fixedWidth]="true" />
-                  <span jhiTranslate="global.menu.entities.newsItem">News Item</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  class="dropdown-item"
-                  routerLink="/analysis-result"
-                  routerLinkActive="active"
-                  [routerLinkActiveOptions]="{ exact: true }"
-                  (click)="collapseNavbar()"
-                >
-                  <fa-icon icon="asterisk" [fixedWidth]="true" />
-                  <span jhiTranslate="global.menu.entities.analysisResult">Analysis Result</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  class="dropdown-item"
-                  routerLink="/ci-alert"
-                  routerLinkActive="active"
-                  [routerLinkActiveOptions]="{ exact: true }"
-                  (click)="collapseNavbar()"
-                >
-                  <fa-icon icon="asterisk" [fixedWidth]="true" />
-                  <span jhiTranslate="global.menu.entities.ciAlert">Ci Alert</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  class="dropdown-item"
-                  routerLink="/analyst-profile"
-                  routerLinkActive="active"
-                  [routerLinkActiveOptions]="{ exact: true }"
-                  (click)="collapseNavbar()"
-                >
-                  <fa-icon icon="asterisk" [fixedWidth]="true" />
-                  <span jhiTranslate="global.menu.entities.analystProfile">Analyst Profile</span>
-                </a>
-              </li>
+              @if (!managerClientContext.isManager() || managerClientContext.hasPermission('NEWS_VIEW')) {
+                <li>
+                  <a
+                    class="dropdown-item"
+                    routerLink="/news-item"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    (click)="collapseNavbar()"
+                  >
+                    <fa-icon icon="asterisk" [fixedWidth]="true" />
+                    <span jhiTranslate="global.menu.entities.newsItem">News Item</span>
+                  </a>
+                </li>
+              }
+              @if (!managerClientContext.isManager() || managerClientContext.hasPermission('ANALYSIS_VIEW')) {
+                <li>
+                  <a
+                    class="dropdown-item"
+                    routerLink="/analysis-result"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    (click)="collapseNavbar()"
+                  >
+                    <fa-icon icon="asterisk" [fixedWidth]="true" />
+                    <span jhiTranslate="global.menu.entities.analysisResult">Analysis Result</span>
+                  </a>
+                </li>
+              }
               <!-- jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here -->
             </ul>
           </li>
@@ -187,6 +154,18 @@
               >
                 <fa-icon icon="asterisk" [fixedWidth]="true" />
                 <span jhiTranslate="userManagement.home.title">User Management</span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/admin/ci-dashboard" routerLinkActive="active" (click)="collapseNavbar()">
+                <fa-icon icon="tachometer-alt" [fixedWidth]="true" />
+                <span>CI Dashboard</span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/admin/manager-assignments" routerLinkActive="active" (click)="collapseNavbar()">
+                <fa-icon icon="users-cog" [fixedWidth]="true" />
+                <span>Менеджеры и клиенты</span>
               </a>
             </li>
             <!-- jhipster-needle-add-element-to-admin-menu - JHipster will add entities to the admin menu here -->

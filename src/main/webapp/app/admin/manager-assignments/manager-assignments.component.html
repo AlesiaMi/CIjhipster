@@ -1,0 +1,167 @@
+<div class="container-fluid">
+  <h2 class="mb-4">Управление менеджерами</h2>
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      {{ successMessage() }}
+    </div>
+  }
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <strong> Новое назначение </strong>
+    </div>
+
+    <div class="card-body">
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="manager" class="form-label"> Менеджер </label>
+
+          <select id="manager" class="form-select" [(ngModel)]="newManagerId">
+            <option [ngValue]="null">Выберите менеджера</option>
+
+            @for (manager of managers(); track manager.id) {
+              <option [ngValue]="manager.id">
+                {{ manager.login }}
+                @if (manager.email) {
+                  — {{ manager.email }}
+                }
+              </option>
+            }
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label for="client" class="form-label"> Клиент </label>
+
+          <select id="client" class="form-select" [(ngModel)]="newClientUserId">
+            <option [ngValue]="null">Выберите клиента</option>
+
+            @for (client of clients(); track client.id) {
+              <option [ngValue]="client.id">
+                {{ client.login }}
+                @if (client.email) {
+                  — {{ client.email }}
+                }
+              </option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <strong>Права доступа</strong>
+
+        <div class="row mt-2">
+          @for (permission of permissionOptions; track permission.value) {
+            <div class="col-md-6 col-lg-4 mb-2">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  [id]="'new-' + permission.value"
+                  [checked]="hasNewPermission(permission.value)"
+                  (change)="setNewPermission(permission.value, $any($event.target).checked)"
+                />
+
+                <label class="form-check-label" [for]="'new-' + permission.value">
+                  {{ permission.label }}
+                  <small class="text-muted d-block">
+                    {{ permission.value }}
+                  </small>
+                </label>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="createAssignment()"
+        [disabled]="newManagerId === null || newClientUserId === null"
+      >
+        <fa-icon icon="plus" />
+        Создать назначение
+      </button>
+    </div>
+  </div>
+
+  <h3 class="mb-3">Текущие назначения</h3>
+
+  @if (loading()) {
+    <div class="alert alert-info">Загрузка...</div>
+  }
+
+  @if (!loading() && assignments().length === 0) {
+    <div class="alert alert-warning">Назначений пока нет.</div>
+  }
+
+  @for (assignment of assignments(); track assignment.id) {
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <strong>
+            {{ assignment.managerLogin }}
+          </strong>
+
+          <span class="mx-2"> → </span>
+
+          <strong>
+            {{ assignment.clientLogin }}
+          </strong>
+        </div>
+
+        <span class="badge" [class.bg-success]="assignment.active" [class.bg-secondary]="!assignment.active">
+          {{ assignment.active ? 'Активно' : 'Неактивно' }}
+        </span>
+      </div>
+
+      <div class="card-body">
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" [id]="'active-' + assignment.id" [(ngModel)]="assignment.active" />
+
+          <label class="form-check-label" [for]="'active-' + assignment.id"> Активное назначение </label>
+        </div>
+
+        <div class="row">
+          @for (permission of permissionOptions; track permission.value) {
+            <div class="col-md-6 col-lg-4 mb-2">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  [id]="assignment.id + '-' + permission.value"
+                  [checked]="hasPermission(assignment.permissions, permission.value)"
+                  (change)="setExistingPermission(assignment, permission.value, $any($event.target).checked)"
+                />
+
+                <label class="form-check-label" [for]="assignment.id + '-' + permission.value">
+                  {{ permission.label }}
+
+                  <small class="text-muted d-block">
+                    {{ permission.value }}
+                  </small>
+                </label>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="mt-3">
+          <button type="button" class="btn btn-primary" (click)="saveAssignment(assignment)" [disabled]="assignment.saving">
+            <fa-icon icon="save" />
+            {{ assignment.saving ? 'Сохранение...' : 'Сохранить' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

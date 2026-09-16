@@ -8,6 +8,7 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
 import { IAnalysisResult, NewAnalysisResult } from '../analysis-result.model';
+import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 
 export type PartialUpdateAnalysisResult = Partial<IAnalysisResult> & Pick<IAnalysisResult, 'id'>;
 
@@ -31,18 +32,23 @@ export class AnalysisResultsService {
     if (!params) {
       return undefined;
     }
-    return { url: this.resourceUrl, params };
+    if (!this.managerClientContext.initialized()) {
+      return undefined;
+    }
+
+    if (this.managerClientContext.isManager() && this.managerClientContext.selectedClientUserId() === null) {
+      return undefined;
+    }
+
+    return { url: this.resourceUrl, params: this.managerClientContext.withClientUserId(params) };
   });
-  /**
-   * This signal holds the list of analysisResult that have been fetched. It is updated when the analysisResultsResource emits a new value.
-   * In case of error while fetching the analysisResults, the signal is set to an empty array.
-   */
+
   readonly analysisResults = computed(() =>
     (this.analysisResultsResource.hasValue() ? this.analysisResultsResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/analysis-results');
-
+  protected readonly managerClientContext = inject(ManagerClientContextService);
   protected convertValueFromServer(restAnalysisResult: RestAnalysisResult): IAnalysisResult {
     return {
       ...restAnalysisResult,
@@ -81,9 +87,12 @@ export class AnalysisResultService extends AnalysisResultsService {
   }
 
   query(req?: any): Observable<HttpResponse<IAnalysisResult[]>> {
-    const options = createRequestOption(req);
+    const options = createRequestOption(this.managerClientContext.withClientUserId(req ?? {}));
     return this.http
-      .get<RestAnalysisResult[]>(this.resourceUrl, { params: options, observe: 'response' })
+      .get<RestAnalysisResult[]>(this.resourceUrl, {
+        params: options,
+        observe: 'response',
+      })
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 

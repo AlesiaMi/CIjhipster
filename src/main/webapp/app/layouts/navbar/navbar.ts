@@ -15,7 +15,7 @@ import { LoginService } from 'app/login/login.service';
 import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { TranslateDirective } from 'app/shared/language';
 import FindLanguageFromKeyPipe from 'app/shared/language/find-language-from-key.pipe';
-
+import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 import ActiveMenuDirective from './active-menu.directive';
 
 @Component({
@@ -51,6 +51,7 @@ export default class Navbar implements OnInit {
   private readonly stateStorageService = inject(StateStorageService);
   private readonly profileService = inject(ProfileService);
   private readonly router = inject(Router);
+  readonly managerClientContext = inject(ManagerClientContextService);
 
   constructor() {
     const { VERSION } = environment;
@@ -66,6 +67,7 @@ export default class Navbar implements OnInit {
       this.inProduction.set(profileInfo.inProduction ?? true);
       this.openAPIEnabled.set(profileInfo.openAPIEnabled ?? false);
     });
+    this.managerClientContext.initialize().subscribe();
   }
 
   changeLanguage(languageKey: string): void {

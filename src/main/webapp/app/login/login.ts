@@ -33,7 +33,7 @@ export default class Login implements OnInit, AfterViewInit {
     // if already authenticated then navigate to home page
     this.accountService.identity().subscribe(() => {
       if (this.accountService.isAuthenticated()) {
-        this.router.navigate(['']);
+        this.navigateAfterLogin();
       }
     });
   }
@@ -46,12 +46,19 @@ export default class Login implements OnInit, AfterViewInit {
     this.loginService.login(this.loginForm.getRawValue()).subscribe({
       next: () => {
         this.authenticationError.set(false);
+
         if (!this.router.currentNavigation()) {
-          // There were no routing during login (eg from navigationToStoredUrl)
-          this.router.navigate(['']);
+          this.navigateAfterLogin();
         }
       },
       error: () => this.authenticationError.set(true),
     });
+  }
+  private navigateAfterLogin(): void {
+    if (this.accountService.hasAnyAuthority('ROLE_ADMIN')) {
+      this.router.navigate(['/admin/manager-assignments']);
+      return;
+    }
+    this.router.navigate(['/dashboard']);
   }
 }

@@ -27,6 +27,16 @@ const routes: Routes = [
     loadComponent: () => import('./metrics/metrics'),
     title: 'metrics.title',
   },
+  {
+    path: 'ci-dashboard',
+    loadComponent: () => import('./ci-dashboard/admin-ci-dashboard.component').then(m => m.AdminCiDashboardComponent),
+    title: 'Admin CI Dashboard',
+  },
+  {
+    path: 'manager-assignments',
+    loadComponent: () => import('./manager-assignments/manager-assignments.component').then(m => m.ManagerAssignmentsComponent),
+    title: 'Manager assignments',
+  },
   /* jhipster-needle-add-admin-route - JHipster will add admin routes here */
 ];
 

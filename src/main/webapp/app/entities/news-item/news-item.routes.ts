@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
-
+import { Authority } from 'app/shared/jhipster/constants';
 import NewsItemResolve from './route/news-item-routing-resolve.service';
 
 const newsItemRoute: Routes = [
@@ -28,6 +28,7 @@ const newsItemRoute: Routes = [
     resolve: {
       newsItem: NewsItemResolve,
     },
+    data: { authorities: [Authority.ADMIN] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -36,6 +37,7 @@ const newsItemRoute: Routes = [
     resolve: {
       newsItem: NewsItemResolve,
     },
+    data: { authorities: [Authority.ADMIN] },
     canActivate: [UserRouteAccessService],
   },
 ];

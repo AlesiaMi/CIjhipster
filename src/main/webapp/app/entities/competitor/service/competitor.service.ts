@@ -4,31 +4,44 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
+import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
+
 import { ICompetitor, NewCompetitor } from '../competitor.model';
 
 export type PartialUpdateCompetitor = Partial<ICompetitor> & Pick<ICompetitor, 'id'>;
 
 @Injectable()
 export class CompetitorsService {
+  protected readonly applicationConfigService = inject(ApplicationConfigService);
+
+  protected readonly managerClientContext = inject(ManagerClientContextService);
+
+  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/competitors');
+
   readonly competitorsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
   );
+
   readonly competitorsResource = httpResource<ICompetitor[]>(() => {
     const params = this.competitorsParams();
-    if (!params) {
+
+    if (!params || !this.managerClientContext.initialized()) {
       return undefined;
     }
-    return { url: this.resourceUrl, params };
+
+    if (this.managerClientContext.isManager() && this.managerClientContext.selectedClientUserId() === null) {
+      return undefined;
+    }
+
+    return {
+      url: this.resourceUrl,
+      params: this.managerClientContext.withClientUserId(params),
+    };
   });
-  /**
-   * This signal holds the list of competitor that have been fetched. It is updated when the competitorsResource emits a new value.
-   * In case of error while fetching the competitors, the signal is set to an empty array.
-   */
+
   readonly competitors = computed(() => (this.competitorsResource.hasValue() ? this.competitorsResource.value() : []));
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/competitors');
 }
 
 @Injectable({ providedIn: 'root' })
@@ -36,7 +49,9 @@ export class CompetitorService extends CompetitorsService {
   protected readonly http = inject(HttpClient);
 
   create(competitor: NewCompetitor): Observable<ICompetitor> {
-    return this.http.post<ICompetitor>(this.resourceUrl, competitor);
+    const params = createRequestOption(this.managerClientContext.withClientUserId());
+
+    return this.http.post<ICompetitor>(this.resourceUrl, competitor, { params });
   }
 
   update(competitor: ICompetitor): Observable<ICompetitor> {
@@ -52,8 +67,12 @@ export class CompetitorService extends CompetitorsService {
   }
 
   query(req?: any): Observable<HttpResponse<ICompetitor[]>> {
-    const options = createRequestOption(req);
-    return this.http.get<ICompetitor[]>(this.resourceUrl, { params: options, observe: 'response' });
+    const options = createRequestOption(this.managerClientContext.withClientUserId(req ?? {}));
+
+    return this.http.get<ICompetitor[]>(this.resourceUrl, {
+      params: options,
+      observe: 'response',
+    });
   }
 
   delete(id: number): Observable<undefined> {
@@ -73,18 +92,25 @@ export class CompetitorService extends CompetitorsService {
     ...competitorsToCheck: (Type | null | undefined)[]
   ): Type[] {
     const competitors: Type[] = competitorsToCheck.filter(isPresent);
+
     if (competitors.length > 0) {
-      const competitorCollectionIdentifiers = competitorCollection.map(competitorItem => this.getCompetitorIdentifier(competitorItem));
-      const competitorsToAdd = competitors.filter(competitorItem => {
-        const competitorIdentifier = this.getCompetitorIdentifier(competitorItem);
-        if (competitorCollectionIdentifiers.includes(competitorIdentifier)) {
+      const identifiers = competitorCollection.map(item => this.getCompetitorIdentifier(item));
+
+      const competitorsToAdd = competitors.filter(item => {
+        const identifier = this.getCompetitorIdentifier(item);
+
+        if (identifiers.includes(identifier)) {
           return false;
         }
-        competitorCollectionIdentifiers.push(competitorIdentifier);
+
+        identifiers.push(identifier);
+
         return true;
       });
+
       return [...competitorsToAdd, ...competitorCollection];
     }
+
     return competitorCollection;
   }
 }

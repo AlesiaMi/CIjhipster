@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
@@ -22,6 +22,7 @@ import { SortByDirective, SortDirective, SortService, type SortState, sortStateS
 import { IDataSource } from '../data-source.model';
 import { DataSourceDeleteDialog } from '../delete/data-source-delete-dialog';
 import { DataSourceService } from '../service/data-source.service';
+import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -62,7 +63,9 @@ export class DataSource implements OnInit {
   protected readonly sortService = inject(SortService);
   protected readonly filterOptions = toSignal(this.filters.filterChanges);
   protected modalService = inject(NgbModal);
+  protected readonly managerClientContext = inject(ManagerClientContextService);
 
+  readonly canEdit = computed(() => this.managerClientContext.hasPermission('SOURCES_EDIT'));
   constructor() {
     effect(() => {
       const headers = this.dataSourceService.dataSourcesResource.headers();
@@ -88,12 +91,14 @@ export class DataSource implements OnInit {
   trackId = (item: IDataSource): number => this.dataSourceService.getDataSourceIdentifier(item);
 
   ngOnInit(): void {
-    this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
-      .pipe(
-        tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
-        tap(() => this.load()),
-      )
-      .subscribe();
+    this.managerClientContext.initialize().subscribe(() => {
+      this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
+        .pipe(
+          tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
+          tap(() => this.load()),
+        )
+        .subscribe();
+    });
   }
 
   delete(dataSource: IDataSource): void {

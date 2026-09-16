@@ -14,7 +14,7 @@ import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
 import { IDataSource } from '../data-source.model';
 import { DataSourceService } from '../service/data-source.service';
-
+import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 import { DataSourceFormGroup, DataSourceFormService } from './data-source-form.service';
 
 @Component({
@@ -34,23 +34,25 @@ export class DataSourceUpdate implements OnInit {
   protected dataSourceFormService = inject(DataSourceFormService);
   protected competitorService = inject(CompetitorService);
   protected activatedRoute = inject(ActivatedRoute);
-
+  protected readonly managerClientContext = inject(ManagerClientContextService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: DataSourceFormGroup = this.dataSourceFormService.createDataSourceFormGroup();
 
   compareCompetitor = (o1: ICompetitor | null, o2: ICompetitor | null): boolean => this.competitorService.compareCompetitor(o1, o2);
 
   ngOnInit(): void {
-    this.activatedRoute.data.subscribe(({ dataSource }) => {
-      this.dataSource = dataSource;
-      if (dataSource) {
-        this.updateForm(dataSource);
-      }
+    this.managerClientContext.initialize().subscribe(() => {
+      this.activatedRoute.data.subscribe(({ dataSource }) => {
+        this.dataSource = dataSource;
 
-      this.loadRelationshipsOptions();
+        if (dataSource) {
+          this.updateForm(dataSource);
+        }
+
+        this.loadRelationshipsOptions();
+      });
     });
   }
-
   previousState(): void {
     globalThis.history.back();
   }

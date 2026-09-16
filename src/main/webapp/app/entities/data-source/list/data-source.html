@@ -8,15 +8,17 @@
         <span jhiTranslate="cIjhipsterApp.dataSource.home.refreshListLabel">Refresh list</span>
       </button>
 
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-data-source"
-        [routerLink]="['/data-source/new']"
-      >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="cIjhipsterApp.dataSource.home.createLabel">Create a new Data Source</span>
-      </button>
+      @if (canEdit()) {
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn btn-primary jh-create-entity create-data-source"
+          [routerLink]="['/data-source/new']"
+        >
+          <fa-icon icon="plus" />
+          <span jhiTranslate="cIjhipsterApp.dataSource.home.createLabel">Create a new Data Source</span>
+        </button>
+      }
     </div>
   </h2>
 
@@ -118,18 +120,20 @@
                 <div class="btn-group">
                   <a [routerLink]="['/data-source', dataSource.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
                     <fa-icon icon="eye" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view"> View </span>
                   </a>
 
-                  <a [routerLink]="['/data-source', dataSource.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
-                  </a>
+                  @if (canEdit()) {
+                    <a [routerLink]="['/data-source', dataSource.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                      <fa-icon icon="pencil-alt" />
+                      <span class="d-none d-md-inline" jhiTranslate="entity.action.edit"> Edit </span>
+                    </a>
 
-                  <button type="submit" (click)="delete(dataSource)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
-                  </button>
+                    <button type="submit" (click)="delete(dataSource)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                      <fa-icon icon="times" />
+                      <span class="d-none d-md-inline" jhiTranslate="entity.action.delete"> Delete </span>
+                    </button>
+                  }
                 </div>
               </td>
             </tr>

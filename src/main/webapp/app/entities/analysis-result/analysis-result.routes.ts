@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
-
+import { Authority } from 'app/shared/jhipster/constants';
 import AnalysisResultResolve from './route/analysis-result-routing-resolve.service';
 
 const analysisResultRoute: Routes = [
@@ -28,6 +28,7 @@ const analysisResultRoute: Routes = [
     resolve: {
       analysisResult: AnalysisResultResolve,
     },
+    data: { authorities: [Authority.ADMIN] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -36,6 +37,7 @@ const analysisResultRoute: Routes = [
     resolve: {
       analysisResult: AnalysisResultResolve,
     },
+    data: { authorities: [Authority.ADMIN] },
     canActivate: [UserRouteAccessService],
   },
 ];

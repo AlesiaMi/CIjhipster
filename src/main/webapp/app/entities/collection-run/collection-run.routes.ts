@@ -4,6 +4,7 @@ import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
 
 import CollectionRunResolve from './route/collection-run-routing-resolve.service';
+import { Authority } from 'app/shared/jhipster/constants';
 
 const collectionRunRoute: Routes = [
   {
@@ -17,9 +18,7 @@ const collectionRunRoute: Routes = [
   {
     path: ':id/view',
     loadComponent: () => import('./detail/collection-run-detail').then(m => m.CollectionRunDetail),
-    resolve: {
-      collectionRun: CollectionRunResolve,
-    },
+    resolve: { collectionRun: CollectionRunResolve },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -28,14 +27,14 @@ const collectionRunRoute: Routes = [
     resolve: {
       collectionRun: CollectionRunResolve,
     },
+    data: { authorities: [Authority.ADMIN] },
     canActivate: [UserRouteAccessService],
   },
   {
     path: ':id/edit',
     loadComponent: () => import('./update/collection-run-update').then(m => m.CollectionRunUpdate),
-    resolve: {
-      collectionRun: CollectionRunResolve,
-    },
+    resolve: { collectionRun: CollectionRunResolve },
+    data: { authorities: [Authority.ADMIN] },
     canActivate: [UserRouteAccessService],
   },
 ];

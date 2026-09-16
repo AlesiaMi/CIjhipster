@@ -8,15 +8,17 @@
         <span jhiTranslate="cIjhipsterApp.competitor.home.refreshListLabel">Refresh list</span>
       </button>
 
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-competitor"
-        [routerLink]="['/competitor/new']"
-      >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="cIjhipsterApp.competitor.home.createLabel">Create a new Competitor</span>
-      </button>
+      @if (canEdit()) {
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn btn-primary jh-create-entity create-competitor"
+          [routerLink]="['/competitor/new']"
+        >
+          <fa-icon icon="plus" />
+          <span jhiTranslate="cIjhipsterApp.competitor.home.createLabel"> Create a new Competitor </span>
+        </button>
+      }
     </div>
   </h2>
 
@@ -98,15 +100,17 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
                   </a>
 
-                  <a [routerLink]="['/competitor', competitor.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
-                  </a>
+                  @if (canEdit()) {
+                    <a [routerLink]="['/competitor', competitor.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                      <fa-icon icon="pencil-alt" />
+                      <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                    </a>
 
-                  <button type="submit" (click)="delete(competitor)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
-                  </button>
+                    <button type="submit" (click)="delete(competitor)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                      <fa-icon icon="times" />
+                      <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                    </button>
+                  }
                 </div>
               </td>
             </tr>

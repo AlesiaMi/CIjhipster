@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
-
+import { CompetitorEditRouteAccessService } from 'app/core/manager/manager-permission-route-access.service';
 import CompetitorResolve from './route/competitor-routing-resolve.service';
 
 const competitorRoute: Routes = [
@@ -28,7 +28,7 @@ const competitorRoute: Routes = [
     resolve: {
       competitor: CompetitorResolve,
     },
-    canActivate: [UserRouteAccessService],
+    canActivate: [UserRouteAccessService, CompetitorEditRouteAccessService],
   },
   {
     path: ':id/edit',
@@ -36,7 +36,7 @@ const competitorRoute: Routes = [
     resolve: {
       competitor: CompetitorResolve,
     },
-    canActivate: [UserRouteAccessService],
+    canActivate: [UserRouteAccessService, CompetitorEditRouteAccessService],
   },
 ];
 

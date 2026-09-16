@@ -1,13 +1,82 @@
 <div class="container-fluid mt-4">
+  @if (isManager) {
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="row align-items-end g-3">
+          <div class="col-md-6 col-lg-4">
+            <label for="manager-client" class="form-label"> Клиент </label>
+
+            <select
+              id="manager-client"
+              class="form-select"
+              [(ngModel)]="selectedClientUserId"
+              (ngModelChange)="onClientChange()"
+              [disabled]="clientsLoading"
+            >
+              @for (client of managerClients; track client.userId) {
+                <option [ngValue]="client.userId">
+                  {{ client.login }}
+                  @if (client.firstName || client.lastName) {
+                    —
+                    {{ client.firstName }}
+                    {{ client.lastName }}
+                  }
+                </option>
+              }
+            </select>
+          </div>
+
+          @if (getSelectedClient(); as client) {
+            <div class="col">
+              <div class="small text-muted">Работа от имени клиента</div>
+
+              <strong>{{ client.login }}</strong>
+
+              @if (client.email) {
+                <span class="text-muted ms-2">
+                  {{ client.email }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+
+        @if (clientMessage) {
+          <div class="alert alert-warning mt-3 mb-0">
+            {{ clientMessage }}
+          </div>
+        }
+      </div>
+    </div>
+  }
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h2>📊 Competitive Intelligence Dashboard</h2>
       <small class="text-muted"> Мониторинг новостей, AI-анализ и уведомления </small>
     </div>
 
-    <button class="btn btn-primary" (click)="refresh()">🔄 Обновить</button>
-  </div>
+    <div class="d-flex gap-2">
+      <button
+        class="btn btn-success"
+        (click)="runCollection()"
+        [disabled]="collectionRunning || !canRunCollection()"
+        [title]="canRunCollection() ? 'Запустить сбор новостей' : 'Нет разрешения COLLECTION_RUN'"
+      >
+        @if (collectionRunning) {
+          ⏳ Запуск...
+        } @else {
+          ▶ Собрать новости
+        }
+      </button>
 
+      <button class="btn btn-primary" (click)="refresh()" [disabled]="loading">🔄 Обновить</button>
+    </div>
+  </div>
+  @if (collectionMessage) {
+    <div class="alert alert-info">
+      {{ collectionMessage }}
+    </div>
+  }
   <!-- KPI -->
 
   <div class="row g-3">
@@ -92,34 +161,6 @@
     <div class="card-header">
       <strong>Последний запуск Collection</strong>
     </div>
-
-    <!-- <div class="card-body" *ngIf="getLastRun()">
-      <div class="row">
-        <div class="col-md-3">
-          <b>Status</b>
-
-          <p>{{ getLastRun().status }}</p>
-        </div>
-
-        <div class="col-md-3">
-          <b>Found</b>
-
-          <p>{{ getLastRun().foundCount }}</p>
-        </div>
-
-        <div class="col-md-3">
-          <b>Processed</b>
-
-          <p>{{ getLastRun().processedCount }}</p>
-        </div>
-
-        <div class="col-md-3">
-          <b>Finished</b>
-
-          <p>{{ getLastRun().finishedAt }}</p>
-        </div>
-      </div>
-    </div>-->
 
     @if (getLastRun(); as lastRun) {
       <div class="card-body">
@@ -214,20 +255,6 @@
             <th></th>
           </tr>
         </thead>
-
-        <!--<tbody>
-          <tr *ngFor="let item of getLatestNews()">
-            <td>{{ item.publishedAt }}</td>
-
-            <td>{{ item.title }}</td>
-
-            <td>{{ item.dataSource?.sourceName }}</td>
-
-            <td>
-              <a *ngIf="item.url" [target]="'_blank'" [href]="item.url" class="btn btn-sm btn-outline-primary"> Открыть </a>
-            </td>
-          </tr>
-        </tbody>-->
 
         <tbody>
           @for (item of getLatestNews(); track item.id) {

@@ -8,6 +8,7 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
 import { INewsItem, NewNewsItem } from '../news-item.model';
+import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 
 export type PartialUpdateNewsItem = Partial<INewsItem> & Pick<INewsItem, 'id'>;
 
@@ -24,26 +25,35 @@ export type PartialUpdateRestNewsItem = RestOf<PartialUpdateNewsItem>;
 
 @Injectable()
 export class NewsItemsService {
+  protected readonly applicationConfigService = inject(ApplicationConfigService);
+  protected readonly managerClientContext = inject(ManagerClientContextService);
+
+  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/news-items');
+
   readonly newsItemsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
   );
+
   readonly newsItemsResource = httpResource<RestNewsItem[]>(() => {
     const params = this.newsItemsParams();
     if (!params) {
       return undefined;
     }
-    return { url: this.resourceUrl, params };
+    if (!this.managerClientContext.initialized()) {
+      return undefined;
+    }
+    if (this.managerClientContext.isManager() && this.managerClientContext.selectedClientUserId() === null) {
+      return undefined;
+    }
+    return {
+      url: this.resourceUrl,
+      params: this.managerClientContext.withClientUserId(params),
+    };
   });
-  /**
-   * This signal holds the list of newsItem that have been fetched. It is updated when the newsItemsResource emits a new value.
-   * In case of error while fetching the newsItems, the signal is set to an empty array.
-   */
+
   readonly newsItems = computed(() =>
     (this.newsItemsResource.hasValue() ? this.newsItemsResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/news-items');
-
   protected convertValueFromServer(restNewsItem: RestNewsItem): INewsItem {
     return {
       ...restNewsItem,
@@ -83,12 +93,21 @@ export class NewsItemService extends NewsItemsService {
   }
 
   query(req?: any): Observable<HttpResponse<INewsItem[]>> {
-    const options = createRequestOption(req);
-    return this.http
-      .get<RestNewsItem[]>(this.resourceUrl, { params: options, observe: 'response' })
-      .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
-  }
+    const options = createRequestOption(this.managerClientContext.withClientUserId(req ?? {}));
 
+    return this.http
+      .get<RestNewsItem[]>(this.resourceUrl, {
+        params: options,
+        observe: 'response',
+      })
+      .pipe(
+        map(res =>
+          res.clone({
+            body: this.convertResponseArrayFromServer(res.body!),
+          }),
+        ),
+      );
+  }
   delete(id: number): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }

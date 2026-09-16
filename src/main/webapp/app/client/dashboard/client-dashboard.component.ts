@@ -1,11 +1,13 @@
-import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Component, OnInit, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ManagerClient, ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 
 @Component({
   standalone: true,
   selector: 'jhi-client-dashboard',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './client-dashboard.component.html',
   styleUrls: ['./client-dashboard.component.scss'],
 })
@@ -32,16 +34,75 @@ export class ClientDashboardComponent implements OnInit {
 
   loading = true;
 
-  private http = inject(HttpClient);
+  collectionRunning = false;
+  collectionMessage = '';
 
+  isManager = false;
+  managerClients: ManagerClient[] = [];
+  selectedClientUserId: number | null = null;
+  clientsLoading = false;
+  clientMessage = '';
+
+  private readonly http = inject(HttpClient);
+  private readonly managerClientContext = inject(ManagerClientContextService);
   ngOnInit(): void {
-    this.loadDashboard();
+    this.loadManagerClients();
+  }
+
+  loadManagerClients(): void {
+    this.clientsLoading = true;
+    this.clientMessage = '';
+
+    this.managerClientContext.initialize().subscribe({
+      next: () => {
+        this.isManager = this.managerClientContext.isManager();
+
+        this.managerClients = this.managerClientContext.clients();
+
+        this.selectedClientUserId = this.managerClientContext.selectedClientUserId();
+
+        this.clientsLoading = false;
+
+        if (this.isManager && this.selectedClientUserId === null) {
+          this.clientMessage = 'Нет доступных клиентов.';
+
+          this.loading = false;
+
+          return;
+        }
+
+        this.loadDashboard();
+      },
+
+      error: () => {
+        this.clientsLoading = false;
+        this.loading = false;
+
+        this.clientMessage = 'Не удалось загрузить список клиентов.';
+      },
+    });
+  }
+  onClientChange(): void {
+    this.managerClientContext.selectClient(this.selectedClientUserId);
+    this.collectionMessage = '';
+    this.resetDashboard();
+
+    if (this.selectedClientUserId !== null) {
+      this.loadDashboard();
+    }
   }
 
   loadDashboard(): void {
+    if (this.isManager && this.selectedClientUserId === null) {
+      this.loading = false;
+      return;
+    }
+
     this.loading = true;
 
-    this.http.get<any>('/api/dashboard').subscribe({
+    const dashboardParams = this.getClientParams();
+
+    this.http.get<any>('/api/dashboard', { params: dashboardParams }).subscribe({
       next: data => {
         this.dashboard = data;
       },
@@ -50,22 +111,88 @@ export class ClientDashboardComponent implements OnInit {
       },
     });
 
-    this.http.get<any[]>('/api/dashboard/latest-news').subscribe(data => {
-      this.latestNewsItems = data;
+    this.http.get<any[]>('/api/dashboard/latest-news', { params: dashboardParams }).subscribe({
+      next: data => {
+        this.latestNewsItems = data;
+      },
+      error: () => {
+        this.latestNewsItems = [];
+      },
     });
 
-    this.http.get<any[]>('/api/collection-runs?size=1&sort=startedAt,desc').subscribe({
+    let collectionParams = new HttpParams().set('size', '1').set('sort', 'startedAt,desc');
+
+    if (this.isManager && this.selectedClientUserId !== null) {
+      collectionParams = collectionParams.set('clientUserId', this.selectedClientUserId.toString());
+    }
+
+    this.http.get<any[]>('/api/collection-runs', { params: collectionParams }).subscribe({
       next: data => {
         this.collectionRuns = data;
         this.loading = false;
       },
       error: () => {
+        this.collectionRuns = [];
         this.loading = false;
       },
     });
   }
 
-  // KPI
+  getSelectedClient(): ManagerClient | null {
+    if (this.selectedClientUserId === null) {
+      return null;
+    }
+
+    return this.managerClients.find(client => client.userId === this.selectedClientUserId) ?? null;
+  }
+
+  canRunCollection(): boolean {
+    if (!this.isManager) {
+      return true;
+    }
+
+    const client = this.getSelectedClient();
+
+    return client?.permissions.includes('COLLECTION_RUN') ?? false;
+  }
+
+  runCollection(): void {
+    if (this.collectionRunning || !this.canRunCollection()) {
+      return;
+    }
+
+    this.collectionRunning = true;
+    this.collectionMessage = '';
+
+    const params = this.getClientParams();
+
+    this.http.post<void>('/api/collection-job/run-rss', {}, { params }).subscribe({
+      next: () => {
+        this.collectionMessage = 'Сбор новостей запущен.';
+
+        setTimeout(() => {
+          this.loadDashboard();
+        }, 2000);
+
+        this.collectionRunning = false;
+      },
+      error: error => {
+        if (error.status === 409) {
+          this.collectionMessage = 'Сбор новостей уже выполняется.';
+        } else if (error.status === 403) {
+          this.collectionMessage = 'Нет разрешения на запуск сбора новостей.';
+        } else {
+          this.collectionMessage = 'Не удалось запустить сбор новостей.';
+        }
+
+        this.collectionRunning = false;
+      },
+    });
+  }
+
+  refresh(): void {
+    this.loadDashboard();
+  }
 
   getNewsCount(): number {
     return this.dashboard.newsCount ?? 0;
@@ -96,14 +223,12 @@ export class ClientDashboardComponent implements OnInit {
   }
 
   getSourcesCount(): number {
-    return this.dashboard.sourceCount ?? 0;
+    return this.dashboard.sourcesCount ?? 0;
   }
 
   getCompetitorsCount(): number {
     return this.dashboard.competitorCount ?? 0;
   }
-
-  // Последние записи
 
   getLatestNews(): any[] {
     return this.latestNewsItems;
@@ -120,8 +245,6 @@ export class ClientDashboardComponent implements OnInit {
   getLastRun(): any {
     return this.collectionRuns.length ? this.collectionRuns[0] : null;
   }
-
-  // Проценты для диаграммы
 
   getPositivePercent(): number {
     const total = this.getAnalysisCount();
@@ -152,7 +275,6 @@ export class ClientDashboardComponent implements OnInit {
 
     return Math.round((this.getNegativeCount() / total) * 100);
   }
-  // Цвет тональности
 
   sentimentClass(sentiment: string): string {
     switch (sentiment) {
@@ -170,8 +292,6 @@ export class ClientDashboardComponent implements OnInit {
     }
   }
 
-  // Цвет Alert
-
   severityClass(severity: string): string {
     switch (severity) {
       case 'CRITICAL':
@@ -188,7 +308,35 @@ export class ClientDashboardComponent implements OnInit {
     }
   }
 
-  refresh(): void {
-    this.loadDashboard();
+  private getClientParams(): HttpParams {
+    let params = new HttpParams();
+
+    if (this.isManager && this.selectedClientUserId !== null) {
+      params = params.set('clientUserId', this.selectedClientUserId.toString());
+    }
+
+    return params;
+  }
+
+  private resetDashboard(): void {
+    this.dashboard = {
+      newsCount: 0,
+      analysisCount: 0,
+      competitorCount: 0,
+      alertsCount: 0,
+      highAlertsCount: 0,
+      sourcesCount: 0,
+
+      positiveCount: 0,
+      negativeCount: 0,
+      neutralCount: 0,
+      unknownCount: 0,
+
+      latestAnalysis: [],
+      latestAlerts: [],
+    };
+
+    this.latestNewsItems = [];
+    this.collectionRuns = [];
   }
 }

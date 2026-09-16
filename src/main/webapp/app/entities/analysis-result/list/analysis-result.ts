@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
@@ -22,6 +22,8 @@ import { SortByDirective, SortDirective, SortService, type SortState, sortStateS
 import { IAnalysisResult } from '../analysis-result.model';
 import { AnalysisResultDeleteDialog } from '../delete/analysis-result-delete-dialog';
 import { AnalysisResultService } from '../service/analysis-result.service';
+import { AccountService } from 'app/core/auth/account.service';
+import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -62,6 +64,9 @@ export class AnalysisResult implements OnInit {
   protected readonly sortService = inject(SortService);
   protected readonly filterOptions = toSignal(this.filters.filterChanges);
   protected modalService = inject(NgbModal);
+  protected readonly managerClientContext = inject(ManagerClientContextService);
+  protected readonly accountService = inject(AccountService);
+  readonly canEdit = computed(() => this.accountService.hasAnyAuthority('ROLE_ADMIN'));
 
   constructor() {
     effect(() => {
@@ -88,12 +93,14 @@ export class AnalysisResult implements OnInit {
   trackId = (item: IAnalysisResult): number => this.analysisResultService.getAnalysisResultIdentifier(item);
 
   ngOnInit(): void {
-    this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
-      .pipe(
-        tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
-        tap(() => this.load()),
-      )
-      .subscribe();
+    this.managerClientContext.initialize().subscribe(() => {
+      this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
+        .pipe(
+          tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
+          tap(() => this.load()),
+        )
+        .subscribe();
+    });
   }
 
   delete(analysisResult: IAnalysisResult): void {

@@ -8,6 +8,7 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
 import { IDataSource, NewDataSource } from '../data-source.model';
+import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 
 export type PartialUpdateDataSource = Partial<IDataSource> & Pick<IDataSource, 'id'>;
 
@@ -24,15 +25,25 @@ export type PartialUpdateRestDataSource = RestOf<PartialUpdateDataSource>;
 
 @Injectable()
 export class DataSourcesService {
+  protected readonly managerClientContext = inject(ManagerClientContextService);
   readonly dataSourcesParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
   );
   readonly dataSourcesResource = httpResource<RestDataSource[]>(() => {
     const params = this.dataSourcesParams();
-    if (!params) {
+
+    if (!params || !this.managerClientContext.initialized()) {
       return undefined;
     }
-    return { url: this.resourceUrl, params };
+
+    if (this.managerClientContext.isManager() && this.managerClientContext.selectedClientUserId() === null) {
+      return undefined;
+    }
+
+    return {
+      url: this.resourceUrl,
+      params: this.managerClientContext.withClientUserId(params),
+    };
   });
   /**
    * This signal holds the list of dataSource that have been fetched. It is updated when the dataSourcesResource emits a new value.
@@ -83,7 +94,7 @@ export class DataSourceService extends DataSourcesService {
   }
 
   query(req?: any): Observable<HttpResponse<IDataSource[]>> {
-    const options = createRequestOption(req);
+    const options = createRequestOption(this.managerClientContext.withClientUserId(req ?? {}));
     return this.http
       .get<RestDataSource[]>(this.resourceUrl, { params: options, observe: 'response' })
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));

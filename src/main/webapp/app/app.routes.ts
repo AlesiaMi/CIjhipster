@@ -42,9 +42,10 @@ const routes: Routes = [
     path: 'dashboard',
     loadComponent: () => import('./client/dashboard/client-dashboard.component').then(m => m.ClientDashboardComponent),
     data: {
-      authorities: ['ROLE_USER', 'ROLE_ADMIN'],
+      authorities: [Authority.USER, Authority.MANAGER, Authority.ADMIN],
       pageTitle: 'Дашборд конкурентной разведки',
     },
+    canActivate: [UserRouteAccessService],
   },
   ...errorRoute,
 ];

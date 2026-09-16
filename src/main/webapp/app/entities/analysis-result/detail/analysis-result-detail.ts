@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -9,6 +9,7 @@ import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { IAnalysisResult } from '../analysis-result.model';
+import { AccountService } from 'app/core/auth/account.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,7 +19,8 @@ import { IAnalysisResult } from '../analysis-result.model';
 })
 export class AnalysisResultDetail {
   readonly analysisResult = input<IAnalysisResult | null>(null);
-
+  protected readonly accountService = inject(AccountService);
+  readonly canEdit = computed(() => this.accountService.hasAnyAuthority('ROLE_ADMIN'));
   previousState(): void {
     globalThis.history.back();
   }
