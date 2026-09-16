@@ -37,4 +37,42 @@ public interface AnalysisResultRepository extends JpaRepository<AnalysisResult, 
 
     @Query("select analysisResult from AnalysisResult analysisResult left join fetch analysisResult.newsItem where analysisResult.id =:id")
     Optional<AnalysisResult> findOneWithToOneRelationships(@Param("id") Long id);
+
+    @Query(
+        """
+        select analysisResult
+        from AnalysisResult analysisResult
+        left join fetch analysisResult.newsItem newsItem
+        join newsItem.competitor competitor
+        join competitor.owner owner
+        where analysisResult.id = :id
+        and owner.id = :ownerId
+        """
+    )
+    Optional<AnalysisResult> findOneByIdAndNewsItemCompetitorOwnerId(@Param("id") Long id, @Param("ownerId") Long ownerId);
+
+    @Query(
+        """
+        select count(analysisResult) > 0
+        from AnalysisResult analysisResult
+        join analysisResult.newsItem newsItem
+        join newsItem.competitor competitor
+        join competitor.owner owner
+        where analysisResult.id = :id
+        and owner.id = :ownerId
+        """
+    )
+    boolean existsByIdAndNewsItemCompetitorOwnerId(@Param("id") Long id, @Param("ownerId") Long ownerId);
+
+    @Query(
+        """
+        select owner.id
+        from AnalysisResult analysisResult
+        join analysisResult.newsItem newsItem
+        join newsItem.competitor competitor
+        join competitor.owner owner
+        where analysisResult.id = :id
+        """
+    )
+    Optional<Long> findOwnerIdById(@Param("id") Long id);
 }

@@ -1,6 +1,7 @@
 package com.mycompany.myapp.repository;
 
 import com.mycompany.myapp.domain.DataSource;
+import com.mycompany.myapp.domain.enumeration.SourceType;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -37,4 +38,44 @@ public interface DataSourceRepository extends JpaRepository<DataSource, Long>, J
 
     @Query("select dataSource from DataSource dataSource left join fetch dataSource.competitor where dataSource.id =:id")
     Optional<DataSource> findOneWithToOneRelationships(@Param("id") Long id);
+
+    @Query(
+        """
+        select dataSource
+        from DataSource dataSource
+        left join fetch dataSource.competitor competitor
+        left join competitor.owner owner
+        where dataSource.id = :id
+        and owner.id = :ownerId
+        """
+    )
+    Optional<DataSource> findOneByIdAndCompetitorOwnerId(@Param("id") Long id, @Param("ownerId") Long ownerId);
+
+    @Query(
+        """
+        select count(dataSource) > 0
+        from DataSource dataSource
+        join dataSource.competitor competitor
+        join competitor.owner owner
+        where dataSource.id = :id
+        and owner.id = :ownerId
+        """
+    )
+    boolean existsByIdAndCompetitorOwnerId(@Param("id") Long id, @Param("ownerId") Long ownerId);
+
+    @Query(
+        """
+        select dataSource
+        from DataSource dataSource
+        join fetch dataSource.competitor competitor
+        join competitor.owner owner
+        where owner.id = :ownerId
+        and dataSource.isActive = true
+        and dataSource.sourceType = :sourceType
+        """
+    )
+    List<DataSource> findAllActiveByCompetitorOwnerIdAndSourceType(
+        @Param("ownerId") Long ownerId,
+        @Param("sourceType") SourceType sourceType
+    );
 }

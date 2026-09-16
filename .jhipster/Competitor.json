@@ -40,6 +40,14 @@
   "pagination": "pagination",
   "relationships": [
     {
+      "otherEntityField": "login",
+      "otherEntityName": "user",
+      "relationshipName": "owner",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipWithBuiltInEntity": true
+    },
+    {
       "otherEntityField": "displayName",
       "otherEntityName": "analystProfile",
       "otherEntityRelationshipName": "competitors",

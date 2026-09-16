@@ -1,4 +1,5 @@
 import dayjs from 'dayjs/esm';
+import { IUser } from 'app/entities/user/user.model';
 
 import { RunStatus } from 'app/entities/enumerations/run-status.model';
 
@@ -10,6 +11,7 @@ export interface ICollectionRun {
   foundCount?: number | null;
   processedCount?: number | null;
   errorMessage?: string | null;
+  owner?: Pick<IUser, 'id' | 'login'> | null;
 }
 
 export type NewCollectionRun = Omit<ICollectionRun, 'id'> & { id: null };

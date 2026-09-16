@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260909090000-1" author="openai">
+
+        <addColumn tableName="competitor">
+            <column name="owner_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="collection_run">
+            <column name="owner_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+            baseColumnNames="owner_id"
+            baseTableName="competitor"
+            constraintName="fk_competitor__owner_id"
+            referencedColumnNames="id"
+            referencedTableName="jhi_user"/>
+
+        <addForeignKeyConstraint
+            baseColumnNames="owner_id"
+            baseTableName="collection_run"
+            constraintName="fk_collection_run__owner_id"
+            referencedColumnNames="id"
+            referencedTableName="jhi_user"/>
+
+        <createIndex
+            indexName="idx_competitor__owner_id"
+            tableName="competitor">
+            <column name="owner_id"/>
+        </createIndex>
+
+        <createIndex
+            indexName="idx_collection_run__owner_id"
+            tableName="collection_run">
+            <column name="owner_id"/>
+        </createIndex>
+
+    </changeSet>
+
+    <changeSet
+        id="20260909090000-2"
+        author="openai"
+        dbms="postgresql">
+
+        <sql>
+            UPDATE competitor c
+            SET owner_id = resolved.user_id
+            FROM (
+                SELECT
+                    rel.competitors_id AS competitor_id,
+                    MIN(ap.user_id) AS user_id
+                FROM rel_analyst_profile__competitors rel
+                JOIN analyst_profile ap
+                    ON ap.id = rel.analyst_profile_id
+                GROUP BY rel.competitors_id
+                HAVING COUNT(DISTINCT ap.user_id) = 1
+            ) resolved
+            WHERE c.id = resolved.competitor_id
+              AND c.owner_id IS NULL;
+        </sql>
+
+    </changeSet>
+
+</databaseChangeLog>

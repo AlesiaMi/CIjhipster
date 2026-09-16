@@ -48,6 +48,8 @@ public class NewsItemCriteria implements Serializable, Criteria {
 
     private LongFilter analysisResultId;
 
+    private LongFilter ownerId;
+
     private Boolean distinct;
 
     public NewsItemCriteria() {}
@@ -65,6 +67,7 @@ public class NewsItemCriteria implements Serializable, Criteria {
         this.competitorId = other.optionalCompetitorId().map(LongFilter::copy).orElse(null);
         this.collectionRunId = other.optionalCollectionRunId().map(LongFilter::copy).orElse(null);
         this.analysisResultId = other.optionalAnalysisResultId().map(LongFilter::copy).orElse(null);
+        this.ownerId = other.optionalOwnerId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -301,6 +304,25 @@ public class NewsItemCriteria implements Serializable, Criteria {
         this.analysisResultId = analysisResultId;
     }
 
+    public LongFilter getOwnerId() {
+        return ownerId;
+    }
+
+    public Optional<LongFilter> optionalOwnerId() {
+        return Optional.ofNullable(ownerId);
+    }
+
+    public LongFilter ownerId() {
+        if (ownerId == null) {
+            setOwnerId(new LongFilter());
+        }
+        return ownerId;
+    }
+
+    public void setOwnerId(LongFilter ownerId) {
+        this.ownerId = ownerId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -342,6 +364,7 @@ public class NewsItemCriteria implements Serializable, Criteria {
             Objects.equals(competitorId, that.competitorId) &&
             Objects.equals(collectionRunId, that.collectionRunId) &&
             Objects.equals(analysisResultId, that.analysisResultId) &&
+            Objects.equals(ownerId, that.ownerId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -361,6 +384,7 @@ public class NewsItemCriteria implements Serializable, Criteria {
             competitorId,
             collectionRunId,
             analysisResultId,
+            ownerId,
             distinct
         );
     }
@@ -381,6 +405,7 @@ public class NewsItemCriteria implements Serializable, Criteria {
             optionalCompetitorId().map(f -> "competitorId=" + f + ", ").orElse("") +
             optionalCollectionRunId().map(f -> "collectionRunId=" + f + ", ").orElse("") +
             optionalAnalysisResultId().map(f -> "analysisResultId=" + f + ", ").orElse("") +
+            optionalOwnerId().map(f -> "ownerId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

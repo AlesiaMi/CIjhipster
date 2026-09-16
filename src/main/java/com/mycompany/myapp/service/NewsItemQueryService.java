@@ -24,17 +24,21 @@ import tech.jhipster.service.QueryService;
 public class NewsItemQueryService extends QueryService<NewsItem> {
 
     private static final Logger LOG = LoggerFactory.getLogger(NewsItemQueryService.class);
-
     private final NewsItemRepository newsItemRepository;
-
     private final NewsItemMapper newsItemMapper;
-
     private final CacheManager cacheManager;
+    private final TenantCacheVersionService tenantCacheVersionService;
 
-    public NewsItemQueryService(NewsItemRepository newsItemRepository, NewsItemMapper newsItemMapper, CacheManager cacheManager) {
+    public NewsItemQueryService(
+        NewsItemRepository newsItemRepository,
+        NewsItemMapper newsItemMapper,
+        CacheManager cacheManager,
+        TenantCacheVersionService tenantCacheVersionService
+    ) {
         this.newsItemRepository = newsItemRepository;
         this.newsItemMapper = newsItemMapper;
         this.cacheManager = cacheManager;
+        this.tenantCacheVersionService = tenantCacheVersionService;
     }
 
     @Transactional(readOnly = true)
@@ -76,9 +80,21 @@ public class NewsItemQueryService extends QueryService<NewsItem> {
     }
 
     private String buildCacheKey(NewsItemCriteria criteria, Pageable page) {
+        Long ownerId = extractOwnerId(criteria);
+
+        String namespace = tenantCacheVersionService.namespace(ownerId);
+
         String criteriaKey = criteria != null ? criteria.toString() : "null";
 
-        return criteriaKey + "|" + page.getPageNumber() + "|" + page.getPageSize() + "|" + page.getSort();
+        return namespace + "|" + criteriaKey + "|" + page.getPageNumber() + "|" + page.getPageSize() + "|" + page.getSort();
+    }
+
+    private Long extractOwnerId(NewsItemCriteria criteria) {
+        if (criteria == null || criteria.getOwnerId() == null) {
+            return null;
+        }
+
+        return criteria.getOwnerId().getEquals();
     }
 
     @Transactional(readOnly = true)
@@ -121,6 +137,9 @@ public class NewsItemQueryService extends QueryService<NewsItem> {
                     ),
                     buildSpecification(criteria.getAnalysisResultId(), root ->
                         root.join(NewsItem_.analysisResult, JoinType.LEFT).get(AnalysisResult_.id)
+                    ),
+                    buildSpecification(criteria.getOwnerId(), root ->
+                        root.join("competitor", JoinType.LEFT).join("owner", JoinType.LEFT).<Long>get("id")
                     )
                 )
             );

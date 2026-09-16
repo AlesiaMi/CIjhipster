@@ -82,6 +82,7 @@ class CollectionRunCriteriaTest {
         collectionRunCriteria.foundCount();
         collectionRunCriteria.processedCount();
         collectionRunCriteria.errorMessage();
+        collectionRunCriteria.ownerId();
         collectionRunCriteria.distinct();
     }
 
@@ -95,6 +96,7 @@ class CollectionRunCriteriaTest {
                 condition.apply(criteria.getFoundCount()) &&
                 condition.apply(criteria.getProcessedCount()) &&
                 condition.apply(criteria.getErrorMessage()) &&
+                condition.apply(criteria.getOwnerId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
         );
@@ -113,6 +115,7 @@ class CollectionRunCriteriaTest {
                 condition.apply(criteria.getFoundCount(), copy.getFoundCount()) &&
                 condition.apply(criteria.getProcessedCount(), copy.getProcessedCount()) &&
                 condition.apply(criteria.getErrorMessage(), copy.getErrorMessage()) &&
+                condition.apply(criteria.getOwnerId(), copy.getOwnerId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"
         );

@@ -31,10 +31,18 @@ public class DataSourceQueryService extends QueryService<DataSource> {
 
     private final CacheManager cacheManager;
 
-    public DataSourceQueryService(DataSourceRepository dataSourceRepository, DataSourceMapper dataSourceMapper, CacheManager cacheManager) {
+    private final TenantCacheVersionService tenantCacheVersionService;
+
+    public DataSourceQueryService(
+        DataSourceRepository dataSourceRepository,
+        DataSourceMapper dataSourceMapper,
+        CacheManager cacheManager,
+        TenantCacheVersionService tenantCacheVersionService
+    ) {
         this.dataSourceRepository = dataSourceRepository;
         this.dataSourceMapper = dataSourceMapper;
         this.cacheManager = cacheManager;
+        this.tenantCacheVersionService = tenantCacheVersionService;
     }
 
     @Transactional(readOnly = true)
@@ -76,8 +84,21 @@ public class DataSourceQueryService extends QueryService<DataSource> {
     }
 
     private String buildCacheKey(DataSourceCriteria criteria, Pageable page) {
+        Long ownerId = extractOwnerId(criteria);
+
+        String namespace = tenantCacheVersionService.namespace(ownerId);
+
         String criteriaKey = criteria != null ? criteria.toString() : "null";
-        return criteriaKey + "|" + page.getPageNumber() + "|" + page.getPageSize() + "|" + page.getSort();
+
+        return namespace + "|" + criteriaKey + "|" + page.getPageNumber() + "|" + page.getPageSize() + "|" + page.getSort();
+    }
+
+    private Long extractOwnerId(DataSourceCriteria criteria) {
+        if (criteria == null || criteria.getOwnerId() == null) {
+            return null;
+        }
+
+        return criteria.getOwnerId().getEquals();
     }
 
     @Transactional(readOnly = true)
@@ -106,8 +127,9 @@ public class DataSourceQueryService extends QueryService<DataSource> {
                     buildSpecification(criteria.getIsActive(), DataSource_.isActive),
                     buildRangeSpecification(criteria.getLastCheckedAt(), DataSource_.lastCheckedAt),
                     buildRangeSpecification(criteria.getCreatedAt(), DataSource_.createdAt),
-                    buildSpecification(criteria.getCompetitorId(), root ->
-                        root.join(DataSource_.competitor, JoinType.LEFT).get(Competitor_.id)
+                    buildSpecification(criteria.getCompetitorId(), root -> root.join("competitor", JoinType.LEFT).<Long>get("id")),
+                    buildSpecification(criteria.getOwnerId(), root ->
+                        root.join("competitor", JoinType.LEFT).join("owner", JoinType.LEFT).<Long>get("id")
                     )
                 )
             );

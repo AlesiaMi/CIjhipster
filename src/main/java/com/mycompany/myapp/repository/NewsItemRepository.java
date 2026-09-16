@@ -17,6 +17,9 @@ public interface NewsItemRepository extends JpaRepository<NewsItem, Long>, JpaSp
     boolean existsByUrl(String url);
     boolean existsByExternalId(String externalId);
 
+    boolean existsByUrlAndCompetitorOwnerId(String url, Long ownerId);
+    boolean existsByExternalIdAndDataSourceId(String externalId, Long dataSourceId);
+
     default Optional<NewsItem> findOneWithEagerRelationships(Long id) {
         return this.findOneWithToOneRelationships(id);
     }
@@ -42,4 +45,41 @@ public interface NewsItemRepository extends JpaRepository<NewsItem, Long>, JpaSp
         "select newsItem from NewsItem newsItem left join fetch newsItem.dataSource left join fetch newsItem.competitor where newsItem.id =:id"
     )
     Optional<NewsItem> findOneWithToOneRelationships(@Param("id") Long id);
+
+    @Query(
+        """
+        select newsItem
+        from NewsItem newsItem
+        left join fetch newsItem.dataSource
+        left join fetch newsItem.competitor competitor
+        left join fetch newsItem.collectionRun
+        join competitor.owner owner
+        where newsItem.id = :id
+        and owner.id = :ownerId
+        """
+    )
+    Optional<NewsItem> findOneByIdAndCompetitorOwnerId(@Param("id") Long id, @Param("ownerId") Long ownerId);
+
+    @Query(
+        """
+        select count(newsItem) > 0
+        from NewsItem newsItem
+        join newsItem.competitor competitor
+        join competitor.owner owner
+        where newsItem.id = :id
+        and owner.id = :ownerId
+        """
+    )
+    boolean existsByIdAndCompetitorOwnerId(@Param("id") Long id, @Param("ownerId") Long ownerId);
+
+    @Query(
+        """
+        select owner.id
+        from NewsItem newsItem
+        join newsItem.competitor competitor
+        join competitor.owner owner
+        where newsItem.id = :id
+        """
+    )
+    Optional<Long> findOwnerIdById(@Param("id") Long id);
 }

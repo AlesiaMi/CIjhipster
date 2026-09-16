@@ -38,6 +38,8 @@ public class CompetitorCriteria implements Serializable, Criteria {
 
     private LongFilter analystProfilesId;
 
+    private LongFilter ownerId;
+
     private Boolean distinct;
 
     public CompetitorCriteria() {}
@@ -50,6 +52,7 @@ public class CompetitorCriteria implements Serializable, Criteria {
         this.description = other.optionalDescription().map(StringFilter::copy).orElse(null);
         this.isActive = other.optionalIsActive().map(BooleanFilter::copy).orElse(null);
         this.analystProfilesId = other.optionalAnalystProfilesId().map(LongFilter::copy).orElse(null);
+        this.ownerId = other.optionalOwnerId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -191,6 +194,25 @@ public class CompetitorCriteria implements Serializable, Criteria {
         this.analystProfilesId = analystProfilesId;
     }
 
+    public LongFilter getOwnerId() {
+        return ownerId;
+    }
+
+    public Optional<LongFilter> optionalOwnerId() {
+        return Optional.ofNullable(ownerId);
+    }
+
+    public LongFilter ownerId() {
+        if (ownerId == null) {
+            setOwnerId(new LongFilter());
+        }
+        return ownerId;
+    }
+
+    public void setOwnerId(LongFilter ownerId) {
+        this.ownerId = ownerId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -227,13 +249,14 @@ public class CompetitorCriteria implements Serializable, Criteria {
             Objects.equals(description, that.description) &&
             Objects.equals(isActive, that.isActive) &&
             Objects.equals(analystProfilesId, that.analystProfilesId) &&
+            Objects.equals(ownerId, that.ownerId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, competitorName, websiteUrl, industry, description, isActive, analystProfilesId, distinct);
+        return Objects.hash(id, competitorName, websiteUrl, industry, description, isActive, analystProfilesId, ownerId, distinct);
     }
 
     // prettier-ignore
@@ -247,6 +270,7 @@ public class CompetitorCriteria implements Serializable, Criteria {
             optionalDescription().map(f -> "description=" + f + ", ").orElse("") +
             optionalIsActive().map(f -> "isActive=" + f + ", ").orElse("") +
             optionalAnalystProfilesId().map(f -> "analystProfilesId=" + f + ", ").orElse("") +
+            optionalOwnerId().map(f -> "ownerId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

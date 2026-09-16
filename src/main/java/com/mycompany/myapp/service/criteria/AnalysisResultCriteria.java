@@ -82,6 +82,8 @@ public class AnalysisResultCriteria implements Serializable, Criteria {
 
     private LongFilter newsItemId;
 
+    private LongFilter ownerId;
+
     private Boolean distinct;
 
     public AnalysisResultCriteria() {}
@@ -98,6 +100,7 @@ public class AnalysisResultCriteria implements Serializable, Criteria {
         this.analyzedAt = other.optionalAnalyzedAt().map(InstantFilter::copy).orElse(null);
         this.errorMessage = other.optionalErrorMessage().map(StringFilter::copy).orElse(null);
         this.newsItemId = other.optionalNewsItemId().map(LongFilter::copy).orElse(null);
+        this.ownerId = other.optionalOwnerId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -315,6 +318,25 @@ public class AnalysisResultCriteria implements Serializable, Criteria {
         this.newsItemId = newsItemId;
     }
 
+    public LongFilter getOwnerId() {
+        return ownerId;
+    }
+
+    public Optional<LongFilter> optionalOwnerId() {
+        return Optional.ofNullable(ownerId);
+    }
+
+    public LongFilter ownerId() {
+        if (ownerId == null) {
+            setOwnerId(new LongFilter());
+        }
+        return ownerId;
+    }
+
+    public void setOwnerId(LongFilter ownerId) {
+        this.ownerId = ownerId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -355,6 +377,7 @@ public class AnalysisResultCriteria implements Serializable, Criteria {
             Objects.equals(analyzedAt, that.analyzedAt) &&
             Objects.equals(errorMessage, that.errorMessage) &&
             Objects.equals(newsItemId, that.newsItemId) &&
+            Objects.equals(ownerId, that.ownerId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -373,6 +396,7 @@ public class AnalysisResultCriteria implements Serializable, Criteria {
             analyzedAt,
             errorMessage,
             newsItemId,
+            ownerId,
             distinct
         );
     }
@@ -392,6 +416,7 @@ public class AnalysisResultCriteria implements Serializable, Criteria {
             optionalAnalyzedAt().map(f -> "analyzedAt=" + f + ", ").orElse("") +
             optionalErrorMessage().map(f -> "errorMessage=" + f + ", ").orElse("") +
             optionalNewsItemId().map(f -> "newsItemId=" + f + ", ").orElse("") +
+            optionalOwnerId().map(f -> "ownerId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

@@ -30,6 +30,8 @@ public class CompetitorDTO implements Serializable {
     @NotNull
     private Boolean isActive;
 
+    private UserDTO owner;
+
     private Set<AnalystProfileDTO> analystProfileses = new HashSet<>();
 
     public Long getId() {
@@ -80,6 +82,14 @@ public class CompetitorDTO implements Serializable {
         this.isActive = isActive;
     }
 
+    public UserDTO getOwner() {
+        return owner;
+    }
+
+    public void setOwner(UserDTO owner) {
+        this.owner = owner;
+    }
+
     public Set<AnalystProfileDTO> getAnalystProfileses() {
         return analystProfileses;
     }
@@ -119,6 +129,7 @@ public class CompetitorDTO implements Serializable {
             ", industry='" + getIndustry() + "'" +
             ", description='" + getDescription() + "'" +
             ", isActive='" + getIsActive() + "'" +
+            ", owner=" + getOwner() +
             ", analystProfileses=" + getAnalystProfileses() +
             "}";
     }

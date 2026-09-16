@@ -29,6 +29,8 @@ public class CollectionRunDTO implements Serializable {
     @Size(max = 4000)
     private String errorMessage;
 
+    private UserDTO owner;
+
     public Long getId() {
         return id;
     }
@@ -85,6 +87,14 @@ public class CollectionRunDTO implements Serializable {
         this.errorMessage = errorMessage;
     }
 
+    public UserDTO getOwner() {
+        return owner;
+    }
+
+    public void setOwner(UserDTO owner) {
+        this.owner = owner;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -117,6 +127,7 @@ public class CollectionRunDTO implements Serializable {
             ", foundCount=" + getFoundCount() +
             ", processedCount=" + getProcessedCount() +
             ", errorMessage='" + getErrorMessage() + "'" +
+            ", owner=" + getOwner() +
             "}";
     }
 }

@@ -58,6 +58,8 @@ public class DataSourceCriteria implements Serializable, Criteria {
 
     private LongFilter competitorId;
 
+    private LongFilter ownerId;
+
     private Boolean distinct;
 
     public DataSourceCriteria() {}
@@ -71,6 +73,7 @@ public class DataSourceCriteria implements Serializable, Criteria {
         this.lastCheckedAt = other.optionalLastCheckedAt().map(InstantFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.competitorId = other.optionalCompetitorId().map(LongFilter::copy).orElse(null);
+        this.ownerId = other.optionalOwnerId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -231,6 +234,25 @@ public class DataSourceCriteria implements Serializable, Criteria {
         this.competitorId = competitorId;
     }
 
+    public LongFilter getOwnerId() {
+        return ownerId;
+    }
+
+    public Optional<LongFilter> optionalOwnerId() {
+        return Optional.ofNullable(ownerId);
+    }
+
+    public LongFilter ownerId() {
+        if (ownerId == null) {
+            setOwnerId(new LongFilter());
+        }
+        return ownerId;
+    }
+
+    public void setOwnerId(LongFilter ownerId) {
+        this.ownerId = ownerId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -268,13 +290,14 @@ public class DataSourceCriteria implements Serializable, Criteria {
             Objects.equals(lastCheckedAt, that.lastCheckedAt) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(competitorId, that.competitorId) &&
+            Objects.equals(ownerId, that.ownerId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, sourceName, url, sourceType, isActive, lastCheckedAt, createdAt, competitorId, distinct);
+        return Objects.hash(id, sourceName, url, sourceType, isActive, lastCheckedAt, createdAt, competitorId, ownerId, distinct);
     }
 
     // prettier-ignore
@@ -289,6 +312,7 @@ public class DataSourceCriteria implements Serializable, Criteria {
             optionalLastCheckedAt().map(f -> "lastCheckedAt=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalCompetitorId().map(f -> "competitorId=" + f + ", ").orElse("") +
+            optionalOwnerId().map(f -> "ownerId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

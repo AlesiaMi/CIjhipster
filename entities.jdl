@@ -107,6 +107,9 @@ entity AnalystProfile {
 }
 
 relationship ManyToOne {
+  Competitor{owner(login)} to User with builtInEntity
+  CollectionRun{owner(login)} to User with builtInEntity
+
   DataSource{competitor(competitorName) required} to Competitor
   Keyword{competitor(competitorName) required} to Competitor
 

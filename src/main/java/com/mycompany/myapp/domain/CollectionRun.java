@@ -46,6 +46,9 @@ public class CollectionRun implements Serializable {
     @Column(name = "error_message", length = 4000)
     private String errorMessage;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User owner;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -139,6 +142,19 @@ public class CollectionRun implements Serializable {
         this.errorMessage = errorMessage;
     }
 
+    public User getOwner() {
+        return this.owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+
+    public CollectionRun owner(User owner) {
+        this.setOwner(owner);
+        return this;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -169,6 +185,7 @@ public class CollectionRun implements Serializable {
             ", foundCount=" + getFoundCount() +
             ", processedCount=" + getProcessedCount() +
             ", errorMessage='" + getErrorMessage() + "'" +
+            ", ownerId=" + (getOwner() != null ? getOwner().getId() : null) +
             "}";
     }
 }

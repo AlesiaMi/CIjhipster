@@ -56,6 +56,8 @@ public class CollectionRunCriteria implements Serializable, Criteria {
 
     private StringFilter errorMessage;
 
+    private LongFilter ownerId;
+
     private Boolean distinct;
 
     public CollectionRunCriteria() {}
@@ -68,6 +70,7 @@ public class CollectionRunCriteria implements Serializable, Criteria {
         this.foundCount = other.optionalFoundCount().map(IntegerFilter::copy).orElse(null);
         this.processedCount = other.optionalProcessedCount().map(IntegerFilter::copy).orElse(null);
         this.errorMessage = other.optionalErrorMessage().map(StringFilter::copy).orElse(null);
+        this.ownerId = other.optionalOwnerId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -209,6 +212,25 @@ public class CollectionRunCriteria implements Serializable, Criteria {
         this.errorMessage = errorMessage;
     }
 
+    public LongFilter getOwnerId() {
+        return ownerId;
+    }
+
+    public Optional<LongFilter> optionalOwnerId() {
+        return Optional.ofNullable(ownerId);
+    }
+
+    public LongFilter ownerId() {
+        if (ownerId == null) {
+            setOwnerId(new LongFilter());
+        }
+        return ownerId;
+    }
+
+    public void setOwnerId(LongFilter ownerId) {
+        this.ownerId = ownerId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -245,13 +267,14 @@ public class CollectionRunCriteria implements Serializable, Criteria {
             Objects.equals(foundCount, that.foundCount) &&
             Objects.equals(processedCount, that.processedCount) &&
             Objects.equals(errorMessage, that.errorMessage) &&
+            Objects.equals(ownerId, that.ownerId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, startedAt, finishedAt, status, foundCount, processedCount, errorMessage, distinct);
+        return Objects.hash(id, startedAt, finishedAt, status, foundCount, processedCount, errorMessage, ownerId, distinct);
     }
 
     // prettier-ignore
@@ -265,6 +288,7 @@ public class CollectionRunCriteria implements Serializable, Criteria {
             optionalFoundCount().map(f -> "foundCount=" + f + ", ").orElse("") +
             optionalProcessedCount().map(f -> "processedCount=" + f + ", ").orElse("") +
             optionalErrorMessage().map(f -> "errorMessage=" + f + ", ").orElse("") +
+            optionalOwnerId().map(f -> "ownerId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

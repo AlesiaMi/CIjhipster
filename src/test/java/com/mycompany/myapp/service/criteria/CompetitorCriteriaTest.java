@@ -82,6 +82,7 @@ class CompetitorCriteriaTest {
         competitorCriteria.description();
         competitorCriteria.isActive();
         competitorCriteria.analystProfilesId();
+        competitorCriteria.ownerId();
         competitorCriteria.distinct();
     }
 
@@ -95,6 +96,7 @@ class CompetitorCriteriaTest {
                 condition.apply(criteria.getDescription()) &&
                 condition.apply(criteria.getIsActive()) &&
                 condition.apply(criteria.getAnalystProfilesId()) &&
+                condition.apply(criteria.getOwnerId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
         );
@@ -110,6 +112,7 @@ class CompetitorCriteriaTest {
                 condition.apply(criteria.getDescription(), copy.getDescription()) &&
                 condition.apply(criteria.getIsActive(), copy.getIsActive()) &&
                 condition.apply(criteria.getAnalystProfilesId(), copy.getAnalystProfilesId()) &&
+                condition.apply(criteria.getOwnerId(), copy.getOwnerId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"
         );

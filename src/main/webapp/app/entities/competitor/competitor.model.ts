@@ -1,4 +1,5 @@
 import { IAnalystProfile } from 'app/entities/analyst-profile/analyst-profile.model';
+import { IUser } from 'app/entities/user/user.model';
 
 export interface ICompetitor {
   id: number;
@@ -7,6 +8,7 @@ export interface ICompetitor {
   industry?: string | null;
   description?: string | null;
   isActive?: boolean | null;
+  owner?: Pick<IUser, 'id' | 'login'> | null;
   analystProfileses?: Pick<IAnalystProfile, 'id' | 'displayName'>[] | null;
 }
 

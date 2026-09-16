@@ -8,9 +8,6 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * A Competitor.
- */
 @Entity
 @Table(name = "competitor")
 @SuppressWarnings("common-java:DuplicatedBlocks")
@@ -45,6 +42,9 @@ public class Competitor implements Serializable {
     @NotNull
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User owner;
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "competitorses")
     @JsonIgnoreProperties(value = { "user", "competitorses" }, allowSetters = true)
@@ -130,6 +130,19 @@ public class Competitor implements Serializable {
         this.isActive = isActive;
     }
 
+    public User getOwner() {
+        return this.owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+
+    public Competitor owner(User owner) {
+        this.setOwner(owner);
+        return this;
+    }
+
     public Set<AnalystProfile> getAnalystProfileses() {
         return this.analystProfileses;
     }
@@ -190,6 +203,7 @@ public class Competitor implements Serializable {
             ", industry='" + getIndustry() + "'" +
             ", description='" + getDescription() + "'" +
             ", isActive='" + getIsActive() + "'" +
+            ", ownerId=" + (getOwner() != null ? getOwner().getId() : null) +
             "}";
     }
 }

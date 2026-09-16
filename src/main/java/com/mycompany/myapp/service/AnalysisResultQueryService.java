@@ -92,6 +92,9 @@ public class AnalysisResultQueryService extends QueryService<AnalysisResult> {
                     buildStringSpecification(criteria.getErrorMessage(), AnalysisResult_.errorMessage),
                     buildSpecification(criteria.getNewsItemId(), root ->
                         root.join(AnalysisResult_.newsItem, JoinType.LEFT).get(NewsItem_.id)
+                    ),
+                    buildSpecification(criteria.getOwnerId(), root ->
+                        root.join("newsItem", JoinType.LEFT).join("competitor", JoinType.LEFT).join("owner", JoinType.LEFT).<Long>get("id")
                     )
                 )
             );
