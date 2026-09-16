@@ -1,0 +1,48 @@
+:host {
+  display: block;
+}
+
+.user-search {
+  width: 280px;
+}
+
+.card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.card-header {
+  background: #f8f9fa;
+}
+
+.table th {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.table td {
+  font-size: 0.875rem;
+}
+
+.source-url {
+  max-width: 320px;
+  font-size: 0.78rem;
+  word-break: break-all;
+}
+
+.run-error {
+  max-width: 350px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .user-search {
+    width: 100%;
+    margin-top: 0.75rem;
+  }
+
+  .card-header {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+}

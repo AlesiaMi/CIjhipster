@@ -13,7 +13,7 @@ public class CollectionJobAsyncService {
     }
 
     @Async("taskExecutor")
-    public void runAsync() {
-        collectionJobService.runRssCollection();
+    public void runAsync(Long userId) {
+        collectionJobService.runRssCollection(userId);
     }
 }

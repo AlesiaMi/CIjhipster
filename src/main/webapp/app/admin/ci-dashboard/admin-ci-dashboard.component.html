@@ -1,0 +1,419 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">CI Dashboard</h2>
+      <p class="text-muted mb-0">Общая статистика и активность пользователей</p>
+    </div>
+
+    <button type="button" class="btn btn-primary" (click)="refresh()" [disabled]="loading">
+      @if (loading) {
+        <span class="spinner-border spinner-border-sm me-2"></span>
+      }
+      Обновить
+    </button>
+  </div>
+
+  @if (errorMessage) {
+    <div class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+  }
+
+  @if (loading) {
+    <div class="card">
+      <div class="card-body text-center py-5">
+        <div class="spinner-border mb-3"></div>
+        <div class="text-muted">Загрузка данных...</div>
+      </div>
+    </div>
+  } @else {
+    <!-- Общая статистика -->
+
+    <div class="row g-3 mb-4">
+      <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-muted small">Пользователи</div>
+            <div class="fs-3 fw-bold">{{ dashboard.usersCount }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-muted small">Конкуренты</div>
+            <div class="fs-3 fw-bold">{{ dashboard.competitorsCount }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-muted small">Источники</div>
+            <div class="fs-3 fw-bold">{{ dashboard.sourcesCount }}</div>
+            <div class="small text-muted">RSS: {{ dashboard.rssCount }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-muted small">Новости</div>
+            <div class="fs-3 fw-bold">{{ dashboard.newsCount }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-muted small">AI-анализы</div>
+            <div class="fs-3 fw-bold">{{ dashboard.analysisCount }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-muted small">Запуски сбора</div>
+            <div class="fs-3 fw-bold">
+              {{ dashboard.collectionRunsCount }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Пользователи -->
+
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Пользователи</strong>
+
+        <input
+          type="search"
+          class="form-control form-control-sm user-search"
+          placeholder="Поиск по логину или email"
+          [value]="searchText"
+          (input)="onSearch($event)"
+        />
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Пользователь</th>
+              <th>Email</th>
+              <th>Статус</th>
+              <th class="text-end">Конкуренты</th>
+              <th class="text-end">Источники</th>
+              <th class="text-end">RSS</th>
+              <th class="text-end">Новости</th>
+              <th class="text-end">AI</th>
+              <th>Последний сбор</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (user of filteredUsers; track user.id) {
+              <tr [class.table-active]="selectedUser?.id === user.id">
+                <td>
+                  <strong>{{ user.login }}</strong>
+                  <div class="small text-muted">ID: {{ user.id }}</div>
+                </td>
+
+                <td>{{ user.email || '—' }}</td>
+
+                <td>
+                  @if (user.activated) {
+                    <span class="badge bg-success"> Активен </span>
+                  } @else {
+                    <span class="badge bg-secondary"> Неактивен </span>
+                  }
+                </td>
+
+                <td class="text-end">
+                  {{ user.competitorsCount }}
+                </td>
+
+                <td class="text-end">
+                  {{ user.sourcesCount }}
+                </td>
+
+                <td class="text-end">
+                  {{ user.rssCount }}
+                </td>
+
+                <td class="text-end">
+                  {{ user.newsCount }}
+                </td>
+
+                <td class="text-end">
+                  {{ user.analysisCount }}
+                </td>
+
+                <td>
+                  @if (user.lastRun) {
+                    <span
+                      class="badge"
+                      [ngClass]="{
+                        'bg-success': user.lastRun.status === 'SUCCESS',
+                        'bg-danger': user.lastRun.status === 'FAILED',
+                        'bg-warning text-dark': user.lastRun.status === 'RUNNING',
+                        'bg-secondary':
+                          user.lastRun.status !== 'SUCCESS' && user.lastRun.status !== 'FAILED' && user.lastRun.status !== 'RUNNING',
+                      }"
+                    >
+                      {{ user.lastRun.status }}
+                    </span>
+
+                    <div class="small text-muted mt-1">
+                      {{ user.lastRun.startedAt | date: 'dd.MM.yyyy HH:mm' }}
+                    </div>
+                  } @else {
+                    <span class="text-muted">Нет запусков</span>
+                  }
+                </td>
+
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-primary" (click)="openUser(user)">Открыть</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="10" class="text-center text-muted py-4">Пользователи не найдены</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Детали пользователя -->
+
+    @if (userLoading) {
+      <div class="card mb-4">
+        <div class="card-body text-center py-4">
+          <div class="spinner-border spinner-border-sm me-2"></div>
+          Загрузка пользователя...
+        </div>
+      </div>
+    }
+
+    @if (userErrorMessage) {
+      <div class="alert alert-danger">
+        {{ userErrorMessage }}
+      </div>
+    }
+
+    @if (selectedUser; as user) {
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ user.login }}</strong>
+
+            <span class="text-muted ms-2">
+              {{ user.email || '' }}
+            </span>
+          </div>
+
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeUser()">Закрыть</button>
+        </div>
+
+        <div class="card-body">
+          <div class="row g-3 mb-4">
+            <div class="col-md-2 col-sm-4">
+              <div class="small text-muted">Конкуренты</div>
+              <div class="fw-bold fs-5">
+                {{ user.competitorsCount }}
+              </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4">
+              <div class="small text-muted">Источники</div>
+              <div class="fw-bold fs-5">
+                {{ user.sourcesCount }}
+              </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4">
+              <div class="small text-muted">RSS</div>
+              <div class="fw-bold fs-5">
+                {{ user.rssCount }}
+              </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4">
+              <div class="small text-muted">Новости</div>
+              <div class="fw-bold fs-5">
+                {{ user.newsCount }}
+              </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4">
+              <div class="small text-muted">AI-анализы</div>
+              <div class="fw-bold fs-5">
+                {{ user.analysisCount }}
+              </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4">
+              <div class="small text-muted">Запуски</div>
+              <div class="fw-bold fs-5">
+                {{ user.collectionRunsCount }}
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-4">
+            <!-- Конкуренты -->
+
+            <div class="col-lg-4">
+              <h5>Конкуренты</h5>
+
+              <div class="list-group">
+                @for (competitor of user.competitors; track competitor.id) {
+                  <div class="list-group-item">
+                    <strong>{{ competitor.name }}</strong>
+
+                    <div class="small text-muted">ID {{ competitor.id }}</div>
+                  </div>
+                } @empty {
+                  <div class="list-group-item text-muted">Нет конкурентов</div>
+                }
+              </div>
+            </div>
+
+            <!-- Источники -->
+
+            <div class="col-lg-8">
+              <h5>Источники</h5>
+
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered align-middle">
+                  <thead>
+                    <tr>
+                      <th>Название</th>
+                      <th>Тип</th>
+                      <th>Конкурент</th>
+                      <th>Статус</th>
+                      <th>URL</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    @for (source of user.sources; track source.id) {
+                      <tr>
+                        <td>{{ source.name }}</td>
+
+                        <td>{{ source.sourceType || '—' }}</td>
+
+                        <td>
+                          {{ source.competitorName || '—' }}
+                        </td>
+
+                        <td>
+                          @if (source.active) {
+                            <span class="badge bg-success"> Активен </span>
+                          } @else {
+                            <span class="badge bg-secondary"> Выключен </span>
+                          }
+                        </td>
+
+                        <td class="source-url">
+                          {{ source.url }}
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="5" class="text-muted text-center">Нет источников</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Collection Runs -->
+
+          <hr class="my-4" />
+
+          <h5>Последние запуски сбора</h5>
+
+          <div class="table-responsive">
+            <table class="table table-sm table-striped table-bordered align-middle">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Статус</th>
+                  <th>Начало</th>
+                  <th>Завершение</th>
+                  <th class="text-end">Найдено</th>
+                  <th class="text-end">Обработано</th>
+                  <th>Ошибка</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (run of user.recentRuns; track run.id) {
+                  <tr>
+                    <td>{{ run.id }}</td>
+
+                    <td>
+                      <span
+                        class="badge"
+                        [ngClass]="{
+                          'bg-success': run.status === 'SUCCESS',
+                          'bg-danger': run.status === 'FAILED',
+                          'bg-warning text-dark': run.status === 'RUNNING',
+                          'bg-secondary': run.status !== 'SUCCESS' && run.status !== 'FAILED' && run.status !== 'RUNNING',
+                        }"
+                      >
+                        {{ run.status || 'UNKNOWN' }}
+                      </span>
+                    </td>
+
+                    <td>
+                      {{ run.startedAt | date: 'dd.MM.yyyy HH:mm:ss' }}
+                    </td>
+
+                    <td>
+                      @if (run.finishedAt) {
+                        {{ run.finishedAt | date: 'dd.MM.yyyy HH:mm:ss' }}
+                      } @else {
+                        —
+                      }
+                    </td>
+
+                    <td class="text-end">
+                      {{ run.foundCount }}
+                    </td>
+
+                    <td class="text-end">
+                      {{ run.processedCount }}
+                    </td>
+
+                    <td class="run-error">
+                      {{ run.errorMessage || '—' }}
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="text-muted text-center py-3">Запусков пока нет</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>
