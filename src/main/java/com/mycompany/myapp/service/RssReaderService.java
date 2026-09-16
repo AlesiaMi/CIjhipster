@@ -18,7 +18,10 @@ public class RssReaderService {
     private final HttpClient httpClient;
 
     public RssReaderService() {
-        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
+        this.httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(20))
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build();
     }
 
     public List<RssItem> read(String rssUrl) {
@@ -26,14 +29,34 @@ public class RssReaderService {
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(rssUrl))
                 .timeout(Duration.ofSeconds(30))
-                .header("User-Agent", "CIjhipster-RSS-Reader/1.0")
+
+                // Выглядим как обычный браузер, а не неизвестный бот.
+                .header(
+                    "User-Agent",
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 " + "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+                )
+
+                // Говорим серверу, что ожидаем RSS / Atom / XML.
+                .header("Accept", "application/rss+xml, application/atom+xml, application/xml, text/xml, */*;q=0.8")
+
+                .header("Accept-Language", "en-US,en;q=0.9")
+                .header("Cache-Control", "no-cache")
+                .header("Pragma", "no-cache")
+
                 .GET()
                 .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new IllegalStateException("RSS source returned HTTP " + response.statusCode());
+            int statusCode = response.statusCode();
+
+            if (statusCode < 200 || statusCode >= 300) {
+                throw new IllegalStateException(
+                    "RSS source returned HTTP " +
+                        statusCode +
+                        ", content-type=" +
+                        response.headers().firstValue("Content-Type").orElse("unknown")
+                );
             }
 
             return parseFeed(response.body());
