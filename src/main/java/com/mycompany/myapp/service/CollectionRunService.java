@@ -2,13 +2,17 @@ package com.mycompany.myapp.service;
 
 import com.mycompany.myapp.domain.CollectionRun;
 import com.mycompany.myapp.repository.CollectionRunRepository;
+import com.mycompany.myapp.security.AuthoritiesConstants;
+import com.mycompany.myapp.security.SecurityUtils;
 import com.mycompany.myapp.service.dto.CollectionRunDTO;
 import com.mycompany.myapp.service.mapper.CollectionRunMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Service Implementation for managing {@link com.mycompany.myapp.domain.CollectionRun}.
@@ -83,7 +87,16 @@ public class CollectionRunService {
     @Transactional(readOnly = true)
     public Optional<CollectionRunDTO> findOne(Long id) {
         LOG.debug("Request to get CollectionRun : {}", id);
-        return collectionRunRepository.findById(id).map(collectionRunMapper::toDto);
+
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+            return collectionRunRepository.findById(id).map(collectionRunMapper::toDto);
+        }
+
+        Long currentUserId = SecurityUtils.getCurrentUserId().orElseThrow(() ->
+            new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Current user id not found")
+        );
+
+        return collectionRunRepository.findOneByIdAndOwnerId(id, currentUserId).map(collectionRunMapper::toDto);
     }
 
     /**

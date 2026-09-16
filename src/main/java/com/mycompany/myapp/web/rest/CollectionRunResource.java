@@ -1,9 +1,12 @@
 package com.mycompany.myapp.web.rest;
 
 import com.mycompany.myapp.repository.CollectionRunRepository;
-import com.mycompany.myapp.service.CollectionJobAsyncService;
+import com.mycompany.myapp.security.AuthoritiesConstants;
+import com.mycompany.myapp.security.SecurityUtils;
 import com.mycompany.myapp.service.CollectionRunQueryService;
 import com.mycompany.myapp.service.CollectionRunService;
+import com.mycompany.myapp.service.ManagerAccessService;
+import com.mycompany.myapp.service.ManagerAccessService;
 import com.mycompany.myapp.service.criteria.CollectionRunCriteria;
 import com.mycompany.myapp.service.dto.CollectionRunDTO;
 import com.mycompany.myapp.web.rest.errors.BadRequestAlertException;
@@ -20,10 +23,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import tech.jhipster.service.filter.LongFilter;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -47,19 +53,18 @@ public class CollectionRunResource {
     private final CollectionRunRepository collectionRunRepository;
 
     private final CollectionRunQueryService collectionRunQueryService;
-
-    private final CollectionJobAsyncService collectionJobAsyncService;
+    private final ManagerAccessService managerAccessService;
 
     public CollectionRunResource(
         CollectionRunService collectionRunService,
         CollectionRunRepository collectionRunRepository,
         CollectionRunQueryService collectionRunQueryService,
-        CollectionJobAsyncService collectionJobAsyncService
+        ManagerAccessService managerAccessService
     ) {
         this.collectionRunService = collectionRunService;
         this.collectionRunRepository = collectionRunRepository;
         this.collectionRunQueryService = collectionRunQueryService;
-        this.collectionJobAsyncService = collectionJobAsyncService;
+        this.managerAccessService = managerAccessService;
     }
 
     /**
@@ -164,12 +169,17 @@ public class CollectionRunResource {
     @GetMapping("")
     public ResponseEntity<List<CollectionRunDTO>> getAllCollectionRuns(
         CollectionRunCriteria criteria,
+        @RequestParam(name = "clientUserId", required = false) Long clientUserId,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
         LOG.debug("REST request to get CollectionRuns by criteria: {}", criteria);
 
+        applyCurrentUserOwnerFilter(criteria, clientUserId);
+
         Page<CollectionRunDTO> page = collectionRunQueryService.findByCriteria(criteria, pageable);
+
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
@@ -180,9 +190,13 @@ public class CollectionRunResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
      */
     @GetMapping("/count")
-    public ResponseEntity<Long> countCollectionRuns(CollectionRunCriteria criteria) {
-        LOG.debug("REST request to count CollectionRuns by criteria: {}", criteria);
-        return ResponseEntity.ok().body(collectionRunQueryService.countByCriteria(criteria));
+    public ResponseEntity<Long> countCollectionRuns(
+        CollectionRunCriteria criteria,
+        @RequestParam(name = "clientUserId", required = false) Long clientUserId
+    ) {
+        applyCurrentUserOwnerFilter(criteria, clientUserId);
+
+        return ResponseEntity.ok(collectionRunQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -214,13 +228,33 @@ public class CollectionRunResource {
             .build();
     }
 
-    @PostMapping("/run")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Void> runCollection() {
-        LOG.debug("REST request to start RSS collection asynchronously");
+    private void applyCurrentUserOwnerFilter(CollectionRunCriteria criteria, Long clientUserId) {
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+            return;
+        }
 
-        collectionJobAsyncService.runAsync();
+        Long ownerId;
 
-        return ResponseEntity.accepted().build();
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.MANAGER)) {
+            if (clientUserId == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "clientUserId is required for manager");
+            }
+
+            if (!managerAccessService.canView(clientUserId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Manager has no access to this client");
+            }
+
+            ownerId = clientUserId;
+        } else {
+            ownerId = SecurityUtils.getCurrentUserId().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Current user id not found")
+            );
+        }
+
+        LongFilter ownerFilter = new LongFilter();
+
+        ownerFilter.setEquals(ownerId);
+
+        criteria.setOwnerId(ownerFilter);
     }
 }

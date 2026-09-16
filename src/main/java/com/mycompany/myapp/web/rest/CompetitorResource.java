@@ -1,8 +1,12 @@
 package com.mycompany.myapp.web.rest;
 
 import com.mycompany.myapp.repository.CompetitorRepository;
+import com.mycompany.myapp.security.AuthoritiesConstants;
+import com.mycompany.myapp.security.SecurityUtils;
 import com.mycompany.myapp.service.CompetitorQueryService;
 import com.mycompany.myapp.service.CompetitorService;
+import com.mycompany.myapp.service.ManagerAccessService;
+import com.mycompany.myapp.service.ManagerAccessService;
 import com.mycompany.myapp.service.criteria.CompetitorCriteria;
 import com.mycompany.myapp.service.dto.CompetitorDTO;
 import com.mycompany.myapp.web.rest.errors.BadRequestAlertException;
@@ -20,9 +24,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import tech.jhipster.service.filter.LongFilter;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -47,14 +51,18 @@ public class CompetitorResource {
 
     private final CompetitorQueryService competitorQueryService;
 
+    private final ManagerAccessService managerAccessService;
+
     public CompetitorResource(
         CompetitorService competitorService,
         CompetitorRepository competitorRepository,
-        CompetitorQueryService competitorQueryService
+        CompetitorQueryService competitorQueryService,
+        ManagerAccessService managerAccessService
     ) {
         this.competitorService = competitorService;
         this.competitorRepository = competitorRepository;
         this.competitorQueryService = competitorQueryService;
+        this.managerAccessService = managerAccessService;
     }
 
     /**
@@ -65,13 +73,18 @@ public class CompetitorResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<CompetitorDTO> createCompetitor(@Valid @RequestBody CompetitorDTO competitorDTO) throws URISyntaxException {
+    public ResponseEntity<CompetitorDTO> createCompetitor(
+        @Valid @RequestBody CompetitorDTO competitorDTO,
+        @RequestParam(name = "clientUserId", required = false) Long clientUserId
+    ) throws URISyntaxException {
         LOG.debug("REST request to save Competitor : {}", competitorDTO);
+
         if (competitorDTO.getId() != null) {
             throw new BadRequestAlertException("A new competitor cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        competitorDTO = competitorService.save(competitorDTO);
+
+        competitorDTO = competitorService.save(competitorDTO, clientUserId);
+
         return ResponseEntity.created(new URI("/api/competitors/" + competitorDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, competitorDTO.getId().toString()))
             .body(competitorDTO);
@@ -88,7 +101,6 @@ public class CompetitorResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<CompetitorDTO> updateCompetitor(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody CompetitorDTO competitorDTO
@@ -99,10 +111,6 @@ public class CompetitorResource {
         }
         if (!Objects.equals(id, competitorDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!competitorRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
         competitorDTO = competitorService.update(competitorDTO);
@@ -123,7 +131,6 @@ public class CompetitorResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<CompetitorDTO> partialUpdateCompetitor(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody CompetitorDTO competitorDTO
@@ -134,10 +141,6 @@ public class CompetitorResource {
         }
         if (!Objects.equals(id, competitorDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!competitorRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
         Optional<CompetitorDTO> result = competitorService.partialUpdate(competitorDTO);
@@ -161,7 +164,7 @@ public class CompetitorResource {
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
         LOG.debug("REST request to get Competitors by criteria: {}", criteria);
-
+        applyCurrentUserOwnerFilter(criteria);
         Page<CompetitorDTO> page = competitorQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -176,6 +179,9 @@ public class CompetitorResource {
     @GetMapping("/count")
     public ResponseEntity<Long> countCompetitors(CompetitorCriteria criteria) {
         LOG.debug("REST request to count Competitors by criteria: {}", criteria);
+
+        applyCurrentUserOwnerFilter(criteria);
+
         return ResponseEntity.ok().body(competitorQueryService.countByCriteria(criteria));
     }
 
@@ -199,12 +205,33 @@ public class CompetitorResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteCompetitor(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Competitor : {}", id);
         competitorService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    private void applyCurrentUserOwnerFilter(CompetitorCriteria criteria) {
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+            return;
+        }
+
+        List<Long> ownerIds = managerAccessService.getViewableClientUserIds();
+
+        LongFilter ownerFilter = new LongFilter();
+
+        if (ownerIds.isEmpty()) {
+            // Guaranteed empty tenant scope.
+            ownerFilter.setEquals(-1L);
+        } else if (ownerIds.size() == 1) {
+            ownerFilter.setEquals(ownerIds.getFirst());
+        } else {
+            ownerFilter.setIn(ownerIds);
+        }
+
+        // Never trust ownerId supplied by HTTP request.
+        criteria.setOwnerId(ownerFilter);
     }
 }
