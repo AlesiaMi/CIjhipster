@@ -29,5 +29,7 @@
     <include file="config/liquibase/changelog/20260622204716_added_entity_constraints_AnalystProfile.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <include file="config/liquibase/changelog/20260830_add_news_item_collected_at_index.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260909090000_add_tenant_ownership.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260913190000_add_manager_access.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>
