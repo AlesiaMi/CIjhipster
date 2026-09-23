@@ -1,4 +1,4 @@
-import { HttpHeaders } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -8,8 +8,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription, combineLatest, filter, tap } from 'rxjs';
-
+import { Subscription, combineLatest, filter, finalize, tap } from 'rxjs';
+import { EntityImportService, ImportError } from 'app/shared/import/import.service';
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { Alert } from 'app/shared/alert/alert';
@@ -64,8 +64,12 @@ export class DataSource implements OnInit {
   protected readonly filterOptions = toSignal(this.filters.filterChanges);
   protected modalService = inject(NgbModal);
   protected readonly managerClientContext = inject(ManagerClientContextService);
+  protected readonly entityImportService = inject(EntityImportService);
 
   readonly canEdit = computed(() => this.managerClientContext.hasPermission('SOURCES_EDIT'));
+  readonly isImporting = signal(false);
+  readonly importErrors = signal<ImportError[]>([]);
+  readonly importSuccess = signal<string | null>(null);
   constructor() {
     effect(() => {
       const headers = this.dataSourceService.dataSourcesResource.headers();
@@ -115,6 +119,42 @@ export class DataSource implements OnInit {
 
   load(): void {
     this.queryBackend();
+  }
+
+  importFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.item(0);
+    input.value = '';
+    if (!file) {
+      return;
+    }
+    this.importErrors.set([]);
+    this.importSuccess.set(null);
+    this.isImporting.set(true);
+
+    this.entityImportService
+      .importFile('data-source', file)
+      .pipe(finalize(() => this.isImporting.set(false)))
+      .subscribe({
+        next: result => {
+          this.importSuccess.set(`Импортировано источников: ${result.imported}`);
+          this.load();
+        },
+
+        error: (error: HttpErrorResponse) => {
+          const importErrors = error.error?.errors;
+          if (Array.isArray(importErrors)) {
+            this.importErrors.set(importErrors as ImportError[]);
+            return;
+          }
+
+          this.importErrors.set([
+            {
+              message: 'Не удалось импортировать файл.',
+            },
+          ]);
+        },
+      });
   }
 
   navigateToWithComponentValues(event: SortState): void {

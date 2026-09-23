@@ -1,0 +1,19 @@
+<!ELEMENT newsItems (newsItem+)>
+
+<!ELEMENT newsItem (
+    externalId?,
+    title,
+    url,
+    originalText?,
+    publishedAt?,
+    dataSourceId,
+    competitorId
+)>
+
+<!ELEMENT externalId (#PCDATA)>
+<!ELEMENT title (#PCDATA)>
+<!ELEMENT url (#PCDATA)>
+<!ELEMENT originalText (#PCDATA)>
+<!ELEMENT publishedAt (#PCDATA)>
+<!ELEMENT dataSourceId (#PCDATA)>
+<!ELEMENT competitorId (#PCDATA)>

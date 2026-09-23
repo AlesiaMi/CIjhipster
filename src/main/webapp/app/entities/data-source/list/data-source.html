@@ -9,6 +9,24 @@
       </button>
 
       @if (canEdit()) {
+        <input
+          #importFileInput
+          type="file"
+          accept=".csv,.json,.xml"
+          class="d-none"
+          data-cy="entityImportFileInput"
+          (change)="importFile($event)"
+        />
+        <button
+          type="button"
+          class="btn btn-secondary me-2"
+          data-cy="entityImportButton"
+          [disabled]="isImporting()"
+          (click)="importFileInput.click()"
+        >
+          <fa-icon icon="database" [animation]="isImporting() ? 'spin' : undefined" />
+          <span> Импорт CSV / JSON / XML </span>
+        </button>
         <button
           id="jh-create-entity"
           data-cy="entityCreateButton"
@@ -26,6 +44,38 @@
 
   <jhi-alert />
 
+  @if (importSuccess()) {
+    <div class="alert alert-success" data-cy="importSuccess">
+      {{ importSuccess() }}
+    </div>
+  }
+
+  @if (importErrors().length > 0) {
+    <div class="alert alert-danger" data-cy="importErrors">
+      <strong> Файл не импортирован. </strong>
+
+      <ul class="mb-0 mt-2">
+        @for (error of importErrors(); track $index) {
+          <li>
+            @if (error.row) {
+              <span>
+                Строка/запись
+                {{ error.row }}:
+              </span>
+            }
+
+            @if (error.field) {
+              <span> {{ error.field }} — </span>
+            }
+
+            <span>
+              {{ error.message }}
+            </span>
+          </li>
+        }
+      </ul>
+    </div>
+  }
   <jhi-filter [filters]="filters" />
 
   @if (dataSources().length === 0) {

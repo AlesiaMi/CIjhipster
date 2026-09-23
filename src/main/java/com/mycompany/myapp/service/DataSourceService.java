@@ -7,7 +7,11 @@ import com.mycompany.myapp.repository.CompetitorRepository;
 import com.mycompany.myapp.repository.DataSourceRepository;
 import com.mycompany.myapp.service.dto.DataSourceDTO;
 import com.mycompany.myapp.service.mapper.DataSourceMapper;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -59,6 +63,30 @@ public class DataSourceService {
         tenantCacheVersionService.invalidateAfterCommit(ownerId);
 
         return dataSourceMapper.toDto(dataSource);
+    }
+
+    public List<DataSourceDTO> saveImported(List<DataSourceDTO> dataSourceDTOs) {
+        LOG.debug("Request to save imported DataSources : {} records", dataSourceDTOs.size());
+
+        List<DataSource> dataSources = new ArrayList<>();
+
+        Set<Long> ownerIds = new LinkedHashSet<>();
+
+        for (DataSourceDTO dataSourceDTO : dataSourceDTOs) {
+            if (dataSourceDTO.getId() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Imported DataSource cannot already have an id");
+            }
+
+            Competitor competitor = resolveWritableCompetitor(dataSourceDTO);
+            DataSource dataSource = dataSourceMapper.toEntity(dataSourceDTO);
+            dataSource.setCompetitor(competitor);
+            dataSources.add(dataSource);
+            ownerIds.add(competitor.getOwner().getId());
+        }
+
+        List<DataSource> savedDataSources = dataSourceRepository.saveAll(dataSources);
+        ownerIds.forEach(tenantCacheVersionService::invalidateAfterCommit);
+        return savedDataSources.stream().map(dataSourceMapper::toDto).toList();
     }
 
     public DataSourceDTO update(DataSourceDTO dataSourceDTO) {

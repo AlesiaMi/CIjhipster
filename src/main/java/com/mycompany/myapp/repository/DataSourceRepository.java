@@ -78,4 +78,14 @@ public interface DataSourceRepository extends JpaRepository<DataSource, Long>, J
         @Param("ownerId") Long ownerId,
         @Param("sourceType") SourceType sourceType
     );
+
+    @Query(
+        """
+        select dataSource
+        from DataSource dataSource
+        join fetch dataSource.competitor competitor
+        where competitor.id in :competitorIds
+        """
+    )
+    List<DataSource> findAllByCompetitorIds(@Param("competitorIds") java.util.Set<Long> competitorIds);
 }

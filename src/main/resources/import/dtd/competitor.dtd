@@ -1,0 +1,15 @@
+<!ELEMENT competitors (competitor+)>
+
+<!ELEMENT competitor (
+    competitorName,
+    websiteUrl?,
+    industry?,
+    description?,
+    isActive
+)>
+
+<!ELEMENT competitorName (#PCDATA)>
+<!ELEMENT websiteUrl (#PCDATA)>
+<!ELEMENT industry (#PCDATA)>
+<!ELEMENT description (#PCDATA)>
+<!ELEMENT isActive (#PCDATA)>

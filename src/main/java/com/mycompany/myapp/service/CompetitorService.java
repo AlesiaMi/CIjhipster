@@ -3,13 +3,14 @@ package com.mycompany.myapp.service;
 import com.mycompany.myapp.domain.Competitor;
 import com.mycompany.myapp.domain.User;
 import com.mycompany.myapp.domain.enumeration.ManagerPermissionType;
-import com.mycompany.myapp.domain.enumeration.ManagerPermissionType;
 import com.mycompany.myapp.repository.CompetitorRepository;
 import com.mycompany.myapp.repository.UserRepository;
 import com.mycompany.myapp.security.AuthoritiesConstants;
 import com.mycompany.myapp.security.SecurityUtils;
 import com.mycompany.myapp.service.dto.CompetitorDTO;
 import com.mycompany.myapp.service.mapper.CompetitorMapper;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,76 +52,74 @@ public class CompetitorService {
      */
     public CompetitorDTO save(CompetitorDTO competitorDTO, Long requestedOwnerId) {
         LOG.debug("Request to save Competitor : {} for owner {}", competitorDTO, requestedOwnerId);
-
         Long ownerId = resolveCreateOwnerId(requestedOwnerId);
-
         User owner = userRepository
             .findById(ownerId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Owner user not found"));
-
         Competitor competitor = competitorMapper.toEntity(competitorDTO);
-
         // Owner is controlled only by backend.
         competitor.setOwner(owner);
-
         competitor = competitorRepository.save(competitor);
-
         tenantCacheVersionService.invalidateAfterCommit(ownerId);
-
         return competitorMapper.toDto(competitor);
+    }
+
+    public List<CompetitorDTO> saveImported(List<CompetitorDTO> competitorDTOs, Long requestedOwnerId) {
+        LOG.debug("Request to save imported Competitors : {} records for owner {}", competitorDTOs.size(), requestedOwnerId);
+        Long ownerId = resolveCreateOwnerId(requestedOwnerId);
+        User owner = userRepository
+            .findById(ownerId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Owner user not found"));
+        List<Competitor> competitors = new ArrayList<>();
+        for (CompetitorDTO competitorDTO : competitorDTOs) {
+            if (competitorDTO.getId() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Imported Competitor cannot already have an id");
+            }
+            Competitor competitor = competitorMapper.toEntity(competitorDTO);
+            competitor.setOwner(owner);
+            competitors.add(competitor);
+        }
+
+        List<Competitor> savedCompetitors = competitorRepository.saveAll(competitors);
+        tenantCacheVersionService.invalidateAfterCommit(ownerId);
+        return savedCompetitors.stream().map(competitorMapper::toDto).toList();
     }
 
     public CompetitorDTO update(CompetitorDTO competitorDTO) {
         LOG.debug("Request to update Competitor : {}", competitorDTO);
-
         Long id = competitorDTO.getId();
-
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Competitor id is required");
         }
-
         Competitor existingCompetitor = findWritableEntity(id);
-
         Long ownerId = existingCompetitor.getOwner().getId();
-
         existingCompetitor.setCompetitorName(competitorDTO.getCompetitorName());
         existingCompetitor.setWebsiteUrl(competitorDTO.getWebsiteUrl());
         existingCompetitor.setIndustry(competitorDTO.getIndustry());
         existingCompetitor.setDescription(competitorDTO.getDescription());
         existingCompetitor.setIsActive(competitorDTO.getIsActive());
-
         existingCompetitor = competitorRepository.save(existingCompetitor);
-
         tenantCacheVersionService.invalidateAfterCommit(ownerId);
-
         return competitorMapper.toDto(existingCompetitor);
     }
 
     public Optional<CompetitorDTO> partialUpdate(CompetitorDTO competitorDTO) {
         LOG.debug("Request to partially update Competitor : {}", competitorDTO);
-
         Long id = competitorDTO.getId();
-
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Competitor id is required");
         }
-
         Competitor existingCompetitor = findWritableEntity(id);
-
         Long ownerId = existingCompetitor.getOwner().getId();
-
         if (competitorDTO.getCompetitorName() != null) {
             existingCompetitor.setCompetitorName(competitorDTO.getCompetitorName());
         }
-
         if (competitorDTO.getWebsiteUrl() != null) {
             existingCompetitor.setWebsiteUrl(competitorDTO.getWebsiteUrl());
         }
-
         if (competitorDTO.getIndustry() != null) {
             existingCompetitor.setIndustry(competitorDTO.getIndustry());
         }
-
         if (competitorDTO.getDescription() != null) {
             existingCompetitor.setDescription(competitorDTO.getDescription());
         }

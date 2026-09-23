@@ -1,0 +1,15 @@
+<!ELEMENT dataSources (dataSource+)>
+
+<!ELEMENT dataSource (
+    sourceName,
+    url,
+    sourceType,
+    isActive,
+    competitorId
+)>
+
+<!ELEMENT sourceName (#PCDATA)>
+<!ELEMENT url (#PCDATA)>
+<!ELEMENT sourceType (#PCDATA)>
+<!ELEMENT isActive (#PCDATA)>
+<!ELEMENT competitorId (#PCDATA)>

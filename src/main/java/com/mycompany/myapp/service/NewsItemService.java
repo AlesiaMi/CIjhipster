@@ -13,9 +13,12 @@ import com.mycompany.myapp.security.AuthoritiesConstants;
 import com.mycompany.myapp.security.SecurityUtils;
 import com.mycompany.myapp.service.dto.NewsItemDTO;
 import com.mycompany.myapp.service.mapper.NewsItemMapper;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
@@ -72,6 +75,31 @@ public class NewsItemService {
         newsItem = newsItemRepository.save(newsItem);
         tenantCacheVersionService.invalidateAfterCommit(relations.ownerId());
         return newsItemMapper.toDto(newsItem);
+    }
+
+    public List<NewsItemDTO> saveImported(List<NewsItemDTO> newsItemDTOs) {
+        LOG.debug("Request to save imported NewsItems : {} records", newsItemDTOs.size());
+
+        List<NewsItem> newsItems = new ArrayList<>();
+        Set<Long> ownerIds = new LinkedHashSet<>();
+
+        for (NewsItemDTO newsItemDTO : newsItemDTOs) {
+            if (newsItemDTO.getId() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Imported NewsItem cannot already have an id");
+            }
+
+            ResolvedRelations relations = resolveRelations(newsItemDTO);
+            NewsItem newsItem = newsItemMapper.toEntity(newsItemDTO);
+
+            newsItem.setDataSource(relations.dataSource());
+            newsItem.setCompetitor(relations.competitor());
+            newsItem.setCollectionRun(null);
+            newsItems.add(newsItem);
+            ownerIds.add(relations.ownerId());
+        }
+        List<NewsItem> savedNewsItems = newsItemRepository.saveAll(newsItems);
+        ownerIds.forEach(tenantCacheVersionService::invalidateAfterCommit);
+        return savedNewsItems.stream().map(newsItemMapper::toDto).toList();
     }
 
     public NewsItemDTO update(NewsItemDTO newsItemDTO) {
