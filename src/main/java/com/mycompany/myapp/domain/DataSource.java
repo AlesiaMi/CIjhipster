@@ -1,6 +1,7 @@
 package com.mycompany.myapp.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.mycompany.myapp.domain.annotation.Importable;
 import com.mycompany.myapp.domain.enumeration.SourceType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -8,9 +9,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 
-/**
- * A DataSource.
- */
 @Entity
 @Table(name = "data_source")
 @SuppressWarnings("common-java:DuplicatedBlocks")
@@ -25,21 +23,25 @@ public class DataSource implements Serializable {
     @Column(name = "id")
     private Long id;
 
+    @Importable
     @NotNull
     @Size(max = 255)
     @Column(name = "source_name", length = 255, nullable = false)
     private String sourceName;
 
+    @Importable
     @NotNull
     @Size(max = 1000)
     @Column(name = "url", length = 1000, nullable = false)
     private String url;
 
+    @Importable
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "source_type", nullable = false)
     private SourceType sourceType;
 
+    @Importable
     @NotNull
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
@@ -51,6 +53,7 @@ public class DataSource implements Serializable {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    @Importable(name = "competitorId")
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "analystProfileses" }, allowSetters = true)

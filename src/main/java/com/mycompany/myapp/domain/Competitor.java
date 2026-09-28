@@ -1,6 +1,7 @@
 package com.mycompany.myapp.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.mycompany.myapp.domain.annotation.Importable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serial;
@@ -22,23 +23,28 @@ public class Competitor implements Serializable {
     @Column(name = "id")
     private Long id;
 
+    @Importable
     @NotNull
     @Size(max = 255)
     @Column(name = "competitor_name", length = 255, nullable = false)
     private String competitorName;
 
+    @Importable
     @Size(max = 500)
     @Column(name = "website_url", length = 500)
     private String websiteUrl;
 
+    @Importable
     @Size(max = 255)
     @Column(name = "industry", length = 255)
     private String industry;
 
+    @Importable
     @Size(max = 2000)
     @Column(name = "description", length = 2000)
     private String description;
 
+    @Importable
     @NotNull
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;

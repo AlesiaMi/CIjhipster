@@ -1,6 +1,7 @@
 package com.mycompany.myapp.service.importer.handler;
 
 import com.mycompany.myapp.domain.Competitor;
+import com.mycompany.myapp.domain.DataSource;
 import com.mycompany.myapp.domain.enumeration.ManagerPermissionType;
 import com.mycompany.myapp.domain.enumeration.SourceType;
 import com.mycompany.myapp.repository.CompetitorRepository;
@@ -11,20 +12,26 @@ import com.mycompany.myapp.service.DataSourceService;
 import com.mycompany.myapp.service.ManagerAccessService;
 import com.mycompany.myapp.service.dto.CompetitorDTO;
 import com.mycompany.myapp.service.dto.DataSourceDTO;
-import com.mycompany.myapp.service.importer.model.*;
-import java.net.URI;
-import java.net.URISyntaxException;
+import com.mycompany.myapp.service.importer.model.ImportContext;
+import com.mycompany.myapp.service.importer.model.ImportError;
+import com.mycompany.myapp.service.importer.model.ImportRecord;
+import com.mycompany.myapp.service.importer.model.XmlImportDefinition;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DataSourceImportHandler implements EntityImportHandler {
+public class DataSourceImportHandler extends AbstractEntityImportHandler<DataSource, DataSourceDTO> {
 
     private static final String ENTITY_TYPE = "data-source";
-    private static final Set<String> SUPPORTED_FIELDS = Set.of("sourceName", "url", "sourceType", "isActive", "competitorId");
     private static final XmlImportDefinition XML_DEFINITION = new XmlImportDefinition(
         "dataSources",
         "dataSource",
@@ -42,6 +49,7 @@ public class DataSourceImportHandler implements EntityImportHandler {
         DataSourceService dataSourceService,
         ManagerAccessService managerAccessService
     ) {
+        super(ENTITY_TYPE, XML_DEFINITION);
         this.competitorRepository = competitorRepository;
         this.dataSourceRepository = dataSourceRepository;
         this.dataSourceService = dataSourceService;
@@ -49,17 +57,12 @@ public class DataSourceImportHandler implements EntityImportHandler {
     }
 
     @Override
-    public String entityType() {
-        return ENTITY_TYPE;
+    protected Class<DataSource> getDomainClass() {
+        return DataSource.class;
     }
 
     @Override
-    public XmlImportDefinition xmlDefinition() {
-        return XML_DEFINITION;
-    }
-
-    @Override
-    public List<ImportError> validate(List<ImportRecord> records, ImportContext context) {
+    protected List<ImportError> validateBusinessRules(List<ImportRecord> records, ImportContext context) {
         List<ImportError> errors = new ArrayList<>();
         if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.MANAGER) && context.clientUserId() == null) {
             return List.of(new ImportError(null, "clientUserId", "clientUserId is required for manager import"));
@@ -68,21 +71,17 @@ public class DataSourceImportHandler implements EntityImportHandler {
         Map<Integer, Long> competitorIdByRow = new HashMap<>();
         Map<Integer, String> urlByRow = new HashMap<>();
         for (ImportRecord record : records) {
-            validateFieldNames(record, errors);
-            validateRequiredFields(record, errors);
-            validateSourceName(record, errors);
-            String url = validateUrl(record, errors);
-            if (url != null) {
-                urlByRow.put(record.rowNumber(), url);
-            }
-            validateSourceType(record, errors);
-            validateBoolean(record, "isActive", errors);
-            Long competitorId = validateCompetitorId(record, errors);
-            if (competitorId != null) {
+            Long competitorId = longValue(record, "competitorId");
+            if (competitorId != null && competitorId > 0) {
                 competitorIds.add(competitorId);
                 competitorIdByRow.put(record.rowNumber(), competitorId);
             }
+            String url = stringValue(record, "url");
+            if (url != null && validateHttpUrl(record, "url", errors)) {
+                urlByRow.put(record.rowNumber(), url);
+            }
         }
+
         Map<Long, Competitor> competitors = competitorRepository
             .findAllById(competitorIds)
             .stream()
@@ -101,6 +100,7 @@ public class DataSourceImportHandler implements EntityImportHandler {
             if (competitorId == null) {
                 continue;
             }
+
             Competitor competitor = competitors.get(competitorId);
             if (competitor == null) {
                 errors.add(new ImportError(record.rowNumber(), "competitorId", "Competitor " + competitorId + " not found"));
@@ -113,7 +113,6 @@ public class DataSourceImportHandler implements EntityImportHandler {
             }
 
             Long ownerId = competitor.getOwner().getId();
-
             if (!canImportForOwner(ownerId, context)) {
                 errors.add(
                     new ImportError(
@@ -139,139 +138,39 @@ public class DataSourceImportHandler implements EntityImportHandler {
                 );
             }
         }
-
         return List.copyOf(errors);
-    }
-
-    @Override
-    public int importRecords(List<ImportRecord> records, ImportContext context) {
-        Instant createdAt = Instant.now();
-        List<DataSourceDTO> dataSources = records
-            .stream()
-            .map(record -> toDataSourceDto(record, createdAt))
-            .toList();
-
-        return dataSourceService.saveImported(dataSources).size();
-    }
-
-    private void validateFieldNames(ImportRecord record, List<ImportError> errors) {
-        for (String field : record.values().keySet()) {
-            if (!SUPPORTED_FIELDS.contains(field)) {
-                errors.add(new ImportError(record.rowNumber(), field, "Unknown import field"));
-            }
-        }
-    }
-
-    private void validateRequiredFields(ImportRecord record, List<ImportError> errors) {
-        for (String field : SUPPORTED_FIELDS) {
-            String value = record.values().get(field);
-            if (value == null || value.isBlank()) {
-                errors.add(new ImportError(record.rowNumber(), field, "Field is required"));
-            }
-        }
-    }
-
-    private void validateSourceName(ImportRecord record, List<ImportError> errors) {
-        String value = trimmed(record, "sourceName");
-        if (value != null && !value.isEmpty() && value.length() > 255) {
-            errors.add(new ImportError(record.rowNumber(), "sourceName", "Maximum length is 255 characters"));
-        }
-    }
-
-    private String validateUrl(ImportRecord record, List<ImportError> errors) {
-        String value = trimmed(record, "url");
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-        if (value.length() > 1000) {
-            errors.add(new ImportError(record.rowNumber(), "url", "Maximum length is 1000 characters"));
-            return null;
-        }
-
-        try {
-            URI uri = new URI(value);
-            String scheme = uri.getScheme();
-            if (scheme == null || !(scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) || uri.getHost() == null) {
-                throw new URISyntaxException(value, "HTTP or HTTPS URL with host is required");
-            }
-        } catch (URISyntaxException exception) {
-            errors.add(new ImportError(record.rowNumber(), "url", "Invalid HTTP/HTTPS URL"));
-            return null;
-        }
-        return value;
-    }
-
-    private void validateSourceType(ImportRecord record, List<ImportError> errors) {
-        String value = trimmed(record, "sourceType");
-        if (value == null || value.isEmpty()) {
-            return;
-        }
-
-        try {
-            SourceType.valueOf(value.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException exception) {
-            errors.add(new ImportError(record.rowNumber(), "sourceType", "Allowed values: RSS, WEBSITE, API"));
-        }
-    }
-
-    private void validateBoolean(ImportRecord record, String field, List<ImportError> errors) {
-        String value = trimmed(record, field);
-        if (value == null || value.isEmpty()) {
-            return;
-        }
-
-        if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
-            errors.add(new ImportError(record.rowNumber(), field, "Allowed values: true, false"));
-        }
-    }
-
-    private Long validateCompetitorId(ImportRecord record, List<ImportError> errors) {
-        String value = trimmed(record, "competitorId");
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-
-        try {
-            long competitorId = Long.parseLong(value);
-            if (competitorId <= 0) {
-                throw new NumberFormatException();
-            }
-            return competitorId;
-        } catch (NumberFormatException exception) {
-            errors.add(new ImportError(record.rowNumber(), "competitorId", "competitorId must be a positive integer"));
-            return null;
-        }
     }
 
     private boolean canImportForOwner(Long ownerId, ImportContext context) {
         if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
-            return (context.clientUserId() == null || ownerId.equals(context.clientUserId()));
+            return context.clientUserId() == null || ownerId.equals(context.clientUserId());
         }
         if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.MANAGER)) {
             return (
                 ownerId.equals(context.clientUserId()) && managerAccessService.hasPermission(ownerId, ManagerPermissionType.SOURCES_EDIT)
             );
         }
-        return managerAccessService.hasPermission(ownerId, ManagerPermissionType.SOURCES_EDIT);
+        return SecurityUtils.getCurrentUserId().filter(ownerId::equals).isPresent();
     }
 
-    private DataSourceDTO toDataSourceDto(ImportRecord record, Instant createdAt) {
+    @Override
+    protected DataSourceDTO mapRecord(ImportRecord record, Instant batchTimestamp) {
         DataSourceDTO dto = new DataSourceDTO();
-        dto.setSourceName(trimmed(record, "sourceName"));
-        dto.setUrl(trimmed(record, "url"));
-        dto.setSourceType(SourceType.valueOf(trimmed(record, "sourceType").toUpperCase(Locale.ROOT)));
-        dto.setIsActive(Boolean.valueOf(trimmed(record, "isActive")));
-        dto.setCreatedAt(createdAt);
+        dto.setSourceName(stringValue(record, "sourceName"));
+        dto.setUrl(stringValue(record, "url"));
+        dto.setSourceType(enumValue(record, "sourceType", SourceType.class));
+        dto.setIsActive(booleanValue(record, "isActive"));
+        dto.setCreatedAt(batchTimestamp);
         dto.setLastCheckedAt(null);
         CompetitorDTO competitor = new CompetitorDTO();
-        competitor.setId(Long.valueOf(trimmed(record, "competitorId")));
+        competitor.setId(longValue(record, "competitorId"));
         dto.setCompetitor(competitor);
         return dto;
     }
 
-    private String trimmed(ImportRecord record, String field) {
-        String value = record.values().get(field);
-        return value == null ? null : value.trim();
+    @Override
+    protected int saveAll(List<DataSourceDTO> records, ImportContext context) {
+        return dataSourceService.saveImported(records).size();
     }
 
     private String duplicateKey(Long competitorId, String url) {

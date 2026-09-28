@@ -1,15 +1,13 @@
 package com.mycompany.myapp.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.mycompany.myapp.domain.annotation.Importable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 
-/**
- * A NewsItem.
- */
 @Entity
 @Table(name = "news_item")
 @SuppressWarnings("common-java:DuplicatedBlocks")
@@ -24,24 +22,29 @@ public class NewsItem implements Serializable {
     @Column(name = "id")
     private Long id;
 
+    @Importable
     @Size(max = 255)
     @Column(name = "external_id", length = 255)
     private String externalId;
 
+    @Importable
     @NotNull
     @Size(max = 500)
     @Column(name = "title", length = 500, nullable = false)
     private String title;
 
+    @Importable
     @NotNull
     @Size(max = 1000)
     @Column(name = "url", length = 1000, nullable = false)
     private String url;
 
+    @Importable
     @Size(max = 10000)
     @Column(name = "original_text", length = 10000)
     private String originalText;
 
+    @Importable
     @Column(name = "published_at")
     private Instant publishedAt;
 
@@ -53,11 +56,13 @@ public class NewsItem implements Serializable {
     @Column(name = "is_duplicate", nullable = false)
     private Boolean isDuplicate;
 
+    @Importable(name = "dataSourceId")
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "competitor" }, allowSetters = true)
     private DataSource dataSource;
 
+    @Importable(name = "competitorId")
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "analystProfileses" }, allowSetters = true)
