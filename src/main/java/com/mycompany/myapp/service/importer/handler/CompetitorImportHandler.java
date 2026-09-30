@@ -13,10 +13,8 @@ import com.mycompany.myapp.service.importer.model.ImportError;
 import com.mycompany.myapp.service.importer.model.ImportRecord;
 import com.mycompany.myapp.service.importer.model.XmlImportDefinition;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
@@ -51,41 +49,48 @@ public class CompetitorImportHandler extends AbstractEntityImportHandler<Competi
     }
 
     @Override
-    protected List<ImportError> validateBusinessRules(List<ImportRecord> records, ImportContext context) {
-        List<ImportError> errors = new ArrayList<>();
+    protected void validateSpecificBusinessRules(List<ImportRecord> records, ImportContext context, List<ImportError> errors) {
         Long ownerId = resolveOwnerId(context, errors);
         if (ownerId == null) {
-            return List.copyOf(errors);
+            return;
         }
         Set<String> existingNames = new HashSet<>();
         for (Competitor competitor : competitorRepository.findAllByOwnerId(ownerId)) {
             if (competitor.getCompetitorName() != null) {
-                existingNames.add(normalizeName(competitor.getCompetitorName()));
+                existingNames.add(normalizeKey(competitor.getCompetitorName()));
             }
         }
 
         Set<String> namesInFile = new HashSet<>();
+
         for (ImportRecord record : records) {
             String competitorName = stringValue(record, "competitorName");
             if (competitorName == null) {
                 continue;
             }
-            String normalizedName = normalizeName(competitorName);
-            if (!namesInFile.add(normalizedName)) {
-                errors.add(new ImportError(record.rowNumber(), "competitorName", "Duplicate competitor in import file"));
+            String normalizedName = normalizeKey(competitorName);
+            boolean uniqueInFile = addUniqueKey(
+                namesInFile,
+                normalizedName,
+                record,
+                "competitorName",
+                "Duplicate competitor in import file",
+                errors
+            );
+            if (!uniqueInFile) {
                 continue;
             }
+
             if (existingNames.contains(normalizedName)) {
                 errors.add(
                     new ImportError(record.rowNumber(), "competitorName", "Competitor with this name already exists for this owner")
                 );
             }
         }
-        return List.copyOf(errors);
     }
 
     @Override
-    protected CompetitorDTO mapRecord(ImportRecord record, Instant batchTimestamp) {
+    protected CompetitorDTO mapSpecificRecord(ImportRecord record, Instant batchTimestamp) {
         CompetitorDTO dto = new CompetitorDTO();
         dto.setCompetitorName(stringValue(record, "competitorName"));
         dto.setWebsiteUrl(stringValue(record, "websiteUrl"));
@@ -96,8 +101,8 @@ public class CompetitorImportHandler extends AbstractEntityImportHandler<Competi
     }
 
     @Override
-    protected int saveAll(List<CompetitorDTO> records, ImportContext context) {
-        return competitorService.saveImported(records, context.clientUserId()).size();
+    protected List<CompetitorDTO> saveSpecificRecords(List<CompetitorDTO> records, ImportContext context) {
+        return competitorService.saveImported(records, context.clientUserId());
     }
 
     private Long resolveOwnerId(ImportContext context, List<ImportError> errors) {
@@ -127,9 +132,5 @@ public class CompetitorImportHandler extends AbstractEntityImportHandler<Competi
         }
         errors.add(new ImportError(null, "clientUserId", "COMPETITORS_EDIT permission is required"));
         return null;
-    }
-
-    private String normalizeName(String value) {
-        return value.trim().toLowerCase(Locale.ROOT);
     }
 }

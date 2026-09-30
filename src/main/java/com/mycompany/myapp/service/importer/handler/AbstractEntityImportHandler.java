@@ -20,21 +20,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class AbstractEntityImportHandler<DOMAIN, DTO> implements EntityImportHandler {
 
-    protected abstract Class<DOMAIN> getDomainClass();
-
-    protected abstract DTO mapRecord(ImportRecord record, Instant batchTimestamp);
-
-    protected abstract int saveAll(List<DTO> records, ImportContext context);
-
-    protected abstract List<ImportError> validateBusinessRules(List<ImportRecord> records, ImportContext context);
-
     private final String entityType;
     private final XmlImportDefinition xmlDefinition;
+
+    protected abstract Class<DOMAIN> getDomainClass();
+
+    protected abstract void validateSpecificBusinessRules(List<ImportRecord> records, ImportContext context, List<ImportError> errors);
+
+    protected abstract DTO mapSpecificRecord(ImportRecord record, Instant batchTimestamp);
+
+    protected abstract List<DTO> saveSpecificRecords(List<DTO> records, ImportContext context);
 
     protected AbstractEntityImportHandler(String entityType, XmlImportDefinition xmlDefinition) {
         this.entityType = entityType;
@@ -70,6 +72,20 @@ public abstract class AbstractEntityImportHandler<DOMAIN, DTO> implements Entity
         return List.copyOf(errors);
     }
 
+    protected final List<ImportError> validateBusinessRules(List<ImportRecord> records, ImportContext context) {
+        List<ImportError> errors = new ArrayList<>();
+        validateSpecificBusinessRules(records, context, errors);
+        return List.copyOf(errors);
+    }
+
+    protected final DTO mapRecord(ImportRecord record, Instant batchTimestamp) {
+        return mapSpecificRecord(record, batchTimestamp);
+    }
+
+    protected final int saveAll(List<DTO> records, ImportContext context) {
+        return saveSpecificRecords(records, context).size();
+    }
+
     protected final boolean validateHttpUrl(ImportRecord record, String field, List<ImportError> errors) {
         String value = stringValue(record, field);
         if (value == null) {
@@ -87,6 +103,28 @@ public abstract class AbstractEntityImportHandler<DOMAIN, DTO> implements Entity
             errors.add(new ImportError(record.rowNumber(), field, "Invalid HTTP/HTTPS URL"));
             return false;
         }
+    }
+
+    protected final String normalizeKey(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    protected final boolean addUniqueKey(
+        Set<String> keys,
+        String key,
+        ImportRecord record,
+        String field,
+        String message,
+        List<ImportError> errors
+    ) {
+        if (keys.add(key)) {
+            return true;
+        }
+        errors.add(new ImportError(record.rowNumber(), field, message));
+        return false;
     }
 
     protected final String stringValue(ImportRecord record, String field) {

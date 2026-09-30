@@ -44,15 +44,7 @@ public class JsonImportParser implements ImportParser {
                     throw new ImportParseException(rowNumber, "Each JSON array item must be an object");
                 }
                 Map<String, String> values = new LinkedHashMap<>();
-                Iterator<Map.Entry<String, JsonNode>> fields = item.fields();
-                while (fields.hasNext()) {
-                    Map.Entry<String, JsonNode> field = fields.next();
-                    JsonNode value = field.getValue();
-                    if (value != null && (value.isObject() || value.isArray())) {
-                        throw new ImportParseException(rowNumber, "Nested JSON values are not supported: " + field.getKey());
-                    }
-                    values.put(field.getKey(), value == null || value.isNull() ? null : value.asText());
-                }
+                flattenObject(item, "", values, rowNumber);
                 records.add(new ImportRecord(rowNumber, values));
                 rowNumber++;
             }
@@ -63,6 +55,29 @@ public class JsonImportParser implements ImportParser {
             throw new ImportParseException("Invalid JSON: " + exception.getOriginalMessage(), exception);
         } catch (IOException exception) {
             throw new ImportParseException("Unable to read JSON file", exception);
+        }
+    }
+
+    private void flattenObject(JsonNode object, String prefix, Map<String, String> values, int rowNumber) {
+        Iterator<Map.Entry<String, JsonNode>> fields = object.fields();
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> field = fields.next();
+            String path = prefix.isEmpty() ? field.getKey() : prefix + "." + field.getKey();
+            JsonNode value = field.getValue();
+            if (value == null || value.isNull()) {
+                values.put(path, null);
+                continue;
+            }
+
+            if (value.isObject()) {
+                flattenObject(value, path, values, rowNumber);
+                continue;
+            }
+
+            if (value.isArray()) {
+                throw new ImportParseException(rowNumber, "JSON arrays are not supported: " + path);
+            }
+            values.put(path, value.asText());
         }
     }
 }

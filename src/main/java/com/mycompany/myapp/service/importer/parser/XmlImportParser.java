@@ -72,10 +72,7 @@ public class XmlImportParser implements ImportParser {
                         continue;
                     }
                     Element fieldElement = (Element) fieldNode;
-                    if (values.containsKey(fieldElement.getTagName())) {
-                        throw new ImportParseException(rowNumber, "Duplicate XML field: " + fieldElement.getTagName());
-                    }
-                    values.put(fieldElement.getTagName(), fieldElement.getTextContent());
+                    flattenElement(fieldElement, fieldElement.getTagName(), values, rowNumber);
                 }
                 records.add(new ImportRecord(rowNumber, values));
                 rowNumber++;
@@ -87,6 +84,29 @@ public class XmlImportParser implements ImportParser {
             throw new ImportParseException(exception.getLineNumber(), "XML/DTD validation error: " + exception.getMessage(), exception);
         } catch (ParserConfigurationException | SAXException | IOException exception) {
             throw new ImportParseException("Unable to parse XML: " + exception.getMessage(), exception);
+        }
+    }
+
+    private void flattenElement(Element element, String path, Map<String, String> values, int rowNumber) {
+        NodeList children = element.getChildNodes();
+
+        boolean hasElementChildren = false;
+
+        for (int index = 0; index < children.getLength(); index++) {
+            Node child = children.item(index);
+            if (child.getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            }
+            hasElementChildren = true;
+            Element childElement = (Element) child;
+            String childPath = path + "." + childElement.getTagName();
+            flattenElement(childElement, childPath, values, rowNumber);
+        }
+        if (!hasElementChildren) {
+            if (values.containsKey(path)) {
+                throw new ImportParseException(rowNumber, "Duplicate XML field: " + path);
+            }
+            values.put(path, element.getTextContent());
         }
     }
 

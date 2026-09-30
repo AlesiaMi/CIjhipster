@@ -53,7 +53,7 @@ public class DataSource implements Serializable {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    @Importable(name = "competitorId")
+    @Importable(name = "competitor.id")
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "analystProfileses" }, allowSetters = true)

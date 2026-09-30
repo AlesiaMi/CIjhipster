@@ -17,7 +17,6 @@ import com.mycompany.myapp.service.importer.model.ImportError;
 import com.mycompany.myapp.service.importer.model.ImportRecord;
 import com.mycompany.myapp.service.importer.model.XmlImportDefinition;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -62,16 +61,16 @@ public class DataSourceImportHandler extends AbstractEntityImportHandler<DataSou
     }
 
     @Override
-    protected List<ImportError> validateBusinessRules(List<ImportRecord> records, ImportContext context) {
-        List<ImportError> errors = new ArrayList<>();
+    protected void validateSpecificBusinessRules(List<ImportRecord> records, ImportContext context, List<ImportError> errors) {
         if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.MANAGER) && context.clientUserId() == null) {
-            return List.of(new ImportError(null, "clientUserId", "clientUserId is required for manager import"));
+            errors.add(new ImportError(null, "clientUserId", "clientUserId is required for manager import"));
+            return;
         }
         Set<Long> competitorIds = new LinkedHashSet<>();
         Map<Integer, Long> competitorIdByRow = new HashMap<>();
         Map<Integer, String> urlByRow = new HashMap<>();
         for (ImportRecord record : records) {
-            Long competitorId = longValue(record, "competitorId");
+            Long competitorId = longValue(record, "competitor.id");
             if (competitorId != null && competitorId > 0) {
                 competitorIds.add(competitorId);
                 competitorIdByRow.put(record.rowNumber(), competitorId);
@@ -97,27 +96,30 @@ public class DataSourceImportHandler extends AbstractEntityImportHandler<DataSou
         for (ImportRecord record : records) {
             Long competitorId = competitorIdByRow.get(record.rowNumber());
             String url = urlByRow.get(record.rowNumber());
+
             if (competitorId == null) {
                 continue;
             }
 
             Competitor competitor = competitors.get(competitorId);
+
             if (competitor == null) {
-                errors.add(new ImportError(record.rowNumber(), "competitorId", "Competitor " + competitorId + " not found"));
+                errors.add(new ImportError(record.rowNumber(), "competitor.id", "Competitor " + competitorId + " not found"));
                 continue;
             }
 
             if (competitor.getOwner() == null || competitor.getOwner().getId() == null) {
-                errors.add(new ImportError(record.rowNumber(), "competitorId", "Competitor has no owner"));
+                errors.add(new ImportError(record.rowNumber(), "competitor.id", "Competitor has no owner"));
                 continue;
             }
 
             Long ownerId = competitor.getOwner().getId();
+
             if (!canImportForOwner(ownerId, context)) {
                 errors.add(
                     new ImportError(
                         record.rowNumber(),
-                        "competitorId",
+                        "competitor.id",
                         "Current user has no SOURCES_EDIT access to competitor " + competitorId
                     )
                 );
@@ -126,19 +128,21 @@ public class DataSourceImportHandler extends AbstractEntityImportHandler<DataSou
             if (url == null) {
                 continue;
             }
-
             String key = duplicateKey(competitorId, url);
-            if (!fileKeys.add(key)) {
-                errors.add(
-                    new ImportError(record.rowNumber(), "url", "Duplicate data source in import file for competitor " + competitorId)
-                );
-            } else if (existingKeys.contains(key)) {
+            boolean uniqueInFile = addUniqueKey(
+                fileKeys,
+                key,
+                record,
+                "url",
+                "Duplicate data source in import file for competitor " + competitorId,
+                errors
+            );
+            if (uniqueInFile && existingKeys.contains(key)) {
                 errors.add(
                     new ImportError(record.rowNumber(), "url", "Data source with this URL already exists for competitor " + competitorId)
                 );
             }
         }
-        return List.copyOf(errors);
     }
 
     private boolean canImportForOwner(Long ownerId, ImportContext context) {
@@ -154,7 +158,7 @@ public class DataSourceImportHandler extends AbstractEntityImportHandler<DataSou
     }
 
     @Override
-    protected DataSourceDTO mapRecord(ImportRecord record, Instant batchTimestamp) {
+    protected DataSourceDTO mapSpecificRecord(ImportRecord record, Instant batchTimestamp) {
         DataSourceDTO dto = new DataSourceDTO();
         dto.setSourceName(stringValue(record, "sourceName"));
         dto.setUrl(stringValue(record, "url"));
@@ -163,14 +167,14 @@ public class DataSourceImportHandler extends AbstractEntityImportHandler<DataSou
         dto.setCreatedAt(batchTimestamp);
         dto.setLastCheckedAt(null);
         CompetitorDTO competitor = new CompetitorDTO();
-        competitor.setId(longValue(record, "competitorId"));
+        competitor.setId(longValue(record, "competitor.id"));
         dto.setCompetitor(competitor);
         return dto;
     }
 
     @Override
-    protected int saveAll(List<DataSourceDTO> records, ImportContext context) {
-        return dataSourceService.saveImported(records).size();
+    protected List<DataSourceDTO> saveSpecificRecords(List<DataSourceDTO> records, ImportContext context) {
+        return dataSourceService.saveImported(records);
     }
 
     private String duplicateKey(Long competitorId, String url) {

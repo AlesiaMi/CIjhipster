@@ -6,8 +6,8 @@
     url,
     originalText?,
     publishedAt?,
-    dataSourceId,
-    competitorId
+    dataSource,
+    competitor
 )>
 
 <!ELEMENT externalId (#PCDATA)>
@@ -15,5 +15,6 @@
 <!ELEMENT url (#PCDATA)>
 <!ELEMENT originalText (#PCDATA)>
 <!ELEMENT publishedAt (#PCDATA)>
-<!ELEMENT dataSourceId (#PCDATA)>
-<!ELEMENT competitorId (#PCDATA)>
+<!ELEMENT dataSource (id)>
+<!ELEMENT competitor (id)>
+<!ELEMENT id (#PCDATA)>

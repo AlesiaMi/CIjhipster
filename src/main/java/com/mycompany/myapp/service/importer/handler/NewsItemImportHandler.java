@@ -17,10 +17,8 @@ import com.mycompany.myapp.service.importer.model.ImportError;
 import com.mycompany.myapp.service.importer.model.ImportRecord;
 import com.mycompany.myapp.service.importer.model.XmlImportDefinition;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
@@ -58,42 +56,39 @@ public class NewsItemImportHandler extends AbstractEntityImportHandler<NewsItem,
     }
 
     @Override
-    protected List<ImportError> validateBusinessRules(List<ImportRecord> records, ImportContext context) {
-        List<ImportError> errors = new ArrayList<>();
+    protected void validateSpecificBusinessRules(List<ImportRecord> records, ImportContext context, List<ImportError> errors) {
         if (!SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
             errors.add(new ImportError(null, null, "Only administrator can import NewsItem"));
-            return List.copyOf(errors);
+            return;
         }
         Set<String> fileUrls = new HashSet<>();
         Set<String> fileExternalIds = new HashSet<>();
         for (ImportRecord record : records) {
             validateHttpUrl(record, "url", errors);
-            Long competitorId = longValue(record, "competitorId");
-            Long dataSourceId = longValue(record, "dataSourceId");
+            Long competitorId = longValue(record, "competitor.id");
+            Long dataSourceId = longValue(record, "dataSource.id");
             if (competitorId != null && competitorId > 0 && dataSourceId != null && dataSourceId > 0) {
                 validateRelations(record, competitorId, dataSourceId, errors);
                 validateDatabaseDuplicates(record, competitorId, dataSourceId, errors);
             }
             validateFileDuplicates(record, fileUrls, fileExternalIds, errors);
         }
-
-        return List.copyOf(errors);
     }
 
     private void validateRelations(ImportRecord record, Long competitorId, Long dataSourceId, List<ImportError> errors) {
         Competitor competitor = competitorRepository.findById(competitorId).orElse(null);
         if (competitor == null) {
-            errors.add(new ImportError(record.rowNumber(), "competitorId", "Competitor not found"));
+            errors.add(new ImportError(record.rowNumber(), "competitor.id", "Competitor not found"));
             return;
         }
 
         DataSource dataSource = dataSourceRepository.findById(dataSourceId).orElse(null);
         if (dataSource == null) {
-            errors.add(new ImportError(record.rowNumber(), "dataSourceId", "DataSource not found"));
+            errors.add(new ImportError(record.rowNumber(), "dataSource.id", "DataSource not found"));
             return;
         }
         if (dataSource.getCompetitor() == null || !competitorId.equals(dataSource.getCompetitor().getId())) {
-            errors.add(new ImportError(record.rowNumber(), "dataSourceId", "DataSource does not belong to selected Competitor"));
+            errors.add(new ImportError(record.rowNumber(), "dataSource.id", "DataSource does not belong to selected Competitor"));
         }
     }
 
@@ -118,24 +113,22 @@ public class NewsItemImportHandler extends AbstractEntityImportHandler<NewsItem,
     private void validateFileDuplicates(ImportRecord record, Set<String> fileUrls, Set<String> fileExternalIds, List<ImportError> errors) {
         String url = stringValue(record, "url");
         if (url != null) {
-            String normalizedUrl = url.toLowerCase(Locale.ROOT);
-            if (!fileUrls.add(normalizedUrl)) {
-                errors.add(new ImportError(record.rowNumber(), "url", "Duplicate URL in import file"));
-            }
+            String normalizedUrl = normalizeKey(url);
+            addUniqueKey(fileUrls, normalizedUrl, record, "url", "Duplicate URL in import file", errors);
         }
 
         String externalId = stringValue(record, "externalId");
-        Long dataSourceId = longValue(record, "dataSourceId");
+        Long dataSourceId = longValue(record, "dataSource.id");
+
         if (externalId != null && dataSourceId != null && dataSourceId > 0) {
             String key = dataSourceId + "|" + externalId;
-            if (!fileExternalIds.add(key)) {
-                errors.add(new ImportError(record.rowNumber(), "externalId", "Duplicate externalId for DataSource in import file"));
-            }
+
+            addUniqueKey(fileExternalIds, key, record, "externalId", "Duplicate externalId for DataSource in import file", errors);
         }
     }
 
     @Override
-    protected NewsItemDTO mapRecord(ImportRecord record, Instant batchTimestamp) {
+    protected NewsItemDTO mapSpecificRecord(ImportRecord record, Instant batchTimestamp) {
         NewsItemDTO dto = new NewsItemDTO();
         dto.setExternalId(stringValue(record, "externalId"));
         dto.setTitle(stringValue(record, "title"));
@@ -145,21 +138,20 @@ public class NewsItemImportHandler extends AbstractEntityImportHandler<NewsItem,
         dto.setCollectedAt(batchTimestamp);
         dto.setIsDuplicate(false);
         DataSourceDTO dataSource = new DataSourceDTO();
-        dataSource.setId(longValue(record, "dataSourceId"));
+        dataSource.setId(longValue(record, "dataSource.id"));
         dto.setDataSource(dataSource);
         CompetitorDTO competitor = new CompetitorDTO();
-        competitor.setId(longValue(record, "competitorId"));
+        competitor.setId(longValue(record, "competitor.id"));
         dto.setCompetitor(competitor);
         dto.setCollectionRun(null);
         return dto;
     }
 
     @Override
-    protected int saveAll(List<NewsItemDTO> records, ImportContext context) {
+    protected List<NewsItemDTO> saveSpecificRecords(List<NewsItemDTO> records, ImportContext context) {
         if (!SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
             throw new IllegalStateException("Only administrator can import NewsItem");
         }
-
-        return newsItemService.saveImported(records).size();
+        return newsItemService.saveImported(records);
     }
 }

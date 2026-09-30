@@ -5,11 +5,12 @@
     url,
     sourceType,
     isActive,
-    competitorId
+    competitor
 )>
 
 <!ELEMENT sourceName (#PCDATA)>
 <!ELEMENT url (#PCDATA)>
 <!ELEMENT sourceType (#PCDATA)>
 <!ELEMENT isActive (#PCDATA)>
-<!ELEMENT competitorId (#PCDATA)>
+<!ELEMENT competitor (id)>
+<!ELEMENT id (#PCDATA)>

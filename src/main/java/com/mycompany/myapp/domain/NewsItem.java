@@ -56,13 +56,13 @@ public class NewsItem implements Serializable {
     @Column(name = "is_duplicate", nullable = false)
     private Boolean isDuplicate;
 
-    @Importable(name = "dataSourceId")
+    @Importable(name = "dataSource.id")
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "competitor" }, allowSetters = true)
     private DataSource dataSource;
 
-    @Importable(name = "competitorId")
+    @Importable(name = "competitor.id")
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "analystProfileses" }, allowSetters = true)
