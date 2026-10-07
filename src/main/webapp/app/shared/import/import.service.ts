@@ -28,13 +28,10 @@ export class EntityImportService {
   private readonly managerClientContext = inject(ManagerClientContextService);
   private readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/import');
 
-  importFile(entityType: string, file: File): Observable<ImportResult> {
+  importFile(entityType: string, file: File, bulk = false): Observable<ImportResult> {
     const formData = new FormData();
-
     formData.append('file', file);
-
-    const params = createRequestOption(this.managerClientContext.withClientUserId({}));
-
+    const params = createRequestOption(this.managerClientContext.withClientUserId({ bulk }));
     return this.http.post<ImportResult>(`${this.resourceUrl}/${encodeURIComponent(entityType)}`, formData, { params });
   }
 }

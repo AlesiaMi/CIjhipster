@@ -92,6 +92,11 @@ management:
 spring:
   application:
     name: CIjhipster
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   docker:
     compose:
       enabled: true
@@ -126,7 +131,7 @@ spring:
       hibernate.cache.use_query_cache: false
       hibernate.generate_statistics: false
       # modify batch size as necessary
-      hibernate.jdbc.batch_size: 25
+      hibernate.jdbc.batch_size: 0
       hibernate.order_inserts: true
       hibernate.order_updates: true
       hibernate.query.fail_on_pagination_over_collection_fetch: true
@@ -226,4 +231,5 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+import-settings:
+  batch-size: 50

@@ -1,6 +1,7 @@
 package com.mycompany.myapp.repository;
 
 import com.mycompany.myapp.domain.Competitor;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
@@ -16,6 +17,16 @@ public interface CompetitorRepository extends JpaRepository<Competitor, Long>, J
     Optional<Competitor> findOneByIdAndOwnerId(Long id, Long ownerId);
 
     boolean existsByIdAndOwnerId(Long id, Long ownerId);
+
+    @Query(
+        """
+        select competitor
+        from Competitor competitor
+        left join fetch competitor.owner
+        where competitor.id in :ids
+        """
+    )
+    List<Competitor> findAllByIdsWithOwner(@Param("ids") Collection<Long> ids);
 
     @Query(
         """

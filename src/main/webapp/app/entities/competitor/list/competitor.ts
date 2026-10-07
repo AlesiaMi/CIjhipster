@@ -65,6 +65,7 @@ export class Competitor implements OnInit {
   protected readonly entityImportService = inject(EntityImportService);
   readonly canEdit = computed(() => this.managerClientContext.hasPermission('COMPETITORS_EDIT'));
   readonly isImporting = signal(false);
+  readonly bulkImport = signal(false);
   readonly importErrors = signal<ImportError[]>([]);
   readonly importSuccess = signal<string | null>(null);
   constructor() {
@@ -129,7 +130,7 @@ export class Competitor implements OnInit {
     this.importSuccess.set(null);
     this.isImporting.set(true);
     this.entityImportService
-      .importFile('competitor', file)
+      .importFile('competitor', file, this.bulkImport())
       .pipe(finalize(() => this.isImporting.set(false)))
       .subscribe({
         next: result => {

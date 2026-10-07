@@ -1,6 +1,7 @@
 package com.mycompany.myapp.repository;
 
 import com.mycompany.myapp.domain.NewsItem;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,39 @@ public interface NewsItemRepository extends JpaRepository<NewsItem, Long>, JpaSp
 
     boolean existsByUrlAndCompetitorOwnerId(String url, Long ownerId);
     boolean existsByExternalIdAndDataSourceId(String externalId, Long dataSourceId);
+
+    @Query(
+        """
+        select newsItem.url as url, owner.id as ownerId
+        from NewsItem newsItem
+        join newsItem.competitor competitor
+        join competitor.owner owner
+        where newsItem.url in :urls
+        """
+    )
+    List<UrlOwnerPair> findExistingUrlOwnerPairs(@Param("urls") Collection<String> urls);
+
+    @Query(
+        """
+        select newsItem.externalId as externalId, dataSource.id as dataSourceId
+        from NewsItem newsItem
+        join newsItem.dataSource dataSource
+        where newsItem.externalId in :externalIds
+        """
+    )
+    List<ExternalIdDataSourcePair> findExistingExternalIdDataSourcePairs(@Param("externalIds") Collection<String> externalIds);
+
+    interface UrlOwnerPair {
+        String getUrl();
+
+        Long getOwnerId();
+    }
+
+    interface ExternalIdDataSourcePair {
+        String getExternalId();
+
+        Long getDataSourceId();
+    }
 
     default Optional<NewsItem> findOneWithEagerRelationships(Long id) {
         return this.findOneWithToOneRelationships(id);

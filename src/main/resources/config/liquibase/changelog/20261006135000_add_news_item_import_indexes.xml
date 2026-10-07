@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20261006135000-1" author="promai">
+        <createIndex
+            indexName="idx_news_item_url_competitor_id"
+            tableName="news_item">
+            <column name="url"/>
+            <column name="competitor_id"/>
+        </createIndex>
+
+        <createIndex
+            indexName="idx_news_item_external_id_data_source_id"
+            tableName="news_item">
+            <column name="external_id"/>
+            <column name="data_source_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

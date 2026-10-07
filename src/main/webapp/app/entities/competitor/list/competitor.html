@@ -18,6 +18,18 @@
           (change)="importFile($event)"
         />
 
+        <div class="form-check form-switch me-2 d-flex align-items-center">
+          <input
+            class="form-check-input me-2"
+            type="checkbox"
+            id="competitorBulkImport"
+            [checked]="bulkImport()"
+            [disabled]="isImporting()"
+            (change)="bulkImport.set($any($event.target).checked)"
+          />
+          <label class="form-check-label" for="competitorBulkImport"> Batch </label>
+        </div>
+
         <button
           type="button"
           class="btn btn-secondary me-2"

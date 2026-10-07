@@ -177,6 +177,11 @@ public class DataSourceImportHandler extends AbstractEntityImportHandler<DataSou
         return dataSourceService.saveImported(records);
     }
 
+    @Override
+    protected int saveSpecificRecordsBatch(List<DataSourceDTO> records, ImportContext context) {
+        return dataSourceService.saveImportedBatch(records);
+    }
+
     private String duplicateKey(Long competitorId, String url) {
         return competitorId + "|" + url.trim();
     }

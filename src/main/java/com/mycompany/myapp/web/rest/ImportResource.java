@@ -31,12 +31,25 @@ public class ImportResource {
     public ResponseEntity<ImportResult> importEntity(
         @PathVariable String entityType,
         @RequestParam("file") MultipartFile file,
-        @RequestParam(name = "clientUserId", required = false) Long clientUserId
+        @RequestParam(name = "clientUserId", required = false) Long clientUserId,
+        @RequestParam(name = "bulk", defaultValue = "false") boolean bulk
     ) {
         LOG.debug("REST request to import entity type {} from file {}", entityType, file.getOriginalFilename());
 
-        ImportResult result = importService.importFile(entityType, file, clientUserId);
+        long startedAt = System.nanoTime();
 
+        ImportResult result = importService.importFile(entityType, file, clientUserId, bulk);
+
+        long totalMs = (System.nanoTime() - startedAt) / 1_000_000;
+        LOG.info(
+            "IMPORT BENCHMARK entity={} mode={} file={} fileBytes={} totalMs={} success={}",
+            entityType,
+            bulk ? "BATCH" : "SAVE_ALL",
+            file.getOriginalFilename(),
+            file.getSize(),
+            totalMs,
+            !result.hasErrors()
+        );
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(result);
         }

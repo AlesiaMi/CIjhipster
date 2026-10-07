@@ -68,6 +68,7 @@ export class DataSource implements OnInit {
 
   readonly canEdit = computed(() => this.managerClientContext.hasPermission('SOURCES_EDIT'));
   readonly isImporting = signal(false);
+  readonly bulkImport = signal(false);
   readonly importErrors = signal<ImportError[]>([]);
   readonly importSuccess = signal<string | null>(null);
   constructor() {
@@ -133,7 +134,7 @@ export class DataSource implements OnInit {
     this.isImporting.set(true);
 
     this.entityImportService
-      .importFile('data-source', file)
+      .importFile('data-source', file, this.bulkImport())
       .pipe(finalize(() => this.isImporting.set(false)))
       .subscribe({
         next: result => {

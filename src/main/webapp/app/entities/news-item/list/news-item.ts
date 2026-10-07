@@ -71,6 +71,7 @@ export class NewsItem implements OnInit {
   readonly canEdit = computed(() => this.accountService.hasAnyAuthority('ROLE_ADMIN'));
 
   readonly isImporting = signal(false);
+  readonly bulkImport = signal(false);
   readonly importErrors = signal<ImportError[]>([]);
   readonly importSuccess = signal<string | null>(null);
   constructor() {
@@ -136,7 +137,7 @@ export class NewsItem implements OnInit {
     this.importSuccess.set(null);
     this.isImporting.set(true);
     this.entityImportService
-      .importFile('news-item', file)
+      .importFile('news-item', file, this.bulkImport())
       .pipe(finalize(() => this.isImporting.set(false)))
       .subscribe({
         next: result => {

@@ -2,6 +2,7 @@ package com.mycompany.myapp.repository;
 
 import com.mycompany.myapp.domain.DataSource;
 import com.mycompany.myapp.domain.enumeration.SourceType;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -88,4 +89,14 @@ public interface DataSourceRepository extends JpaRepository<DataSource, Long>, J
         """
     )
     List<DataSource> findAllByCompetitorIds(@Param("competitorIds") java.util.Set<Long> competitorIds);
+
+    @Query(
+        """
+        select dataSource
+        from DataSource dataSource
+        join fetch dataSource.competitor
+        where dataSource.id in :ids
+        """
+    )
+    List<DataSource> findAllByIdsWithCompetitor(@Param("ids") Collection<Long> ids);
 }

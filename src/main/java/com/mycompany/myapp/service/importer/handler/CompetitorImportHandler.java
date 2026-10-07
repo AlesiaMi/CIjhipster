@@ -133,4 +133,9 @@ public class CompetitorImportHandler extends AbstractEntityImportHandler<Competi
         errors.add(new ImportError(null, "clientUserId", "COMPETITORS_EDIT permission is required"));
         return null;
     }
+
+    @Override
+    protected int saveSpecificRecordsBatch(List<CompetitorDTO> records, ImportContext context) {
+        return competitorService.saveImportedBatch(records, context.clientUserId());
+    }
 }

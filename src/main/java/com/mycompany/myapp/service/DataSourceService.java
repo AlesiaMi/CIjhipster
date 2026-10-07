@@ -6,6 +6,7 @@ import com.mycompany.myapp.domain.enumeration.ManagerPermissionType;
 import com.mycompany.myapp.repository.CompetitorRepository;
 import com.mycompany.myapp.repository.DataSourceRepository;
 import com.mycompany.myapp.service.dto.DataSourceDTO;
+import com.mycompany.myapp.service.importer.BatchImportService;
 import com.mycompany.myapp.service.mapper.DataSourceMapper;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -32,19 +33,22 @@ public class DataSourceService {
     private final CompetitorRepository competitorRepository;
     private final TenantCacheVersionService tenantCacheVersionService;
     private final ManagerAccessService managerAccessService;
+    private final BatchImportService batchImportService;
 
     public DataSourceService(
         DataSourceRepository dataSourceRepository,
         DataSourceMapper dataSourceMapper,
         CompetitorRepository competitorRepository,
         TenantCacheVersionService tenantCacheVersionService,
-        ManagerAccessService managerAccessService
+        ManagerAccessService managerAccessService,
+        BatchImportService batchImportService
     ) {
         this.dataSourceRepository = dataSourceRepository;
         this.dataSourceMapper = dataSourceMapper;
         this.competitorRepository = competitorRepository;
         this.tenantCacheVersionService = tenantCacheVersionService;
         this.managerAccessService = managerAccessService;
+        this.batchImportService = batchImportService;
     }
 
     public DataSourceDTO save(DataSourceDTO dataSourceDTO) {
@@ -85,8 +89,29 @@ public class DataSourceService {
         }
 
         List<DataSource> savedDataSources = dataSourceRepository.saveAll(dataSources);
+        dataSourceRepository.flush();
         ownerIds.forEach(tenantCacheVersionService::invalidateAfterCommit);
         return savedDataSources.stream().map(dataSourceMapper::toDto).toList();
+    }
+
+    public int saveImportedBatch(List<DataSourceDTO> dataSourceDTOs) {
+        LOG.debug("Request to batch save imported DataSources : {} records", dataSourceDTOs.size());
+        List<DataSource> dataSources = new ArrayList<>();
+        Set<Long> ownerIds = new LinkedHashSet<>();
+        for (DataSourceDTO dataSourceDTO : dataSourceDTOs) {
+            if (dataSourceDTO.getId() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Imported DataSource cannot already have an id");
+            }
+            Competitor competitor = resolveWritableCompetitor(dataSourceDTO);
+            DataSource dataSource = dataSourceMapper.toEntity(dataSourceDTO);
+            dataSource.setCompetitor(competitor);
+            dataSources.add(dataSource);
+            ownerIds.add(competitor.getOwner().getId());
+        }
+
+        int savedCount = batchImportService.saveBatch(dataSources);
+        ownerIds.forEach(tenantCacheVersionService::invalidateAfterCommit);
+        return savedCount;
     }
 
     public DataSourceDTO update(DataSourceDTO dataSourceDTO) {

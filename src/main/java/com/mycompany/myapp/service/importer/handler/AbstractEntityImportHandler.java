@@ -24,9 +24,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractEntityImportHandler<DOMAIN, DTO> implements EntityImportHandler {
 
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractEntityImportHandler.class);
     private final String entityType;
     private final XmlImportDefinition xmlDefinition;
 
@@ -37,6 +40,8 @@ public abstract class AbstractEntityImportHandler<DOMAIN, DTO> implements Entity
     protected abstract DTO mapSpecificRecord(ImportRecord record, Instant batchTimestamp);
 
     protected abstract List<DTO> saveSpecificRecords(List<DTO> records, ImportContext context);
+
+    protected abstract int saveSpecificRecordsBatch(List<DTO> records, ImportContext context);
 
     protected AbstractEntityImportHandler(String entityType, XmlImportDefinition xmlDefinition) {
         this.entityType = entityType;
@@ -83,7 +88,28 @@ public abstract class AbstractEntityImportHandler<DOMAIN, DTO> implements Entity
     }
 
     protected final int saveAll(List<DTO> records, ImportContext context) {
-        return saveSpecificRecords(records, context).size();
+        long startedAt = System.nanoTime();
+        int savedCount;
+        String mode;
+        if (context.bulk()) {
+            savedCount = saveSpecificRecordsBatch(records, context);
+            mode = "BATCH";
+        } else {
+            List<DTO> savedRecords = saveSpecificRecords(records, context);
+            savedCount = savedRecords.size();
+            mode = "SAVE_ALL";
+        }
+
+        long saveMs = (System.nanoTime() - startedAt) / 1_000_000;
+        LOG.info(
+            "IMPORT SAVE BENCHMARK entity={} mode={} records={} saved={} saveMs={}",
+            entityType,
+            mode,
+            records.size(),
+            savedCount,
+            saveMs
+        );
+        return savedCount;
     }
 
     protected final boolean validateHttpUrl(ImportRecord record, String field, List<ImportError> errors) {

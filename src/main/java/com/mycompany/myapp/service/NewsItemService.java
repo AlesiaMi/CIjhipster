@@ -12,15 +12,18 @@ import com.mycompany.myapp.repository.NewsItemRepository;
 import com.mycompany.myapp.security.AuthoritiesConstants;
 import com.mycompany.myapp.security.SecurityUtils;
 import com.mycompany.myapp.service.dto.NewsItemDTO;
+import com.mycompany.myapp.service.importer.BatchImportService;
 import com.mycompany.myapp.service.mapper.NewsItemMapper;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.hibernate.engine.jdbc.batch.spi.Batch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -42,6 +45,7 @@ public class NewsItemService {
     private final CompetitorRepository competitorRepository;
     private final CollectionRunRepository collectionRunRepository;
     private final TenantCacheVersionService tenantCacheVersionService;
+    private final BatchImportService batchImportService;
     private final ManagerAccessService managerAccessService;
 
     public NewsItemService(
@@ -51,7 +55,8 @@ public class NewsItemService {
         CompetitorRepository competitorRepository,
         CollectionRunRepository collectionRunRepository,
         TenantCacheVersionService tenantCacheVersionService,
-        ManagerAccessService managerAccessService
+        ManagerAccessService managerAccessService,
+        BatchImportService batchImportService
     ) {
         this.newsItemRepository = newsItemRepository;
         this.newsItemMapper = newsItemMapper;
@@ -60,6 +65,7 @@ public class NewsItemService {
         this.collectionRunRepository = collectionRunRepository;
         this.tenantCacheVersionService = tenantCacheVersionService;
         this.managerAccessService = managerAccessService;
+        this.batchImportService = batchImportService;
     }
 
     public NewsItemDTO save(NewsItemDTO newsItemDTO) {
@@ -79,27 +85,42 @@ public class NewsItemService {
 
     public List<NewsItemDTO> saveImported(List<NewsItemDTO> newsItemDTOs) {
         LOG.debug("Request to save imported NewsItems : {} records", newsItemDTOs.size());
-
-        List<NewsItem> newsItems = new ArrayList<>();
-        Set<Long> ownerIds = new LinkedHashSet<>();
-
-        for (NewsItemDTO newsItemDTO : newsItemDTOs) {
-            if (newsItemDTO.getId() != null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Imported NewsItem cannot already have an id");
-            }
-
-            ResolvedRelations relations = resolveRelations(newsItemDTO);
-            NewsItem newsItem = newsItemMapper.toEntity(newsItemDTO);
-
-            newsItem.setDataSource(relations.dataSource());
-            newsItem.setCompetitor(relations.competitor());
-            newsItem.setCollectionRun(null);
-            newsItems.add(newsItem);
-            ownerIds.add(relations.ownerId());
-        }
-        List<NewsItem> savedNewsItems = newsItemRepository.saveAll(newsItems);
-        ownerIds.forEach(tenantCacheVersionService::invalidateAfterCommit);
+        long prepareStartedAt = System.nanoTime();
+        PreparedImport prepared = prepareImportedNewsItems(newsItemDTOs);
+        long prepareMs = (System.nanoTime() - prepareStartedAt) / 1_000_000;
+        long persistStartedAt = System.nanoTime();
+        List<NewsItem> savedNewsItems = newsItemRepository.saveAll(prepared.newsItems());
+        newsItemRepository.flush();
+        long persistMs = (System.nanoTime() - persistStartedAt) / 1_000_000;
+        prepared.ownerIds().forEach(tenantCacheVersionService::invalidateAfterCommit);
+        LOG.info(
+            "NEWS ITEM IMPORT SERVICE BENCHMARK mode={} records={} prepareMs={} persistMs={}",
+            "SAVE_ALL",
+            newsItemDTOs.size(),
+            prepareMs,
+            persistMs
+        );
         return savedNewsItems.stream().map(newsItemMapper::toDto).toList();
+    }
+
+    public int saveImportedBatch(List<NewsItemDTO> newsItemDTOs) {
+        LOG.debug("Request to batch save imported NewsItems : {} records", newsItemDTOs.size());
+        long prepareStartedAt = System.nanoTime();
+        PreparedImport prepared = prepareImportedNewsItems(newsItemDTOs);
+        long prepareMs = (System.nanoTime() - prepareStartedAt) / 1_000_000;
+        long persistStartedAt = System.nanoTime();
+        int savedCount = batchImportService.saveBatch(prepared.newsItems());
+        long persistMs = (System.nanoTime() - persistStartedAt) / 1_000_000;
+        prepared.ownerIds().forEach(tenantCacheVersionService::invalidateAfterCommit);
+        LOG.info(
+            "NEWS ITEM IMPORT SERVICE BENCHMARK mode={} records={} prepareMs={} persistMs={}",
+            "BATCH",
+            newsItemDTOs.size(),
+            prepareMs,
+            persistMs
+        );
+
+        return savedCount;
     }
 
     public NewsItemDTO update(NewsItemDTO newsItemDTO) {
@@ -263,6 +284,74 @@ public class NewsItemService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NewsItem not found"));
     }
 
+    private PreparedImport prepareImportedNewsItems(List<NewsItemDTO> newsItemDTOs) {
+        if (!isAdmin()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only administrator can import NewsItem");
+        }
+
+        Set<Long> competitorIds = new LinkedHashSet<>();
+        Set<Long> dataSourceIds = new LinkedHashSet<>();
+
+        for (NewsItemDTO newsItemDTO : newsItemDTOs) {
+            if (newsItemDTO.getId() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Imported NewsItem cannot already have an id");
+            }
+
+            if (newsItemDTO.getCompetitor() == null || newsItemDTO.getCompetitor().getId() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Competitor is required");
+            }
+
+            if (newsItemDTO.getDataSource() == null || newsItemDTO.getDataSource().getId() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "DataSource is required");
+            }
+
+            competitorIds.add(newsItemDTO.getCompetitor().getId());
+            dataSourceIds.add(newsItemDTO.getDataSource().getId());
+        }
+
+        Map<Long, Competitor> competitors = competitorRepository
+            .findAllByIdsWithOwner(competitorIds)
+            .stream()
+            .collect(Collectors.toMap(Competitor::getId, competitor -> competitor));
+        Map<Long, DataSource> dataSources = dataSourceRepository
+            .findAllByIdsWithCompetitor(dataSourceIds)
+            .stream()
+            .collect(Collectors.toMap(DataSource::getId, dataSource -> dataSource));
+        List<NewsItem> newsItems = new ArrayList<>(newsItemDTOs.size());
+        Set<Long> ownerIds = new LinkedHashSet<>();
+
+        for (NewsItemDTO newsItemDTO : newsItemDTOs) {
+            Long competitorId = newsItemDTO.getCompetitor().getId();
+
+            Long dataSourceId = newsItemDTO.getDataSource().getId();
+
+            Competitor competitor = competitors.get(competitorId);
+
+            if (competitor == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Competitor not found");
+            }
+
+            DataSource dataSource = dataSources.get(dataSourceId);
+            if (dataSource == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "DataSource belongs to another owner");
+            }
+
+            if (dataSource.getCompetitor() == null || !competitorId.equals(dataSource.getCompetitor().getId())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "DataSource does not belong to selected Competitor");
+            }
+
+            NewsItem newsItem = newsItemMapper.toEntity(newsItemDTO);
+
+            newsItem.setCompetitor(competitor);
+            newsItem.setDataSource(dataSource);
+            newsItem.setCollectionRun(null);
+            newsItems.add(newsItem);
+            ownerIds.add(competitor.getOwner().getId());
+        }
+
+        return new PreparedImport(newsItems, ownerIds);
+    }
+
     private ResolvedRelations resolveRelations(NewsItemDTO dto) {
         if (dto.getCompetitor() == null || dto.getCompetitor().getId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Competitor is required");
@@ -322,11 +411,8 @@ public class NewsItemService {
 
     private NewsItemDTO buildRelationDTOForPartialUpdate(NewsItemDTO patch, NewsItem existing) {
         NewsItemDTO dto = new NewsItemDTO();
-
         dto.setCompetitor(patch.getCompetitor() != null ? patch.getCompetitor() : newsItemMapper.toDto(existing).getCompetitor());
-
         dto.setDataSource(patch.getDataSource() != null ? patch.getDataSource() : newsItemMapper.toDto(existing).getDataSource());
-
         dto.setCollectionRun(
             patch.getCollectionRun() != null ? patch.getCollectionRun() : newsItemMapper.toDto(existing).getCollectionRun()
         );
@@ -351,6 +437,8 @@ public class NewsItemService {
     private boolean isAdmin() {
         return SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
     }
+
+    private record PreparedImport(List<NewsItem> newsItems, Set<Long> ownerIds) {}
 
     private record ResolvedRelations(DataSource dataSource, Competitor competitor, CollectionRun collectionRun, Long ownerId) {}
 }

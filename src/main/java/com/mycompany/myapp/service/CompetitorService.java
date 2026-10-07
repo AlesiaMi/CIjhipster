@@ -8,6 +8,7 @@ import com.mycompany.myapp.repository.UserRepository;
 import com.mycompany.myapp.security.AuthoritiesConstants;
 import com.mycompany.myapp.security.SecurityUtils;
 import com.mycompany.myapp.service.dto.CompetitorDTO;
+import com.mycompany.myapp.service.importer.BatchImportService;
 import com.mycompany.myapp.service.mapper.CompetitorMapper;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,19 +33,22 @@ public class CompetitorService {
     private final UserRepository userRepository;
     private final TenantCacheVersionService tenantCacheVersionService;
     private final ManagerAccessService managerAccessService;
+    private final BatchImportService batchImportService;
 
     public CompetitorService(
         CompetitorRepository competitorRepository,
         CompetitorMapper competitorMapper,
         UserRepository userRepository,
         TenantCacheVersionService tenantCacheVersionService,
-        ManagerAccessService managerAccessService
+        ManagerAccessService managerAccessService,
+        BatchImportService batchImportService
     ) {
         this.competitorRepository = competitorRepository;
         this.competitorMapper = competitorMapper;
         this.userRepository = userRepository;
         this.tenantCacheVersionService = tenantCacheVersionService;
         this.managerAccessService = managerAccessService;
+        this.batchImportService = batchImportService;
     }
 
     /**
@@ -81,8 +85,31 @@ public class CompetitorService {
         }
 
         List<Competitor> savedCompetitors = competitorRepository.saveAll(competitors);
+        competitorRepository.flush();
         tenantCacheVersionService.invalidateAfterCommit(ownerId);
         return savedCompetitors.stream().map(competitorMapper::toDto).toList();
+    }
+
+    public int saveImportedBatch(List<CompetitorDTO> competitorDTOs, Long requestedOwnerId) {
+        LOG.debug("Request to batch save imported Competitors : {} records for owner {}", competitorDTOs.size(), requestedOwnerId);
+        Long ownerId = resolveCreateOwnerId(requestedOwnerId);
+        User owner = userRepository
+            .findById(ownerId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Owner user not found"));
+        List<Competitor> competitors = new ArrayList<>();
+        for (CompetitorDTO competitorDTO : competitorDTOs) {
+            if (competitorDTO.getId() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Imported Competitor cannot already have an id");
+            }
+
+            Competitor competitor = competitorMapper.toEntity(competitorDTO);
+            competitor.setOwner(owner);
+            competitors.add(competitor);
+        }
+
+        int savedCount = batchImportService.saveBatch(competitors);
+        tenantCacheVersionService.invalidateAfterCommit(ownerId);
+        return savedCount;
     }
 
     public CompetitorDTO update(CompetitorDTO competitorDTO) {
