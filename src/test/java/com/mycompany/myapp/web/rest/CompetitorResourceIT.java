@@ -8,7 +8,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.myapp.IntegrationTest;
 import com.mycompany.myapp.domain.AnalystProfile;
 import com.mycompany.myapp.domain.Competitor;
@@ -36,6 +35,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for the {@link CompetitorResource} REST controller.
@@ -65,7 +65,7 @@ class CompetitorResourceIT {
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static final Random random = new Random();
-    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2L * Integer.MAX_VALUE));
+    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + 2L * Integer.MAX_VALUE);
 
     @Autowired
     private ObjectMapper om;
@@ -540,7 +540,7 @@ class CompetitorResourceIT {
             competitorRepository.saveAndFlush(competitor);
             owner = UserResourceIT.createEntity();
         } else {
-            owner = TestUtil.findAll(em, User.class).get(0);
+            owner = TestUtil.findAll(em, User.class).getFirst();
         }
         em.persist(owner);
         em.flush();
@@ -562,7 +562,7 @@ class CompetitorResourceIT {
             competitorRepository.saveAndFlush(competitor);
             analystProfiles = AnalystProfileResourceIT.createEntity(em);
         } else {
-            analystProfiles = TestUtil.findAll(em, AnalystProfile.class).get(0);
+            analystProfiles = TestUtil.findAll(em, AnalystProfile.class).getFirst();
         }
         em.persist(analystProfiles);
         em.flush();

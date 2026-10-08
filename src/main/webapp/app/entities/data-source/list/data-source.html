@@ -38,49 +38,42 @@
             <th scope="col" jhiSortBy="id">
               <div class="d-flex">
                 <span jhiTranslate="global.field.id">ID</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="sourceName">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.dataSource.sourceName">Source Name</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="url">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.dataSource.url">Url</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="sourceType">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.dataSource.sourceType">Source Type</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="isActive">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.dataSource.isActive">Is Active</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="lastCheckedAt">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.dataSource.lastCheckedAt">Last Checked At</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="createdAt">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.dataSource.createdAt">Created At</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -126,7 +119,7 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
                   </a>
 
-                  <button type="submit" (click)="delete(dataSource)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                  <button type="button" (click)="delete(dataSource)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="times" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
                   </button>

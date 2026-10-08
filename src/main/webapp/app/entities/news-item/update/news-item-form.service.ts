@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import dayjs from 'dayjs/esm';
 
-import { DATE_TIME_FORMAT } from 'app/config/input.constants';
+import { DATE_TIME_FORMAT } from 'app/config';
 import { INewsItem, NewNewsItem } from '../news-item.model';
 
 /**
@@ -47,13 +47,14 @@ type NewsItemFormGroupContent = {
 
 export type NewsItemFormGroup = FormGroup<NewsItemFormGroupContent>;
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class NewsItemFormService {
   createNewsItemFormGroup(newsItem?: NewsItemFormGroupInput): NewsItemFormGroup {
     const newsItemRawValue = this.convertNewsItemToNewsItemRawValue({
       ...this.getFormDefaults(),
       ...(newsItem ?? { id: null }),
     });
+
     return new FormGroup<NewsItemFormGroupContent>({
       id: new FormControl(
         { value: newsItemRawValue.id, disabled: true },

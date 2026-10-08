@@ -56,7 +56,7 @@ public class KeywordResource {
      * {@code POST  /keywords} : Create a new keyword.
      *
      * @param keywordDTO the keywordDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new keywordDTO, or with status {@code 400 (Bad Request)} if the keyword has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new keywordDTO, or with status {@code 400 (Bad Request)} if the keyword already has an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
@@ -120,7 +120,7 @@ public class KeywordResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody KeywordDTO keywordDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update Keyword partially : {}, {}", id, keywordDTO);
+        LOG.debug("REST request to partially update Keyword : {}, {}", id, keywordDTO);
         if (keywordDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

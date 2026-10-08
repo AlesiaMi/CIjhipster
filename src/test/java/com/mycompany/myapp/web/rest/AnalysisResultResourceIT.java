@@ -8,7 +8,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.myapp.IntegrationTest;
 import com.mycompany.myapp.domain.AnalysisResult;
 import com.mycompany.myapp.domain.NewsItem;
@@ -20,7 +19,6 @@ import com.mycompany.myapp.service.dto.AnalysisResultDTO;
 import com.mycompany.myapp.service.mapper.AnalysisResultMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -38,6 +36,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for the {@link AnalysisResultResource} REST controller.
@@ -70,7 +69,7 @@ class AnalysisResultResourceIT {
     private static final String UPDATED_MODEL_NAME = "BBBBBBBBBB";
 
     private static final Instant DEFAULT_ANALYZED_AT = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_ANALYZED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final Instant UPDATED_ANALYZED_AT = Instant.ofEpochMilli(1782126205341L);
 
     private static final String DEFAULT_ERROR_MESSAGE = "AAAAAAAAAA";
     private static final String UPDATED_ERROR_MESSAGE = "BBBBBBBBBB";
@@ -79,7 +78,7 @@ class AnalysisResultResourceIT {
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static final Random random = new Random();
-    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2L * Integer.MAX_VALUE));
+    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + 2L * Integer.MAX_VALUE);
 
     @Autowired
     private ObjectMapper om;
@@ -130,7 +129,7 @@ class AnalysisResultResourceIT {
             em.persist(newsItem);
             em.flush();
         } else {
-            newsItem = TestUtil.findAll(em, NewsItem.class).get(0);
+            newsItem = TestUtil.findAll(em, NewsItem.class).getFirst();
         }
         analysisResult.setNewsItem(newsItem);
         return analysisResult;
@@ -160,7 +159,7 @@ class AnalysisResultResourceIT {
             em.persist(newsItem);
             em.flush();
         } else {
-            newsItem = TestUtil.findAll(em, NewsItem.class).get(0);
+            newsItem = TestUtil.findAll(em, NewsItem.class).getFirst();
         }
         updatedAnalysisResult.setNewsItem(newsItem);
         return updatedAnalysisResult;

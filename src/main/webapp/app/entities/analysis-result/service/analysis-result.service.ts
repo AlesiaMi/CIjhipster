@@ -1,12 +1,11 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Service, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
 
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { createRequestOption } from 'app/core/request/request-util';
-import { isPresent } from 'app/core/util/operators';
+import { serverApiUrl } from 'app/config';
+import { createRequestOption } from 'app/core/request';
 import { IAnalysisResult, NewAnalysisResult } from '../analysis-result.model';
 
 export type PartialUpdateAnalysisResult = Partial<IAnalysisResult> & Pick<IAnalysisResult, 'id'>;
@@ -21,7 +20,7 @@ export type NewRestAnalysisResult = RestOf<NewAnalysisResult>;
 
 export type PartialUpdateRestAnalysisResult = RestOf<PartialUpdateAnalysisResult>;
 
-@Injectable()
+@Service()
 export class AnalysisResultsService {
   readonly analysisResultsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
@@ -40,8 +39,7 @@ export class AnalysisResultsService {
   readonly analysisResults = computed(() =>
     (this.analysisResultsResource.hasValue() ? this.analysisResultsResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/analysis-results');
+  protected readonly resourceUrl = `${serverApiUrl}api/analysis-results`;
 
   protected convertValueFromServer(restAnalysisResult: RestAnalysisResult): IAnalysisResult {
     return {
@@ -51,7 +49,7 @@ export class AnalysisResultsService {
   }
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class AnalysisResultService extends AnalysisResultsService {
   protected readonly http = inject(HttpClient);
 
@@ -103,7 +101,9 @@ export class AnalysisResultService extends AnalysisResultsService {
     analysisResultCollection: Type[],
     ...analysisResultsToCheck: (Type | null | undefined)[]
   ): Type[] {
-    const analysisResults: Type[] = analysisResultsToCheck.filter(isPresent);
+    const analysisResults: Type[] = analysisResultsToCheck.filter(
+      analysisResultItem => analysisResultItem !== null && analysisResultItem !== undefined,
+    );
     if (analysisResults.length > 0) {
       const analysisResultCollectionIdentifiers = analysisResultCollection.map(analysisResultItem =>
         this.getAnalysisResultIdentifier(analysisResultItem),

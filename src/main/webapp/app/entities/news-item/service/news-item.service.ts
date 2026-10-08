@@ -1,12 +1,11 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Service, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
 
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { createRequestOption } from 'app/core/request/request-util';
-import { isPresent } from 'app/core/util/operators';
+import { serverApiUrl } from 'app/config';
+import { createRequestOption } from 'app/core/request';
 import { INewsItem, NewNewsItem } from '../news-item.model';
 
 export type PartialUpdateNewsItem = Partial<INewsItem> & Pick<INewsItem, 'id'>;
@@ -22,7 +21,7 @@ export type NewRestNewsItem = RestOf<NewNewsItem>;
 
 export type PartialUpdateRestNewsItem = RestOf<PartialUpdateNewsItem>;
 
-@Injectable()
+@Service()
 export class NewsItemsService {
   readonly newsItemsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
@@ -41,8 +40,7 @@ export class NewsItemsService {
   readonly newsItems = computed(() =>
     (this.newsItemsResource.hasValue() ? this.newsItemsResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/news-items');
+  protected readonly resourceUrl = `${serverApiUrl}api/news-items`;
 
   protected convertValueFromServer(restNewsItem: RestNewsItem): INewsItem {
     return {
@@ -53,7 +51,7 @@ export class NewsItemsService {
   }
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class NewsItemService extends NewsItemsService {
   protected readonly http = inject(HttpClient);
 
@@ -105,7 +103,7 @@ export class NewsItemService extends NewsItemsService {
     newsItemCollection: Type[],
     ...newsItemsToCheck: (Type | null | undefined)[]
   ): Type[] {
-    const newsItems: Type[] = newsItemsToCheck.filter(isPresent);
+    const newsItems: Type[] = newsItemsToCheck.filter(newsItemItem => newsItemItem !== null && newsItemItem !== undefined);
     if (newsItems.length > 0) {
       const newsItemCollectionIdentifiers = newsItemCollection.map(newsItemItem => this.getNewsItemIdentifier(newsItemItem));
       const newsItemsToAdd = newsItems.filter(newsItemItem => {

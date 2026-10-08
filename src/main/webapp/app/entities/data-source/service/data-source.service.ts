@@ -1,12 +1,11 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Service, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
 
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { createRequestOption } from 'app/core/request/request-util';
-import { isPresent } from 'app/core/util/operators';
+import { serverApiUrl } from 'app/config';
+import { createRequestOption } from 'app/core/request';
 import { IDataSource, NewDataSource } from '../data-source.model';
 
 export type PartialUpdateDataSource = Partial<IDataSource> & Pick<IDataSource, 'id'>;
@@ -22,7 +21,7 @@ export type NewRestDataSource = RestOf<NewDataSource>;
 
 export type PartialUpdateRestDataSource = RestOf<PartialUpdateDataSource>;
 
-@Injectable()
+@Service()
 export class DataSourcesService {
   readonly dataSourcesParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
@@ -41,8 +40,7 @@ export class DataSourcesService {
   readonly dataSources = computed(() =>
     (this.dataSourcesResource.hasValue() ? this.dataSourcesResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/data-sources');
+  protected readonly resourceUrl = `${serverApiUrl}api/data-sources`;
 
   protected convertValueFromServer(restDataSource: RestDataSource): IDataSource {
     return {
@@ -53,7 +51,7 @@ export class DataSourcesService {
   }
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class DataSourceService extends DataSourcesService {
   protected readonly http = inject(HttpClient);
 
@@ -105,7 +103,7 @@ export class DataSourceService extends DataSourcesService {
     dataSourceCollection: Type[],
     ...dataSourcesToCheck: (Type | null | undefined)[]
   ): Type[] {
-    const dataSources: Type[] = dataSourcesToCheck.filter(isPresent);
+    const dataSources: Type[] = dataSourcesToCheck.filter(dataSourceItem => dataSourceItem !== null && dataSourceItem !== undefined);
     if (dataSources.length > 0) {
       const dataSourceCollectionIdentifiers = dataSourceCollection.map(dataSourceItem => this.getDataSourceIdentifier(dataSourceItem));
       const dataSourcesToAdd = dataSources.filter(dataSourceItem => {

@@ -8,7 +8,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.myapp.IntegrationTest;
 import com.mycompany.myapp.domain.Competitor;
 import com.mycompany.myapp.domain.DataSource;
@@ -19,7 +18,6 @@ import com.mycompany.myapp.service.dto.DataSourceDTO;
 import com.mycompany.myapp.service.mapper.DataSourceMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,6 +35,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for the {@link DataSourceResource} REST controller.
@@ -60,16 +59,16 @@ class DataSourceResourceIT {
     private static final Boolean UPDATED_IS_ACTIVE = true;
 
     private static final Instant DEFAULT_LAST_CHECKED_AT = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_LAST_CHECKED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final Instant UPDATED_LAST_CHECKED_AT = Instant.ofEpochMilli(1782126205341L);
 
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final Instant UPDATED_CREATED_AT = Instant.ofEpochMilli(1782126205341L);
 
     private static final String ENTITY_API_URL = "/api/data-sources";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static final Random random = new Random();
-    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2L * Integer.MAX_VALUE));
+    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + 2L * Integer.MAX_VALUE);
 
     @Autowired
     private ObjectMapper om;
@@ -117,7 +116,7 @@ class DataSourceResourceIT {
             em.persist(competitor);
             em.flush();
         } else {
-            competitor = TestUtil.findAll(em, Competitor.class).get(0);
+            competitor = TestUtil.findAll(em, Competitor.class).getFirst();
         }
         dataSource.setCompetitor(competitor);
         return dataSource;
@@ -144,7 +143,7 @@ class DataSourceResourceIT {
             em.persist(competitor);
             em.flush();
         } else {
-            competitor = TestUtil.findAll(em, Competitor.class).get(0);
+            competitor = TestUtil.findAll(em, Competitor.class).getFirst();
         }
         updatedDataSource.setCompetitor(competitor);
         return updatedDataSource;
@@ -599,7 +598,7 @@ class DataSourceResourceIT {
             dataSourceRepository.saveAndFlush(dataSource);
             competitor = CompetitorResourceIT.createEntity();
         } else {
-            competitor = TestUtil.findAll(em, Competitor.class).get(0);
+            competitor = TestUtil.findAll(em, Competitor.class).getFirst();
         }
         em.persist(competitor);
         em.flush();

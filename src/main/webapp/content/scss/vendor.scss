@@ -9,6 +9,9 @@ eg $input-color: red;
 @import 'bootstrap-variables';
 // Import Bootstrap source files from node_modules
 @import 'bootstrap/scss/bootstrap';
+// Prevent bootswatch from importing its Google Fonts URL: the interpolated `@import url(...)`
+// it emits is not resolved correctly by the Angular esbuild-based Sass compiler (see #33691).
+$web-font-path: false;
 @import 'bootswatch/dist/flatly/bootswatch';
 
 /* jhipster-needle-scss-add-vendor JHipster will add new css style */

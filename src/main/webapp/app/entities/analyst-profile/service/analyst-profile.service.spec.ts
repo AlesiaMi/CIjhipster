@@ -83,7 +83,6 @@ describe('AnalystProfile Service', () => {
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush([returnedFromService]);
-      httpMock.verify();
       expect(expectedResult).toMatchObject([expected]);
     });
 
@@ -91,7 +90,7 @@ describe('AnalystProfile Service', () => {
       service.delete(123).subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
-      expect(requests.length).toBe(1);
+      expect(requests).toHaveLength(1);
     });
 
     describe('addAnalystProfileToCollectionIfMissing', () => {
@@ -180,7 +179,7 @@ describe('AnalystProfile Service', () => {
         expect(compareResult2).toEqual(false);
       });
 
-      it('should return false if primaryKey matches', () => {
+      it('should return true if primaryKey matches', () => {
         const entity1 = { id: 27303 };
         const entity2 = { id: 27303 };
 

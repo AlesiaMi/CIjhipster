@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
-import { ElementRef, signal } from '@angular/core';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ElementRef } from '@angular/core';
 import { ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 
 import PasswordResetFinish from './password-reset-finish';
@@ -15,8 +15,8 @@ describe('PasswordResetFinish', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
       providers: [
+        provideTranslateService(),
         {
           provide: ActivatedRoute,
           useValue: { queryParams: of({ key: 'XYZPDQ' }) },
@@ -38,9 +38,9 @@ describe('PasswordResetFinish', () => {
 
   it('sets focus after the view has been initialized', () => {
     const node = {
-      focus: vitest.fn(),
+      focus: vi.fn(),
     };
-    comp.newPassword = signal(new ElementRef(node));
+    vi.spyOn(comp, 'newPassword').mockReturnValue(new ElementRef(node));
 
     comp.ngAfterViewInit();
 
@@ -61,7 +61,7 @@ describe('PasswordResetFinish', () => {
   it('should update success to true after resetting password', inject(
     [PasswordResetFinishService],
     (service: PasswordResetFinishService) => {
-      vitest.spyOn(service, 'save').mockReturnValue(of({}));
+      vi.spyOn(service, 'save').mockReturnValue(of({}));
       comp.passwordForm.patchValue({
         newPassword: 'password',
         confirmPassword: 'password',
@@ -75,7 +75,7 @@ describe('PasswordResetFinish', () => {
   ));
 
   it('should notify of generic error', inject([PasswordResetFinishService], (service: PasswordResetFinishService) => {
-    vitest.spyOn(service, 'save').mockReturnValue(throwError(Error));
+    vi.spyOn(service, 'save').mockReturnValue(throwError(Error));
     comp.passwordForm.patchValue({
       newPassword: 'password',
       confirmPassword: 'password',

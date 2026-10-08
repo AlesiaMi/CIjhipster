@@ -60,7 +60,7 @@ public class AnalysisResultResource {
      * {@code POST  /analysis-results} : Create a new analysisResult.
      *
      * @param analysisResultDTO the analysisResultDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new analysisResultDTO, or with status {@code 400 (Bad Request)} if the analysisResult has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new analysisResultDTO, or with status {@code 400 (Bad Request)} if the analysisResult already has an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
@@ -125,7 +125,7 @@ public class AnalysisResultResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody AnalysisResultDTO analysisResultDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update AnalysisResult partially : {}, {}", id, analysisResultDTO);
+        LOG.debug("REST request to partially update AnalysisResult : {}, {}", id, analysisResultDTO);
         if (analysisResultDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

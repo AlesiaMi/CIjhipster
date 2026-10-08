@@ -38,70 +38,60 @@
             <th scope="col" jhiSortBy="id">
               <div class="d-flex">
                 <span jhiTranslate="global.field.id">ID</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="summary">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analysisResult.summary">Summary</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="sentiment">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analysisResult.sentiment">Sentiment</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="topic">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analysisResult.topic">Topic</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="entities">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analysisResult.entities">Entities</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="riskSource">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analysisResult.riskSource">Risk Source</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="status">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analysisResult.status">Status</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="modelName">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analysisResult.modelName">Model Name</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="analyzedAt">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analysisResult.analyzedAt">Analyzed At</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="errorMessage">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analysisResult.errorMessage">Error Message</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -164,7 +154,7 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
                   </a>
 
-                  <button type="submit" (click)="delete(analysisResult)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                  <button type="button" (click)="delete(analysisResult)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="times" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
                   </button>

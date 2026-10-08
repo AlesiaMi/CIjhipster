@@ -8,7 +8,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.myapp.IntegrationTest;
 import com.mycompany.myapp.domain.CollectionRun;
 import com.mycompany.myapp.domain.User;
@@ -20,7 +19,6 @@ import com.mycompany.myapp.service.dto.CollectionRunDTO;
 import com.mycompany.myapp.service.mapper.CollectionRunMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -38,6 +36,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for the {@link CollectionRunResource} REST controller.
@@ -49,10 +48,10 @@ import org.springframework.transaction.annotation.Transactional;
 class CollectionRunResourceIT {
 
     private static final Instant DEFAULT_STARTED_AT = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_STARTED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final Instant UPDATED_STARTED_AT = Instant.ofEpochMilli(1782126205341L);
 
     private static final Instant DEFAULT_FINISHED_AT = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_FINISHED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final Instant UPDATED_FINISHED_AT = Instant.ofEpochMilli(1782126205341L);
 
     private static final RunStatus DEFAULT_STATUS = RunStatus.RUNNING;
     private static final RunStatus UPDATED_STATUS = RunStatus.SUCCESS;
@@ -72,7 +71,7 @@ class CollectionRunResourceIT {
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static final Random random = new Random();
-    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2L * Integer.MAX_VALUE));
+    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + 2L * Integer.MAX_VALUE);
 
     @Autowired
     private ObjectMapper om;
@@ -622,7 +621,7 @@ class CollectionRunResourceIT {
             collectionRunRepository.saveAndFlush(collectionRun);
             owner = UserResourceIT.createEntity();
         } else {
-            owner = TestUtil.findAll(em, User.class).get(0);
+            owner = TestUtil.findAll(em, User.class).getFirst();
         }
         em.persist(owner);
         em.flush();

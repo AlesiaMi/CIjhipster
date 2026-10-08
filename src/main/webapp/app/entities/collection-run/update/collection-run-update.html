@@ -35,12 +35,12 @@
           </div>
           @if (startedAtRef.invalid && (startedAtRef.dirty || startedAtRef.touched)) {
             <div>
-              @if (editForm.get('startedAt')?.errors?.required) {
+              @if (startedAtRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
               <small
                 class="form-text text-danger"
-                [hidden]="!editForm.get('startedAt')?.errors?.datetimelocal"
+                [hidden]="!startedAtRef.errors?.datetimelocal"
                 jhiTranslate="entity.validation.datetimelocal"
                 >This field should be a date and time.</small
               >
@@ -66,7 +66,7 @@
         @let statusRef = editForm.get('status')!;
         <div class="mb-3">
           <label class="form-label" for="field_status" jhiTranslate="cIjhipsterApp.collectionRun.status">Status</label>
-          <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
+          <select class="form-select" name="status" formControlName="status" id="field_status" data-cy="status">
             <option [ngValue]="null">{{ 'cIjhipsterApp.RunStatus.null' | translate }}</option>
             @for (runStatus of runStatusValues; track $index) {
               <option [value]="runStatus">{{ 'cIjhipsterApp.RunStatus.' + runStatus | translate }}</option>
@@ -74,7 +74,7 @@
           </select>
           @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
             <div>
-              @if (editForm.get('status')?.errors?.required) {
+              @if (statusRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
             </div>
@@ -120,7 +120,7 @@
           />
           @if (errorMessageRef.invalid && (errorMessageRef.dirty || errorMessageRef.touched)) {
             <div>
-              @if (editForm.get('errorMessage')?.errors?.maxlength) {
+              @if (errorMessageRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '4000' }"
                   >This field cannot be longer than 4000 characters.</small
                 >
@@ -131,7 +131,7 @@
 
         <div class="mb-3">
           <label class="form-label" for="field_owner" jhiTranslate="cIjhipsterApp.collectionRun.owner">Owner</label>
-          <select class="form-control" id="field_owner" data-cy="owner" name="owner" formControlName="owner" [compareWith]="compareUser">
+          <select class="form-select" id="field_owner" data-cy="owner" name="owner" formControlName="owner" [compareWith]="compareUser">
             <option [ngValue]="null"></option>
             @for (userOption of usersSharedCollection(); track $index) {
               <option [ngValue]="userOption">{{ userOption.login }}</option>

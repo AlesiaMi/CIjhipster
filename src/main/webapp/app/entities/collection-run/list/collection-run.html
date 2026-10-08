@@ -38,49 +38,42 @@
             <th scope="col" jhiSortBy="id">
               <div class="d-flex">
                 <span jhiTranslate="global.field.id">ID</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="startedAt">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.collectionRun.startedAt">Started At</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="finishedAt">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.collectionRun.finishedAt">Finished At</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="status">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.collectionRun.status">Status</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="foundCount">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.collectionRun.foundCount">Found Count</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="processedCount">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.collectionRun.processedCount">Processed Count</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="errorMessage">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.collectionRun.errorMessage">Error Message</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -122,7 +115,7 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
                   </a>
 
-                  <button type="submit" (click)="delete(collectionRun)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                  <button type="button" (click)="delete(collectionRun)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="times" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
                   </button>

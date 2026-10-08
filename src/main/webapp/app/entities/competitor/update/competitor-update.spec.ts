@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpResponse } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { Subject, from, of } from 'rxjs';
 
 import { IAnalystProfile } from 'app/entities/analyst-profile/analyst-profile.model';
@@ -28,8 +28,8 @@ describe('Competitor Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
       providers: [
+        provideTranslateService(),
         provideHttpClientTesting(),
         {
           provide: ActivatedRoute,
@@ -57,10 +57,10 @@ describe('Competitor Management Update Component', () => {
       competitor.owner = owner;
 
       const userCollection: IUser[] = [{ id: 3944 }];
-      vitest.spyOn(userService, 'query').mockReturnValue(of(new HttpResponse({ body: userCollection })));
+      vi.spyOn(userService, 'query').mockReturnValue(of(new HttpResponse({ body: userCollection })));
       const additionalUsers = [owner];
       const expectedCollection: IUser[] = [...additionalUsers, ...userCollection];
-      vitest.spyOn(userService, 'addUserToCollectionIfMissing').mockReturnValue(expectedCollection);
+      vi.spyOn(userService, 'addUserToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ competitor });
       comp.ngOnInit();
@@ -79,10 +79,10 @@ describe('Competitor Management Update Component', () => {
       competitor.analystProfileses = analystProfileses;
 
       const analystProfileCollection: IAnalystProfile[] = [{ id: 27303 }];
-      vitest.spyOn(analystProfileService, 'query').mockReturnValue(of(new HttpResponse({ body: analystProfileCollection })));
+      vi.spyOn(analystProfileService, 'query').mockReturnValue(of(new HttpResponse({ body: analystProfileCollection })));
       const additionalAnalystProfiles = [...analystProfileses];
       const expectedCollection: IAnalystProfile[] = [...additionalAnalystProfiles, ...analystProfileCollection];
-      vitest.spyOn(analystProfileService, 'addAnalystProfileToCollectionIfMissing').mockReturnValue(expectedCollection);
+      vi.spyOn(analystProfileService, 'addAnalystProfileToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ competitor });
       comp.ngOnInit();
@@ -116,9 +116,9 @@ describe('Competitor Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<ICompetitor>();
       const competitor = { id: 6672 };
-      vitest.spyOn(competitorFormService, 'getCompetitor').mockReturnValue(competitor);
-      vitest.spyOn(competitorService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(competitorFormService, 'getCompetitor').mockReturnValue(competitor);
+      vi.spyOn(competitorService, 'update').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ competitor });
       comp.ngOnInit();
 
@@ -139,9 +139,9 @@ describe('Competitor Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<ICompetitor>();
       const competitor = { id: 6672 };
-      vitest.spyOn(competitorFormService, 'getCompetitor').mockReturnValue({ id: null });
-      vitest.spyOn(competitorService, 'create').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(competitorFormService, 'getCompetitor').mockReturnValue({ id: null });
+      vi.spyOn(competitorService, 'create').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ competitor: null });
       comp.ngOnInit();
 
@@ -162,8 +162,8 @@ describe('Competitor Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<ICompetitor>();
       const competitor = { id: 6672 };
-      vitest.spyOn(competitorService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(competitorService, 'update').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ competitor });
       comp.ngOnInit();
 
@@ -184,7 +184,7 @@ describe('Competitor Management Update Component', () => {
       it('should forward to userService', () => {
         const entity = { id: 3944 };
         const entity2 = { id: 6275 };
-        vitest.spyOn(userService, 'compareUser');
+        vi.spyOn(userService, 'compareUser');
         comp.compareUser(entity, entity2);
         expect(userService.compareUser).toHaveBeenCalledWith(entity, entity2);
       });
@@ -194,7 +194,7 @@ describe('Competitor Management Update Component', () => {
       it('should forward to analystProfileService', () => {
         const entity = { id: 27303 };
         const entity2 = { id: 15537 };
-        vitest.spyOn(analystProfileService, 'compareAnalystProfile');
+        vi.spyOn(analystProfileService, 'compareAnalystProfile');
         comp.compareAnalystProfile(entity, entity2);
         expect(analystProfileService.compareAnalystProfile).toHaveBeenCalledWith(entity, entity2);
       });

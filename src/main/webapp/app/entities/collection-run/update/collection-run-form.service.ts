@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import dayjs from 'dayjs/esm';
 
-import { DATE_TIME_FORMAT } from 'app/config/input.constants';
+import { DATE_TIME_FORMAT } from 'app/config';
 import { ICollectionRun, NewCollectionRun } from '../collection-run.model';
 
 /**
@@ -44,13 +44,14 @@ type CollectionRunFormGroupContent = {
 
 export type CollectionRunFormGroup = FormGroup<CollectionRunFormGroupContent>;
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class CollectionRunFormService {
   createCollectionRunFormGroup(collectionRun?: CollectionRunFormGroupInput): CollectionRunFormGroup {
     const collectionRunRawValue = this.convertCollectionRunToCollectionRunRawValue({
       ...this.getFormDefaults(),
       ...(collectionRun ?? { id: null }),
     });
+
     return new FormGroup<CollectionRunFormGroupContent>({
       id: new FormControl(
         { value: collectionRunRawValue.id, disabled: true },

@@ -60,7 +60,7 @@ public class DataSourceResource {
      * {@code POST  /data-sources} : Create a new dataSource.
      *
      * @param dataSourceDTO the dataSourceDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new dataSourceDTO, or with status {@code 400 (Bad Request)} if the dataSource has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new dataSourceDTO, or with status {@code 400 (Bad Request)} if the dataSource already has an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
@@ -124,7 +124,7 @@ public class DataSourceResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody DataSourceDTO dataSourceDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update DataSource partially : {}, {}", id, dataSourceDTO);
+        LOG.debug("REST request to partially update DataSource : {}, {}", id, dataSourceDTO);
         if (dataSourceDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

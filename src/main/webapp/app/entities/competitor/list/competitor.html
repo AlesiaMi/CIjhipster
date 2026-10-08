@@ -38,42 +38,36 @@
             <th scope="col" jhiSortBy="id">
               <div class="d-flex">
                 <span jhiTranslate="global.field.id">ID</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="competitorName">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.competitor.competitorName">Competitor Name</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="websiteUrl">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.competitor.websiteUrl">Website Url</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="industry">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.competitor.industry">Industry</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="description">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.competitor.description">Description</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="isActive">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.competitor.isActive">Is Active</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -112,7 +106,7 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
                   </a>
 
-                  <button type="submit" (click)="delete(competitor)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                  <button type="button" (click)="delete(competitor)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="times" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
                   </button>

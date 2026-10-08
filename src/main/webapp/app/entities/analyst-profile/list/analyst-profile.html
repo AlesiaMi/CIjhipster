@@ -38,35 +38,30 @@
             <th scope="col" jhiSortBy="id">
               <div class="d-flex">
                 <span jhiTranslate="global.field.id">ID</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="displayName">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analystProfile.displayName">Display Name</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="telegramChatId">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analystProfile.telegramChatId">Telegram Chat Id</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="notificationEnabled">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analystProfile.notificationEnabled">Notification Enabled</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="createdAt">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.analystProfile.createdAt">Created At</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -112,7 +107,7 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
                   </a>
 
-                  <button type="submit" (click)="delete(analystProfile)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                  <button type="button" (click)="delete(analystProfile)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="times" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
                   </button>

@@ -60,7 +60,7 @@ public class NewsItemResource {
      * {@code POST  /news-items} : Create a new newsItem.
      *
      * @param newsItemDTO the newsItemDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new newsItemDTO, or with status {@code 400 (Bad Request)} if the newsItem has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new newsItemDTO, or with status {@code 400 (Bad Request)} if the newsItem already has an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
@@ -124,7 +124,7 @@ public class NewsItemResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody NewsItemDTO newsItemDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update NewsItem partially : {}, {}", id, newsItemDTO);
+        LOG.debug("REST request to partially update NewsItem : {}, {}", id, newsItemDTO);
         if (newsItemDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

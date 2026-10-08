@@ -1,12 +1,11 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Service, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
 
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { createRequestOption } from 'app/core/request/request-util';
-import { isPresent } from 'app/core/util/operators';
+import { serverApiUrl } from 'app/config';
+import { createRequestOption } from 'app/core/request';
 import { IAnalystProfile, NewAnalystProfile } from '../analyst-profile.model';
 
 export type PartialUpdateAnalystProfile = Partial<IAnalystProfile> & Pick<IAnalystProfile, 'id'>;
@@ -21,7 +20,7 @@ export type NewRestAnalystProfile = RestOf<NewAnalystProfile>;
 
 export type PartialUpdateRestAnalystProfile = RestOf<PartialUpdateAnalystProfile>;
 
-@Injectable()
+@Service()
 export class AnalystProfilesService {
   readonly analystProfilesParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
@@ -40,8 +39,7 @@ export class AnalystProfilesService {
   readonly analystProfiles = computed(() =>
     (this.analystProfilesResource.hasValue() ? this.analystProfilesResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/analyst-profiles');
+  protected readonly resourceUrl = `${serverApiUrl}api/analyst-profiles`;
 
   protected convertValueFromServer(restAnalystProfile: RestAnalystProfile): IAnalystProfile {
     return {
@@ -51,7 +49,7 @@ export class AnalystProfilesService {
   }
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class AnalystProfileService extends AnalystProfilesService {
   protected readonly http = inject(HttpClient);
 
@@ -103,7 +101,9 @@ export class AnalystProfileService extends AnalystProfilesService {
     analystProfileCollection: Type[],
     ...analystProfilesToCheck: (Type | null | undefined)[]
   ): Type[] {
-    const analystProfiles: Type[] = analystProfilesToCheck.filter(isPresent);
+    const analystProfiles: Type[] = analystProfilesToCheck.filter(
+      analystProfileItem => analystProfileItem !== null && analystProfileItem !== undefined,
+    );
     if (analystProfiles.length > 0) {
       const analystProfileCollectionIdentifiers = analystProfileCollection.map(analystProfileItem =>
         this.getAnalystProfileIdentifier(analystProfileItem),

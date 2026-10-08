@@ -8,7 +8,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.myapp.IntegrationTest;
 import com.mycompany.myapp.domain.CollectionRun;
 import com.mycompany.myapp.domain.Competitor;
@@ -20,7 +19,6 @@ import com.mycompany.myapp.service.dto.NewsItemDTO;
 import com.mycompany.myapp.service.mapper.NewsItemMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -38,6 +36,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for the {@link NewsItemResource} REST controller.
@@ -61,10 +60,10 @@ class NewsItemResourceIT {
     private static final String UPDATED_ORIGINAL_TEXT = "BBBBBBBBBB";
 
     private static final Instant DEFAULT_PUBLISHED_AT = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_PUBLISHED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final Instant UPDATED_PUBLISHED_AT = Instant.ofEpochMilli(1782126205341L);
 
     private static final Instant DEFAULT_COLLECTED_AT = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_COLLECTED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final Instant UPDATED_COLLECTED_AT = Instant.ofEpochMilli(1782126205341L);
 
     private static final Boolean DEFAULT_IS_DUPLICATE = false;
     private static final Boolean UPDATED_IS_DUPLICATE = true;
@@ -73,7 +72,7 @@ class NewsItemResourceIT {
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static final Random random = new Random();
-    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2L * Integer.MAX_VALUE));
+    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + 2L * Integer.MAX_VALUE);
 
     @Autowired
     private ObjectMapper om;
@@ -122,7 +121,7 @@ class NewsItemResourceIT {
             em.persist(dataSource);
             em.flush();
         } else {
-            dataSource = TestUtil.findAll(em, DataSource.class).get(0);
+            dataSource = TestUtil.findAll(em, DataSource.class).getFirst();
         }
         newsItem.setDataSource(dataSource);
         // Add required entity
@@ -132,7 +131,7 @@ class NewsItemResourceIT {
             em.persist(competitor);
             em.flush();
         } else {
-            competitor = TestUtil.findAll(em, Competitor.class).get(0);
+            competitor = TestUtil.findAll(em, Competitor.class).getFirst();
         }
         newsItem.setCompetitor(competitor);
         return newsItem;
@@ -160,7 +159,7 @@ class NewsItemResourceIT {
             em.persist(dataSource);
             em.flush();
         } else {
-            dataSource = TestUtil.findAll(em, DataSource.class).get(0);
+            dataSource = TestUtil.findAll(em, DataSource.class).getFirst();
         }
         updatedNewsItem.setDataSource(dataSource);
         // Add required entity
@@ -170,7 +169,7 @@ class NewsItemResourceIT {
             em.persist(competitor);
             em.flush();
         } else {
-            competitor = TestUtil.findAll(em, Competitor.class).get(0);
+            competitor = TestUtil.findAll(em, Competitor.class).getFirst();
         }
         updatedNewsItem.setCompetitor(competitor);
         return updatedNewsItem;
@@ -689,7 +688,7 @@ class NewsItemResourceIT {
             newsItemRepository.saveAndFlush(newsItem);
             dataSource = DataSourceResourceIT.createEntity(em);
         } else {
-            dataSource = TestUtil.findAll(em, DataSource.class).get(0);
+            dataSource = TestUtil.findAll(em, DataSource.class).getFirst();
         }
         em.persist(dataSource);
         em.flush();
@@ -711,7 +710,7 @@ class NewsItemResourceIT {
             newsItemRepository.saveAndFlush(newsItem);
             competitor = CompetitorResourceIT.createEntity();
         } else {
-            competitor = TestUtil.findAll(em, Competitor.class).get(0);
+            competitor = TestUtil.findAll(em, Competitor.class).getFirst();
         }
         em.persist(competitor);
         em.flush();
@@ -733,7 +732,7 @@ class NewsItemResourceIT {
             newsItemRepository.saveAndFlush(newsItem);
             collectionRun = CollectionRunResourceIT.createEntity();
         } else {
-            collectionRun = TestUtil.findAll(em, CollectionRun.class).get(0);
+            collectionRun = TestUtil.findAll(em, CollectionRun.class).getFirst();
         }
         em.persist(collectionRun);
         em.flush();

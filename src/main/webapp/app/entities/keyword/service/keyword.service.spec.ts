@@ -83,7 +83,6 @@ describe('Keyword Service', () => {
 
       const req = httpMock.expectOne({ method: 'GET' });
       req.flush([returnedFromService]);
-      httpMock.verify();
       expect(expectedResult).toMatchObject([expected]);
     });
 
@@ -91,7 +90,7 @@ describe('Keyword Service', () => {
       service.delete(123).subscribe();
 
       const requests = httpMock.match({ method: 'DELETE' });
-      expect(requests.length).toBe(1);
+      expect(requests).toHaveLength(1);
     });
 
     describe('addKeywordToCollectionIfMissing', () => {
@@ -180,7 +179,7 @@ describe('Keyword Service', () => {
         expect(compareResult2).toEqual(false);
       });
 
-      it('should return false if primaryKey matches', () => {
+      it('should return true if primaryKey matches', () => {
         const entity1 = { id: 5188 };
         const entity2 = { id: 5188 };
 

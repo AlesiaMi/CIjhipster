@@ -32,10 +32,10 @@
           />
           @if (displayNameRef.invalid && (displayNameRef.dirty || displayNameRef.touched)) {
             <div>
-              @if (editForm.get('displayName')?.errors?.required) {
+              @if (displayNameRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
-              @if (editForm.get('displayName')?.errors?.maxlength) {
+              @if (displayNameRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
                   >This field cannot be longer than 255 characters.</small
                 >
@@ -59,7 +59,7 @@
           />
           @if (telegramChatIdRef.invalid && (telegramChatIdRef.dirty || telegramChatIdRef.touched)) {
             <div>
-              @if (editForm.get('telegramChatId')?.errors?.maxlength) {
+              @if (telegramChatIdRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '100' }"
                   >This field cannot be longer than 100 characters.</small
                 >
@@ -69,21 +69,21 @@
         </div>
 
         @let notificationEnabledRef = editForm.get('notificationEnabled')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_notificationEnabled" jhiTranslate="cIjhipsterApp.analystProfile.notificationEnabled"
-            >Notification Enabled</label
-          >
+        <div class="mb-3 form-check">
           <input
             type="checkbox"
-            class="form-check"
+            class="form-check-input"
             name="notificationEnabled"
             id="field_notificationEnabled"
             data-cy="notificationEnabled"
             formControlName="notificationEnabled"
           />
+          <label class="form-check-label" for="field_notificationEnabled" jhiTranslate="cIjhipsterApp.analystProfile.notificationEnabled"
+            >Notification Enabled</label
+          >
           @if (notificationEnabledRef.invalid && (notificationEnabledRef.dirty || notificationEnabledRef.touched)) {
             <div>
-              @if (editForm.get('notificationEnabled')?.errors?.required) {
+              @if (notificationEnabledRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
             </div>
@@ -106,12 +106,12 @@
           </div>
           @if (createdAtRef.invalid && (createdAtRef.dirty || createdAtRef.touched)) {
             <div>
-              @if (editForm.get('createdAt')?.errors?.required) {
+              @if (createdAtRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
               <small
                 class="form-text text-danger"
-                [hidden]="!editForm.get('createdAt')?.errors?.datetimelocal"
+                [hidden]="!createdAtRef.errors?.datetimelocal"
                 jhiTranslate="entity.validation.datetimelocal"
                 >This field should be a date and time.</small
               >
@@ -121,7 +121,7 @@
 
         <div class="mb-3">
           <label class="form-label" for="field_user" jhiTranslate="cIjhipsterApp.analystProfile.user">User</label>
-          <select class="form-control" id="field_user" data-cy="user" name="user" formControlName="user" [compareWith]="compareUser">
+          <select class="form-select" id="field_user" data-cy="user" name="user" formControlName="user" [compareWith]="compareUser">
             @if (!editForm.get('user')!.value) {
               <option [ngValue]="null" selected></option>
             }
@@ -141,7 +141,7 @@
         <div class="mb-3">
           <label for="field_competitorses" jhiTranslate="cIjhipsterApp.analystProfile.competitors">Competitors</label>
           <select
-            class="form-control"
+            class="form-select"
             id="field_competitorses"
             data-cy="competitors"
             multiple

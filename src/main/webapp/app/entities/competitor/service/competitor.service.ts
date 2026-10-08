@@ -1,16 +1,15 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Service, computed, inject, signal } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { createRequestOption } from 'app/core/request/request-util';
-import { isPresent } from 'app/core/util/operators';
+import { serverApiUrl } from 'app/config';
+import { createRequestOption } from 'app/core/request';
 import { ICompetitor, NewCompetitor } from '../competitor.model';
 
 export type PartialUpdateCompetitor = Partial<ICompetitor> & Pick<ICompetitor, 'id'>;
 
-@Injectable()
+@Service()
 export class CompetitorsService {
   readonly competitorsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
@@ -27,11 +26,10 @@ export class CompetitorsService {
    * In case of error while fetching the competitors, the signal is set to an empty array.
    */
   readonly competitors = computed(() => (this.competitorsResource.hasValue() ? this.competitorsResource.value() : []));
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/competitors');
+  protected readonly resourceUrl = `${serverApiUrl}api/competitors`;
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class CompetitorService extends CompetitorsService {
   protected readonly http = inject(HttpClient);
 
@@ -72,7 +70,7 @@ export class CompetitorService extends CompetitorsService {
     competitorCollection: Type[],
     ...competitorsToCheck: (Type | null | undefined)[]
   ): Type[] {
-    const competitors: Type[] = competitorsToCheck.filter(isPresent);
+    const competitors: Type[] = competitorsToCheck.filter(competitorItem => competitorItem !== null && competitorItem !== undefined);
     if (competitors.length > 0) {
       const competitorCollectionIdentifiers = competitorCollection.map(competitorItem => this.getCompetitorIdentifier(competitorItem));
       const competitorsToAdd = competitors.filter(competitorItem => {

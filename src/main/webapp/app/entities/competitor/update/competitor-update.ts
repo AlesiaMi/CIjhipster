@@ -1,17 +1,16 @@
 import { HttpResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { TranslateModule } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
 import { IAnalystProfile } from 'app/entities/analyst-profile/analyst-profile.model';
 import { AnalystProfileService } from 'app/entities/analyst-profile/service/analyst-profile.service';
 import { UserService } from 'app/entities/user/service/user.service';
 import { IUser } from 'app/entities/user/user.model';
-import { AlertError } from 'app/shared/alert/alert-error';
+import { AlertError } from 'app/shared/alert';
 import { TranslateDirective } from 'app/shared/language';
 import { ICompetitor } from '../competitor.model';
 import { CompetitorService } from '../service/competitor.service';
@@ -19,10 +18,9 @@ import { CompetitorService } from '../service/competitor.service';
 import { CompetitorFormGroup, CompetitorFormService } from './competitor-form.service';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-competitor-update',
   templateUrl: './competitor-update.html',
-  imports: [TranslateDirective, TranslateModule, FontAwesomeModule, AlertError, ReactiveFormsModule],
+  imports: [TranslateDirective, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
 export class CompetitorUpdate implements OnInit {
   readonly isSaving = signal(false);

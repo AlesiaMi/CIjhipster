@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { ICompetitor, NewCompetitor } from '../competitor.model';
@@ -29,13 +29,14 @@ type CompetitorFormGroupContent = {
 
 export type CompetitorFormGroup = FormGroup<CompetitorFormGroupContent>;
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class CompetitorFormService {
   createCompetitorFormGroup(competitor?: CompetitorFormGroupInput): CompetitorFormGroup {
     const competitorRawValue = {
       ...this.getFormDefaults(),
       ...(competitor ?? { id: null }),
     };
+
     return new FormGroup<CompetitorFormGroupContent>({
       id: new FormControl(
         { value: competitorRawValue.id, disabled: true },
