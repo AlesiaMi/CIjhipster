@@ -1,0 +1,176 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-analyst-profile-heading"
+        data-cy="AnalystProfileCreateUpdateHeading"
+        jhiTranslate="cIjhipsterApp.analystProfile.home.createOrEditLabel"
+      >
+        Create or edit a Analyst Profile
+      </h2>
+
+      <div>
+        <jhi-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+          </div>
+        }
+
+        @let displayNameRef = editForm.get('displayName')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_displayName" jhiTranslate="cIjhipsterApp.analystProfile.displayName">Display Name</label>
+          <input
+            type="text"
+            class="form-control"
+            name="displayName"
+            id="field_displayName"
+            data-cy="displayName"
+            formControlName="displayName"
+          />
+          @if (displayNameRef.invalid && (displayNameRef.dirty || displayNameRef.touched)) {
+            <div>
+              @if (editForm.get('displayName')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (editForm.get('displayName')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >This field cannot be longer than 255 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let telegramChatIdRef = editForm.get('telegramChatId')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_telegramChatId" jhiTranslate="cIjhipsterApp.analystProfile.telegramChatId"
+            >Telegram Chat Id</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="telegramChatId"
+            id="field_telegramChatId"
+            data-cy="telegramChatId"
+            formControlName="telegramChatId"
+          />
+          @if (telegramChatIdRef.invalid && (telegramChatIdRef.dirty || telegramChatIdRef.touched)) {
+            <div>
+              @if (editForm.get('telegramChatId')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '100' }"
+                  >This field cannot be longer than 100 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let notificationEnabledRef = editForm.get('notificationEnabled')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_notificationEnabled" jhiTranslate="cIjhipsterApp.analystProfile.notificationEnabled"
+            >Notification Enabled</label
+          >
+          <input
+            type="checkbox"
+            class="form-check"
+            name="notificationEnabled"
+            id="field_notificationEnabled"
+            data-cy="notificationEnabled"
+            formControlName="notificationEnabled"
+          />
+          @if (notificationEnabledRef.invalid && (notificationEnabledRef.dirty || notificationEnabledRef.touched)) {
+            <div>
+              @if (editForm.get('notificationEnabled')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let createdAtRef = editForm.get('createdAt')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_createdAt" jhiTranslate="cIjhipsterApp.analystProfile.createdAt">Created At</label>
+          <div class="d-flex">
+            <input
+              id="field_createdAt"
+              data-cy="createdAt"
+              type="datetime-local"
+              class="form-control"
+              name="createdAt"
+              formControlName="createdAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          @if (createdAtRef.invalid && (createdAtRef.dirty || createdAtRef.touched)) {
+            <div>
+              @if (editForm.get('createdAt')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+              <small
+                class="form-text text-danger"
+                [hidden]="!editForm.get('createdAt')?.errors?.datetimelocal"
+                jhiTranslate="entity.validation.datetimelocal"
+                >This field should be a date and time.</small
+              >
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_user" jhiTranslate="cIjhipsterApp.analystProfile.user">User</label>
+          <select class="form-control" id="field_user" data-cy="user" name="user" formControlName="user" [compareWith]="compareUser">
+            @if (!editForm.get('user')!.value) {
+              <option [ngValue]="null" selected></option>
+            }
+            @for (userOption of usersSharedCollection(); track $index) {
+              <option [ngValue]="userOption">{{ userOption.login }}</option>
+            }
+          </select>
+        </div>
+        @if (editForm.get(['user'])!.invalid && (editForm.get(['user'])!.dirty || editForm.get(['user'])!.touched)) {
+          <div>
+            @if (editForm.get(['user'])?.errors?.required) {
+              <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+            }
+          </div>
+        }
+
+        <div class="mb-3">
+          <label for="field_competitorses" jhiTranslate="cIjhipsterApp.analystProfile.competitors">Competitors</label>
+          <select
+            class="form-control"
+            id="field_competitorses"
+            data-cy="competitors"
+            multiple
+            name="competitorses"
+            formControlName="competitorses"
+            [compareWith]="compareCompetitor"
+          >
+            @for (competitorOption of competitorsSharedCollection(); track $index) {
+              <option [ngValue]="competitorOption">{{ competitorOption.competitorName }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

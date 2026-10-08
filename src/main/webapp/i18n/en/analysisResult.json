@@ -1,0 +1,33 @@
+{
+  "cIjhipsterApp": {
+    "analysisResult": {
+      "home": {
+        "title": "Analysis Results",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Analysis Result",
+        "createOrEditLabel": "Create or edit a Analysis Result",
+        "notFound": "No Analysis Results found"
+      },
+      "created": "A new Analysis Result is created with identifier {{ param }}",
+      "updated": "A Analysis Result is updated with identifier {{ param }}",
+      "deleted": "A Analysis Result is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Analysis Result {{ id }}?"
+      },
+      "detail": {
+        "title": "Analysis Result"
+      },
+      "id": "ID",
+      "summary": "Summary",
+      "sentiment": "Sentiment",
+      "topic": "Topic",
+      "entities": "Entities",
+      "riskSource": "Risk Source",
+      "status": "Status",
+      "modelName": "Model Name",
+      "analyzedAt": "Analyzed At",
+      "errorMessage": "Error Message",
+      "newsItem": "News Item"
+    }
+  }
+}

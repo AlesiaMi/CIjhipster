@@ -1,0 +1,184 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-data-source-heading"
+        data-cy="DataSourceCreateUpdateHeading"
+        jhiTranslate="cIjhipsterApp.dataSource.home.createOrEditLabel"
+      >
+        Create or edit a Data Source
+      </h2>
+
+      <div>
+        <jhi-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+          </div>
+        }
+
+        @let sourceNameRef = editForm.get('sourceName')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_sourceName" jhiTranslate="cIjhipsterApp.dataSource.sourceName">Source Name</label>
+          <input
+            type="text"
+            class="form-control"
+            name="sourceName"
+            id="field_sourceName"
+            data-cy="sourceName"
+            formControlName="sourceName"
+          />
+          @if (sourceNameRef.invalid && (sourceNameRef.dirty || sourceNameRef.touched)) {
+            <div>
+              @if (editForm.get('sourceName')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (editForm.get('sourceName')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >This field cannot be longer than 255 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let urlRef = editForm.get('url')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_url" jhiTranslate="cIjhipsterApp.dataSource.url">Url</label>
+          <input type="text" class="form-control" name="url" id="field_url" data-cy="url" formControlName="url" />
+          @if (urlRef.invalid && (urlRef.dirty || urlRef.touched)) {
+            <div>
+              @if (editForm.get('url')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (editForm.get('url')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '1000' }"
+                  >This field cannot be longer than 1000 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let sourceTypeRef = editForm.get('sourceType')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_sourceType" jhiTranslate="cIjhipsterApp.dataSource.sourceType">Source Type</label>
+          <select class="form-control" name="sourceType" formControlName="sourceType" id="field_sourceType" data-cy="sourceType">
+            <option [ngValue]="null">{{ 'cIjhipsterApp.SourceType.null' | translate }}</option>
+            @for (sourceType of sourceTypeValues; track $index) {
+              <option [value]="sourceType">{{ 'cIjhipsterApp.SourceType.' + sourceType | translate }}</option>
+            }
+          </select>
+          @if (sourceTypeRef.invalid && (sourceTypeRef.dirty || sourceTypeRef.touched)) {
+            <div>
+              @if (editForm.get('sourceType')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let isActiveRef = editForm.get('isActive')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_isActive" jhiTranslate="cIjhipsterApp.dataSource.isActive">Is Active</label>
+          <input type="checkbox" class="form-check" name="isActive" id="field_isActive" data-cy="isActive" formControlName="isActive" />
+          @if (isActiveRef.invalid && (isActiveRef.dirty || isActiveRef.touched)) {
+            <div>
+              @if (editForm.get('isActive')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_lastCheckedAt" jhiTranslate="cIjhipsterApp.dataSource.lastCheckedAt">Last Checked At</label>
+          <div class="d-flex">
+            <input
+              id="field_lastCheckedAt"
+              data-cy="lastCheckedAt"
+              type="datetime-local"
+              class="form-control"
+              name="lastCheckedAt"
+              formControlName="lastCheckedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        @let createdAtRef = editForm.get('createdAt')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_createdAt" jhiTranslate="cIjhipsterApp.dataSource.createdAt">Created At</label>
+          <div class="d-flex">
+            <input
+              id="field_createdAt"
+              data-cy="createdAt"
+              type="datetime-local"
+              class="form-control"
+              name="createdAt"
+              formControlName="createdAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          @if (createdAtRef.invalid && (createdAtRef.dirty || createdAtRef.touched)) {
+            <div>
+              @if (editForm.get('createdAt')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+              <small
+                class="form-text text-danger"
+                [hidden]="!editForm.get('createdAt')?.errors?.datetimelocal"
+                jhiTranslate="entity.validation.datetimelocal"
+                >This field should be a date and time.</small
+              >
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_competitor" jhiTranslate="cIjhipsterApp.dataSource.competitor">Competitor</label>
+          <select
+            class="form-control"
+            id="field_competitor"
+            data-cy="competitor"
+            name="competitor"
+            formControlName="competitor"
+            [compareWith]="compareCompetitor"
+          >
+            @if (!editForm.get('competitor')!.value) {
+              <option [ngValue]="null" selected></option>
+            }
+            @for (competitorOption of competitorsSharedCollection(); track $index) {
+              <option [ngValue]="competitorOption">{{ competitorOption.competitorName }}</option>
+            }
+          </select>
+        </div>
+        @if (editForm.get(['competitor'])!.invalid && (editForm.get(['competitor'])!.dirty || editForm.get(['competitor'])!.touched)) {
+          <div>
+            @if (editForm.get(['competitor'])?.errors?.required) {
+              <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+            }
+          </div>
+        }
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

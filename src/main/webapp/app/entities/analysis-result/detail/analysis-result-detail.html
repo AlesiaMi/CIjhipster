@@ -1,0 +1,82 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (analysisResult(); as analysisResultRef) {
+      <div>
+        <h2 data-cy="analysisResultDetailsHeading">
+          <span jhiTranslate="cIjhipsterApp.analysisResult.detail.title">Analysis Result</span>
+        </h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ analysisResultRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analysisResult.summary">Summary</span></dt>
+          <dd>
+            <span>{{ analysisResultRef.summary }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analysisResult.sentiment">Sentiment</span></dt>
+          <dd>
+            <span [jhiTranslate]="'cIjhipsterApp.Sentiment.' + (analysisResultRef.sentiment ?? 'null')">{{
+              { null: '', POSITIVE: 'POSITIVE', NEGATIVE: 'NEGATIVE', NEUTRAL: 'NEUTRAL', UNKNOWN: 'UNKNOWN' }[
+                analysisResultRef.sentiment ?? 'null'
+              ]
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analysisResult.topic">Topic</span></dt>
+          <dd>
+            <span>{{ analysisResultRef.topic }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analysisResult.entities">Entities</span></dt>
+          <dd>
+            <span>{{ analysisResultRef.entities }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analysisResult.riskSource">Risk Source</span></dt>
+          <dd>
+            <span>{{ analysisResultRef.riskSource }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analysisResult.status">Status</span></dt>
+          <dd>
+            <span [jhiTranslate]="'cIjhipsterApp.AnalysisStatus.' + (analysisResultRef.status ?? 'null')">{{
+              { null: '', PENDING: 'PENDING', SUCCESS: 'SUCCESS', FAILED: 'FAILED' }[analysisResultRef.status ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analysisResult.modelName">Model Name</span></dt>
+          <dd>
+            <span>{{ analysisResultRef.modelName }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analysisResult.analyzedAt">Analyzed At</span></dt>
+          <dd>
+            <span>{{ analysisResultRef.analyzedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analysisResult.errorMessage">Error Message</span></dt>
+          <dd>
+            <span>{{ analysisResultRef.errorMessage }}</span>
+          </dd>
+          <dt><span jhiTranslate="cIjhipsterApp.analysisResult.newsItem">News Item</span></dt>
+          <dd>
+            @if (analysisResult()!.newsItem) {
+              <div>
+                <a [routerLink]="['/news-item', analysisResult()!.newsItem?.id, 'view']">{{ analysisResultRef.newsItem?.title }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/analysis-result', analysisResultRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

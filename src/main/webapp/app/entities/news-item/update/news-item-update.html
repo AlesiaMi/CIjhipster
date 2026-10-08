@@ -1,0 +1,249 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2 id="jhi-news-item-heading" data-cy="NewsItemCreateUpdateHeading" jhiTranslate="cIjhipsterApp.newsItem.home.createOrEditLabel">
+        Create or edit a News Item
+      </h2>
+
+      <div>
+        <jhi-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+          </div>
+        }
+
+        @let externalIdRef = editForm.get('externalId')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_externalId" jhiTranslate="cIjhipsterApp.newsItem.externalId">External Id</label>
+          <input
+            type="text"
+            class="form-control"
+            name="externalId"
+            id="field_externalId"
+            data-cy="externalId"
+            formControlName="externalId"
+          />
+          @if (externalIdRef.invalid && (externalIdRef.dirty || externalIdRef.touched)) {
+            <div>
+              @if (editForm.get('externalId')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >This field cannot be longer than 255 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let titleRef = editForm.get('title')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_title" jhiTranslate="cIjhipsterApp.newsItem.title">Title</label>
+          <input type="text" class="form-control" name="title" id="field_title" data-cy="title" formControlName="title" />
+          @if (titleRef.invalid && (titleRef.dirty || titleRef.touched)) {
+            <div>
+              @if (editForm.get('title')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (editForm.get('title')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '500' }"
+                  >This field cannot be longer than 500 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let urlRef = editForm.get('url')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_url" jhiTranslate="cIjhipsterApp.newsItem.url">Url</label>
+          <input type="text" class="form-control" name="url" id="field_url" data-cy="url" formControlName="url" />
+          @if (urlRef.invalid && (urlRef.dirty || urlRef.touched)) {
+            <div>
+              @if (editForm.get('url')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+              @if (editForm.get('url')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '1000' }"
+                  >This field cannot be longer than 1000 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let originalTextRef = editForm.get('originalText')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_originalText" jhiTranslate="cIjhipsterApp.newsItem.originalText">Original Text</label>
+          <input
+            type="text"
+            class="form-control"
+            name="originalText"
+            id="field_originalText"
+            data-cy="originalText"
+            formControlName="originalText"
+          />
+          @if (originalTextRef.invalid && (originalTextRef.dirty || originalTextRef.touched)) {
+            <div>
+              @if (editForm.get('originalText')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '10000' }"
+                  >This field cannot be longer than 10000 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_publishedAt" jhiTranslate="cIjhipsterApp.newsItem.publishedAt">Published At</label>
+          <div class="d-flex">
+            <input
+              id="field_publishedAt"
+              data-cy="publishedAt"
+              type="datetime-local"
+              class="form-control"
+              name="publishedAt"
+              formControlName="publishedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        @let collectedAtRef = editForm.get('collectedAt')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_collectedAt" jhiTranslate="cIjhipsterApp.newsItem.collectedAt">Collected At</label>
+          <div class="d-flex">
+            <input
+              id="field_collectedAt"
+              data-cy="collectedAt"
+              type="datetime-local"
+              class="form-control"
+              name="collectedAt"
+              formControlName="collectedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          @if (collectedAtRef.invalid && (collectedAtRef.dirty || collectedAtRef.touched)) {
+            <div>
+              @if (editForm.get('collectedAt')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+              <small
+                class="form-text text-danger"
+                [hidden]="!editForm.get('collectedAt')?.errors?.datetimelocal"
+                jhiTranslate="entity.validation.datetimelocal"
+                >This field should be a date and time.</small
+              >
+            </div>
+          }
+        </div>
+
+        @let isDuplicateRef = editForm.get('isDuplicate')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_isDuplicate" jhiTranslate="cIjhipsterApp.newsItem.isDuplicate">Is Duplicate</label>
+          <input
+            type="checkbox"
+            class="form-check"
+            name="isDuplicate"
+            id="field_isDuplicate"
+            data-cy="isDuplicate"
+            formControlName="isDuplicate"
+          />
+          @if (isDuplicateRef.invalid && (isDuplicateRef.dirty || isDuplicateRef.touched)) {
+            <div>
+              @if (editForm.get('isDuplicate')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_dataSource" jhiTranslate="cIjhipsterApp.newsItem.dataSource">Data Source</label>
+          <select
+            class="form-control"
+            id="field_dataSource"
+            data-cy="dataSource"
+            name="dataSource"
+            formControlName="dataSource"
+            [compareWith]="compareDataSource"
+          >
+            @if (!editForm.get('dataSource')!.value) {
+              <option [ngValue]="null" selected></option>
+            }
+            @for (dataSourceOption of dataSourcesSharedCollection(); track $index) {
+              <option [ngValue]="dataSourceOption">{{ dataSourceOption.sourceName }}</option>
+            }
+          </select>
+        </div>
+        @if (editForm.get(['dataSource'])!.invalid && (editForm.get(['dataSource'])!.dirty || editForm.get(['dataSource'])!.touched)) {
+          <div>
+            @if (editForm.get(['dataSource'])?.errors?.required) {
+              <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+            }
+          </div>
+        }
+
+        <div class="mb-3">
+          <label class="form-label" for="field_competitor" jhiTranslate="cIjhipsterApp.newsItem.competitor">Competitor</label>
+          <select
+            class="form-control"
+            id="field_competitor"
+            data-cy="competitor"
+            name="competitor"
+            formControlName="competitor"
+            [compareWith]="compareCompetitor"
+          >
+            @if (!editForm.get('competitor')!.value) {
+              <option [ngValue]="null" selected></option>
+            }
+            @for (competitorOption of competitorsSharedCollection(); track $index) {
+              <option [ngValue]="competitorOption">{{ competitorOption.competitorName }}</option>
+            }
+          </select>
+        </div>
+        @if (editForm.get(['competitor'])!.invalid && (editForm.get(['competitor'])!.dirty || editForm.get(['competitor'])!.touched)) {
+          <div>
+            @if (editForm.get(['competitor'])?.errors?.required) {
+              <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+            }
+          </div>
+        }
+
+        <div class="mb-3">
+          <label class="form-label" for="field_collectionRun" jhiTranslate="cIjhipsterApp.newsItem.collectionRun">Collection Run</label>
+          <select
+            class="form-control"
+            id="field_collectionRun"
+            data-cy="collectionRun"
+            name="collectionRun"
+            formControlName="collectionRun"
+            [compareWith]="compareCollectionRun"
+          >
+            <option [ngValue]="null"></option>
+            @for (collectionRunOption of collectionRunsSharedCollection(); track $index) {
+              <option [ngValue]="collectionRunOption">{{ collectionRunOption.id }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

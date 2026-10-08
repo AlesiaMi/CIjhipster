@@ -1,0 +1,221 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-analysis-result-heading"
+        data-cy="AnalysisResultCreateUpdateHeading"
+        jhiTranslate="cIjhipsterApp.analysisResult.home.createOrEditLabel"
+      >
+        Create or edit a Analysis Result
+      </h2>
+
+      <div>
+        <jhi-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+          </div>
+        }
+
+        @let summaryRef = editForm.get('summary')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_summary" jhiTranslate="cIjhipsterApp.analysisResult.summary">Summary</label>
+          <input type="text" class="form-control" name="summary" id="field_summary" data-cy="summary" formControlName="summary" />
+          @if (summaryRef.invalid && (summaryRef.dirty || summaryRef.touched)) {
+            <div>
+              @if (editForm.get('summary')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '4000' }"
+                  >This field cannot be longer than 4000 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let sentimentRef = editForm.get('sentiment')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_sentiment" jhiTranslate="cIjhipsterApp.analysisResult.sentiment">Sentiment</label>
+          <select class="form-control" name="sentiment" formControlName="sentiment" id="field_sentiment" data-cy="sentiment">
+            <option [ngValue]="null">{{ 'cIjhipsterApp.Sentiment.null' | translate }}</option>
+            @for (sentiment of sentimentValues; track $index) {
+              <option [value]="sentiment">{{ 'cIjhipsterApp.Sentiment.' + sentiment | translate }}</option>
+            }
+          </select>
+          @if (sentimentRef.invalid && (sentimentRef.dirty || sentimentRef.touched)) {
+            <div>
+              @if (editForm.get('sentiment')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let topicRef = editForm.get('topic')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_topic" jhiTranslate="cIjhipsterApp.analysisResult.topic">Topic</label>
+          <input type="text" class="form-control" name="topic" id="field_topic" data-cy="topic" formControlName="topic" />
+          @if (topicRef.invalid && (topicRef.dirty || topicRef.touched)) {
+            <div>
+              @if (editForm.get('topic')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >This field cannot be longer than 255 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let entitiesRef = editForm.get('entities')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_entities" jhiTranslate="cIjhipsterApp.analysisResult.entities">Entities</label>
+          <input type="text" class="form-control" name="entities" id="field_entities" data-cy="entities" formControlName="entities" />
+          @if (entitiesRef.invalid && (entitiesRef.dirty || entitiesRef.touched)) {
+            <div>
+              @if (editForm.get('entities')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '4000' }"
+                  >This field cannot be longer than 4000 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let riskSourceRef = editForm.get('riskSource')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_riskSource" jhiTranslate="cIjhipsterApp.analysisResult.riskSource">Risk Source</label>
+          <input
+            type="text"
+            class="form-control"
+            name="riskSource"
+            id="field_riskSource"
+            data-cy="riskSource"
+            formControlName="riskSource"
+          />
+          @if (riskSourceRef.invalid && (riskSourceRef.dirty || riskSourceRef.touched)) {
+            <div>
+              @if (editForm.get('riskSource')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                  >This field cannot be longer than 255 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let statusRef = editForm.get('status')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_status" jhiTranslate="cIjhipsterApp.analysisResult.status">Status</label>
+          <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
+            <option [ngValue]="null">{{ 'cIjhipsterApp.AnalysisStatus.null' | translate }}</option>
+            @for (analysisStatus of analysisStatusValues; track $index) {
+              <option [value]="analysisStatus">{{ 'cIjhipsterApp.AnalysisStatus.' + analysisStatus | translate }}</option>
+            }
+          </select>
+          @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
+            <div>
+              @if (editForm.get('status')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let modelNameRef = editForm.get('modelName')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_modelName" jhiTranslate="cIjhipsterApp.analysisResult.modelName">Model Name</label>
+          <input type="text" class="form-control" name="modelName" id="field_modelName" data-cy="modelName" formControlName="modelName" />
+          @if (modelNameRef.invalid && (modelNameRef.dirty || modelNameRef.touched)) {
+            <div>
+              @if (editForm.get('modelName')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '100' }"
+                  >This field cannot be longer than 100 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_analyzedAt" jhiTranslate="cIjhipsterApp.analysisResult.analyzedAt">Analyzed At</label>
+          <div class="d-flex">
+            <input
+              id="field_analyzedAt"
+              data-cy="analyzedAt"
+              type="datetime-local"
+              class="form-control"
+              name="analyzedAt"
+              formControlName="analyzedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        @let errorMessageRef = editForm.get('errorMessage')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_errorMessage" jhiTranslate="cIjhipsterApp.analysisResult.errorMessage">Error Message</label>
+          <input
+            type="text"
+            class="form-control"
+            name="errorMessage"
+            id="field_errorMessage"
+            data-cy="errorMessage"
+            formControlName="errorMessage"
+          />
+          @if (errorMessageRef.invalid && (errorMessageRef.dirty || errorMessageRef.touched)) {
+            <div>
+              @if (editForm.get('errorMessage')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '4000' }"
+                  >This field cannot be longer than 4000 characters.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_newsItem" jhiTranslate="cIjhipsterApp.analysisResult.newsItem">News Item</label>
+          <select
+            class="form-control"
+            id="field_newsItem"
+            data-cy="newsItem"
+            name="newsItem"
+            formControlName="newsItem"
+            [compareWith]="compareNewsItem"
+          >
+            @if (editForm.get(['newsItem'])!.value === null) {
+              <option [ngValue]="null" selected></option>
+            }
+            @for (newsItemOption of newsItemsCollection(); track $index) {
+              <option [ngValue]="newsItemOption">{{ newsItemOption.title }}</option>
+            }
+          </select>
+        </div>
+        @if (editForm.get(['newsItem'])!.invalid && (editForm.get(['newsItem'])!.dirty || editForm.get(['newsItem'])!.touched)) {
+          <div>
+            @if (editForm.get(['newsItem'])?.errors?.required) {
+              <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+            }
+          </div>
+        }
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+{
+  "cIjhipsterApp": {
+    "Sentiment": {
+      "null": "",
+      "POSITIVE": "POSITIVE",
+      "NEGATIVE": "NEGATIVE",
+      "NEUTRAL": "NEUTRAL",
+      "UNKNOWN": "UNKNOWN"
+    }
+  }
+}
