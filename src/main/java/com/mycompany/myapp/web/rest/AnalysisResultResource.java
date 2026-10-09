@@ -105,7 +105,7 @@ public class AnalysisResultResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody AnalysisResultDTO analysisResultDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update AnalysisResult partially : {}, {}", id, analysisResultDTO);
+        LOG.debug("REST request to partially update AnalysisResult : {}, {}", id, analysisResultDTO);
         if (analysisResultDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

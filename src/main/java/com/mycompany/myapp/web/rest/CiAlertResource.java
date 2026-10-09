@@ -57,7 +57,7 @@ public class CiAlertResource {
      * {@code POST  /ci-alerts} : Create a new ciAlert.
      *
      * @param ciAlertDTO the ciAlertDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new ciAlertDTO, or with status {@code 400 (Bad Request)} if the ciAlert has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new ciAlertDTO, or with status {@code 400 (Bad Request)} if the ciAlert already has an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
@@ -124,7 +124,7 @@ public class CiAlertResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody CiAlertDTO ciAlertDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update CiAlert partially : {}, {}", id, ciAlertDTO);
+        LOG.debug("REST request to partially update CiAlert : {}, {}", id, ciAlertDTO);
         if (ciAlertDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

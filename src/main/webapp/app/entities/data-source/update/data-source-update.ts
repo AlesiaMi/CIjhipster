@@ -1,16 +1,16 @@
 import { HttpResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
 import { ICompetitor } from 'app/entities/competitor/competitor.model';
 import { CompetitorService } from 'app/entities/competitor/service/competitor.service';
 import { SourceType } from 'app/entities/enumerations/source-type.model';
-import { AlertError } from 'app/shared/alert/alert-error';
+import { AlertError } from 'app/shared/alert';
 import { TranslateDirective } from 'app/shared/language';
 import { IDataSource } from '../data-source.model';
 import { DataSourceService } from '../service/data-source.service';
@@ -18,10 +18,9 @@ import { ManagerClientContextService } from 'app/core/manager/manager-client-con
 import { DataSourceFormGroup, DataSourceFormService } from './data-source-form.service';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-data-source-update',
   templateUrl: './data-source-update.html',
-  imports: [TranslateDirective, TranslateModule, FontAwesomeModule, AlertError, ReactiveFormsModule],
+  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
 export class DataSourceUpdate implements OnInit {
   readonly isSaving = signal(false);

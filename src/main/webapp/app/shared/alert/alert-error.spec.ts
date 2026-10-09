@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { WritableSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 
-import { AlertModel, AlertService } from 'app/core/util/alert.service';
-import { EventManager } from 'app/core/util/event-manager.service';
+import { AlertModel, AlertService, EventManager } from 'app/core/util';
 import { MESSAGE_ERROR_HEADER_NAME, MESSAGE_PARAM_HEADER_NAME } from 'app/shared/jhipster/constants';
 import { ProblemWithMessageType } from 'app/shared/jhipster/problem-details';
 
@@ -19,8 +19,7 @@ describe('Alert Error Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
-      providers: [EventManager, AlertService],
+      providers: [provideTranslateService(), EventManager, AlertService],
     });
   });
 
@@ -29,10 +28,8 @@ describe('Alert Error Component', () => {
     comp = fixture.componentInstance;
     eventManager = TestBed.inject(EventManager);
     alertService = TestBed.inject(AlertService);
-    alertService.addAlert = (alert: AlertModel, alerts?: AlertModel[]) => {
-      if (alerts) {
-        alerts.push(alert);
-      }
+    alertService.addAlert = (alert: AlertModel, alerts?: WritableSignal<AlertModel[]>) => {
+      alerts?.update(current => [...current, alert]);
       return alert;
     };
   });
@@ -42,7 +39,7 @@ describe('Alert Error Component', () => {
       // GIVEN
       eventManager.broadcast({ name: 'cIjhipsterApp.httpError', content: { status: 0 } });
       // THEN
-      expect(comp.alerts().length).toBe(1);
+      expect(comp.alerts()).toHaveLength(1);
       expect(comp.alerts()[0].translationKey).toBe('error.server.not.reachable');
     });
 
@@ -50,7 +47,7 @@ describe('Alert Error Component', () => {
       // GIVEN
       eventManager.broadcast({ name: 'cIjhipsterApp.httpError', content: { status: 404 } });
       // THEN
-      expect(comp.alerts().length).toBe(1);
+      expect(comp.alerts()).toHaveLength(1);
       expect(comp.alerts()[0].translationKey).toBe('error.url.not.found');
     });
 
@@ -59,7 +56,7 @@ describe('Alert Error Component', () => {
       eventManager.broadcast({ name: 'cIjhipsterApp.httpError', content: { error: { message: 'Error Message' } } });
       eventManager.broadcast({ name: 'cIjhipsterApp.httpError', content: { error: 'Second Error Message' } });
       // THEN
-      expect(comp.alerts().length).toBe(2);
+      expect(comp.alerts()).toHaveLength(2);
       expect(comp.alerts()[0].translationKey).toBe('Error Message');
       expect(comp.alerts()[1].translationKey).toBe('Second Error Message');
     });
@@ -81,7 +78,7 @@ describe('Alert Error Component', () => {
       });
       eventManager.broadcast({ name: 'cIjhipsterApp.httpError', content: response });
       // THEN
-      expect(comp.alerts().length).toBe(1);
+      expect(comp.alerts()).toHaveLength(1);
       expect(comp.alerts()[0].translationKey).toBe('error.validation');
     });
 
@@ -95,7 +92,7 @@ describe('Alert Error Component', () => {
       });
       eventManager.broadcast({ name: 'cIjhipsterApp.httpError', content: response });
       // THEN
-      expect(comp.alerts().length).toBe(1);
+      expect(comp.alerts()).toHaveLength(1);
       expect(comp.alerts()[0].translationKey).toBe('Bad Request');
     });
 
@@ -117,7 +114,7 @@ describe('Alert Error Component', () => {
       });
       eventManager.broadcast({ name: 'cIjhipsterApp.httpError', content: response });
       // THEN
-      expect(comp.alerts().length).toBe(1);
+      expect(comp.alerts()).toHaveLength(1);
       expect(comp.alerts()[0].translationKey).toBe('error.Size');
     });
 
@@ -135,7 +132,7 @@ describe('Alert Error Component', () => {
       });
       eventManager.broadcast({ name: 'cIjhipsterApp.httpError', content: response });
       // THEN
-      expect(comp.alerts().length).toBe(1);
+      expect(comp.alerts()).toHaveLength(1);
       expect(comp.alerts()[0].translationKey).toBe('header.error');
     });
 
@@ -154,7 +151,7 @@ describe('Alert Error Component', () => {
       });
       eventManager.broadcast({ name: 'cIjhipsterApp.httpError', content: response });
       // THEN
-      expect(comp.alerts().length).toBe(1);
+      expect(comp.alerts()).toHaveLength(1);
       expect(comp.alerts()[0].translationKey).toBe('error.http.500');
     });
   });

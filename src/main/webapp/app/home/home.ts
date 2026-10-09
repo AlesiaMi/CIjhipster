@@ -1,17 +1,14 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
-import { TranslateModule } from '@ngx-translate/core';
-
-import { AccountService } from 'app/core/auth/account.service';
+import { AccountService } from 'app/core/auth';
 import { TranslateDirective } from 'app/shared/language';
 
 @Component({
   selector: 'jhi-home',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './home.html',
   styleUrl: './home.scss',
-  imports: [TranslateDirective, TranslateModule, RouterLink],
+  imports: [TranslateDirective, RouterLink],
 })
 export default class Home implements OnInit {
   private readonly accountService = inject(AccountService);
@@ -23,16 +20,19 @@ export default class Home implements OnInit {
       if (!account) {
         return;
       }
+
       if (account.authorities.includes('ROLE_ADMIN')) {
-        this.router.navigate(['/admin/manager-assignments']);
+        void this.router.navigate(['/admin/manager-assignments']);
         return;
       }
+
       if (account.authorities.includes('ROLE_MANAGER') || account.authorities.includes('ROLE_USER')) {
-        this.router.navigate(['/dashboard']);
+        void this.router.navigate(['/dashboard']);
       }
     });
   }
+
   login(): void {
-    this.router.navigate(['/login']);
+    void this.router.navigate(['/login']);
   }
 }

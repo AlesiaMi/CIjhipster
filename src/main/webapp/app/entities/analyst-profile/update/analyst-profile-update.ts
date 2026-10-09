@@ -1,17 +1,16 @@
 import { HttpResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { TranslateModule } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
 import { ICompetitor } from 'app/entities/competitor/competitor.model';
 import { CompetitorService } from 'app/entities/competitor/service/competitor.service';
 import { UserService } from 'app/entities/user/service/user.service';
 import { IUser } from 'app/entities/user/user.model';
-import { AlertError } from 'app/shared/alert/alert-error';
+import { AlertError } from 'app/shared/alert';
 import { TranslateDirective } from 'app/shared/language';
 import { IAnalystProfile } from '../analyst-profile.model';
 import { AnalystProfileService } from '../service/analyst-profile.service';
@@ -19,10 +18,9 @@ import { AnalystProfileService } from '../service/analyst-profile.service';
 import { AnalystProfileFormGroup, AnalystProfileFormService } from './analyst-profile-form.service';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-analyst-profile-update',
   templateUrl: './analyst-profile-update.html',
-  imports: [TranslateDirective, TranslateModule, FontAwesomeModule, AlertError, ReactiveFormsModule],
+  imports: [TranslateDirective, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
 export class AnalystProfileUpdate implements OnInit {
   readonly isSaving = signal(false);

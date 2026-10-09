@@ -1,10 +1,10 @@
 import { HttpResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
 import { IAnalysisResult } from 'app/entities/analysis-result/analysis-result.model';
@@ -13,7 +13,7 @@ import { IAnalystProfile } from 'app/entities/analyst-profile/analyst-profile.mo
 import { AnalystProfileService } from 'app/entities/analyst-profile/service/analyst-profile.service';
 import { AlertStatus } from 'app/entities/enumerations/alert-status.model';
 import { Severity } from 'app/entities/enumerations/severity.model';
-import { AlertError } from 'app/shared/alert/alert-error';
+import { AlertError } from 'app/shared/alert';
 import { TranslateDirective } from 'app/shared/language';
 import { ICiAlert } from '../ci-alert.model';
 import { CiAlertService } from '../service/ci-alert.service';
@@ -21,10 +21,9 @@ import { CiAlertService } from '../service/ci-alert.service';
 import { CiAlertFormGroup, CiAlertFormService } from './ci-alert-form.service';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-ci-alert-update',
   templateUrl: './ci-alert-update.html',
-  imports: [TranslateDirective, TranslateModule, FontAwesomeModule, AlertError, ReactiveFormsModule],
+  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
 export class CiAlertUpdate implements OnInit {
   readonly isSaving = signal(false);

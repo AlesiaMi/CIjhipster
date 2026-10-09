@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpResponse } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { Subject, from, of } from 'rxjs';
 
 import { INewsItem } from 'app/entities/news-item/news-item.model';
@@ -25,8 +25,8 @@ describe('AnalysisResult Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
       providers: [
+        provideTranslateService(),
         provideHttpClientTesting(),
         {
           provide: ActivatedRoute,
@@ -53,9 +53,9 @@ describe('AnalysisResult Management Update Component', () => {
       analysisResult.newsItem = newsItem;
 
       const newsItemCollection: INewsItem[] = [{ id: 25999 }];
-      vitest.spyOn(newsItemService, 'query').mockReturnValue(of(new HttpResponse({ body: newsItemCollection })));
+      vi.spyOn(newsItemService, 'query').mockReturnValue(of(new HttpResponse({ body: newsItemCollection })));
       const expectedCollection: INewsItem[] = [newsItem, ...newsItemCollection];
-      vitest.spyOn(newsItemService, 'addNewsItemToCollectionIfMissing').mockReturnValue(expectedCollection);
+      vi.spyOn(newsItemService, 'addNewsItemToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ analysisResult });
       comp.ngOnInit();
@@ -83,9 +83,9 @@ describe('AnalysisResult Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<IAnalysisResult>();
       const analysisResult = { id: 28488 };
-      vitest.spyOn(analysisResultFormService, 'getAnalysisResult').mockReturnValue(analysisResult);
-      vitest.spyOn(analysisResultService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(analysisResultFormService, 'getAnalysisResult').mockReturnValue(analysisResult);
+      vi.spyOn(analysisResultService, 'update').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ analysisResult });
       comp.ngOnInit();
 
@@ -106,9 +106,9 @@ describe('AnalysisResult Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<IAnalysisResult>();
       const analysisResult = { id: 28488 };
-      vitest.spyOn(analysisResultFormService, 'getAnalysisResult').mockReturnValue({ id: null });
-      vitest.spyOn(analysisResultService, 'create').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(analysisResultFormService, 'getAnalysisResult').mockReturnValue({ id: null });
+      vi.spyOn(analysisResultService, 'create').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ analysisResult: null });
       comp.ngOnInit();
 
@@ -129,8 +129,8 @@ describe('AnalysisResult Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<IAnalysisResult>();
       const analysisResult = { id: 28488 };
-      vitest.spyOn(analysisResultService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(analysisResultService, 'update').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ analysisResult });
       comp.ngOnInit();
 
@@ -151,7 +151,7 @@ describe('AnalysisResult Management Update Component', () => {
       it('should forward to newsItemService', () => {
         const entity = { id: 25999 };
         const entity2 = { id: 14522 };
-        vitest.spyOn(newsItemService, 'compareNewsItem');
+        vi.spyOn(newsItemService, 'compareNewsItem');
         comp.compareNewsItem(entity, entity2);
         expect(newsItemService.compareNewsItem).toHaveBeenCalledWith(entity, entity2);
       });

@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class NewsItemTestSamples {
 
     private static final Random random = new Random();
-    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2L * Integer.MAX_VALUE));
+    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + 2L * Integer.MAX_VALUE);
 
     public static NewsItem getNewsItemSample1() {
         return new NewsItem().id(1L).externalId("externalId1").title("title1").url("url1").originalText("originalText1");

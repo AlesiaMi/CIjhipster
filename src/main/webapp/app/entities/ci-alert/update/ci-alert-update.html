@@ -21,10 +21,10 @@
           <input type="text" class="form-control" name="title" id="field_title" data-cy="title" formControlName="title" />
           @if (titleRef.invalid && (titleRef.dirty || titleRef.touched)) {
             <div>
-              @if (editForm.get('title')?.errors?.required) {
+              @if (titleRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
-              @if (editForm.get('title')?.errors?.maxlength) {
+              @if (titleRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
                   >This field cannot be longer than 255 characters.</small
                 >
@@ -39,10 +39,10 @@
           <input type="text" class="form-control" name="message" id="field_message" data-cy="message" formControlName="message" />
           @if (messageRef.invalid && (messageRef.dirty || messageRef.touched)) {
             <div>
-              @if (editForm.get('message')?.errors?.required) {
+              @if (messageRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
-              @if (editForm.get('message')?.errors?.maxlength) {
+              @if (messageRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '4000' }"
                   >This field cannot be longer than 4000 characters.</small
                 >
@@ -54,7 +54,7 @@
         @let severityRef = editForm.get('severity')!;
         <div class="mb-3">
           <label class="form-label" for="field_severity" jhiTranslate="cIjhipsterApp.ciAlert.severity">Severity</label>
-          <select class="form-control" name="severity" formControlName="severity" id="field_severity" data-cy="severity">
+          <select class="form-select" name="severity" formControlName="severity" id="field_severity" data-cy="severity">
             <option [ngValue]="null">{{ 'cIjhipsterApp.Severity.null' | translate }}</option>
             @for (severity of severityValues; track $index) {
               <option [value]="severity">{{ 'cIjhipsterApp.Severity.' + severity | translate }}</option>
@@ -62,7 +62,7 @@
           </select>
           @if (severityRef.invalid && (severityRef.dirty || severityRef.touched)) {
             <div>
-              @if (editForm.get('severity')?.errors?.required) {
+              @if (severityRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
             </div>
@@ -72,7 +72,7 @@
         @let statusRef = editForm.get('status')!;
         <div class="mb-3">
           <label class="form-label" for="field_status" jhiTranslate="cIjhipsterApp.ciAlert.status">Status</label>
-          <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
+          <select class="form-select" name="status" formControlName="status" id="field_status" data-cy="status">
             <option [ngValue]="null">{{ 'cIjhipsterApp.AlertStatus.null' | translate }}</option>
             @for (alertStatus of alertStatusValues; track $index) {
               <option [value]="alertStatus">{{ 'cIjhipsterApp.AlertStatus.' + alertStatus | translate }}</option>
@@ -80,7 +80,7 @@
           </select>
           @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
             <div>
-              @if (editForm.get('status')?.errors?.required) {
+              @if (statusRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
             </div>
@@ -103,12 +103,12 @@
           </div>
           @if (createdAtRef.invalid && (createdAtRef.dirty || createdAtRef.touched)) {
             <div>
-              @if (editForm.get('createdAt')?.errors?.required) {
+              @if (createdAtRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
               <small
                 class="form-text text-danger"
-                [hidden]="!editForm.get('createdAt')?.errors?.datetimelocal"
+                [hidden]="!createdAtRef.errors?.datetimelocal"
                 jhiTranslate="entity.validation.datetimelocal"
                 >This field should be a date and time.</small
               >
@@ -134,7 +134,7 @@
         <div class="mb-3">
           <label class="form-label" for="field_analysisResult" jhiTranslate="cIjhipsterApp.ciAlert.analysisResult">Analysis Result</label>
           <select
-            class="form-control"
+            class="form-select"
             id="field_analysisResult"
             data-cy="analysisResult"
             name="analysisResult"
@@ -163,7 +163,7 @@
         <div class="mb-3">
           <label class="form-label" for="field_analystProfile" jhiTranslate="cIjhipsterApp.ciAlert.analystProfile">Analyst Profile</label>
           <select
-            class="form-control"
+            class="form-select"
             id="field_analystProfile"
             data-cy="analystProfile"
             name="analystProfile"

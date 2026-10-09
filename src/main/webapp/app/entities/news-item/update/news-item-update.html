@@ -28,7 +28,7 @@
           />
           @if (externalIdRef.invalid && (externalIdRef.dirty || externalIdRef.touched)) {
             <div>
-              @if (editForm.get('externalId')?.errors?.maxlength) {
+              @if (externalIdRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
                   >This field cannot be longer than 255 characters.</small
                 >
@@ -43,10 +43,10 @@
           <input type="text" class="form-control" name="title" id="field_title" data-cy="title" formControlName="title" />
           @if (titleRef.invalid && (titleRef.dirty || titleRef.touched)) {
             <div>
-              @if (editForm.get('title')?.errors?.required) {
+              @if (titleRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
-              @if (editForm.get('title')?.errors?.maxlength) {
+              @if (titleRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '500' }"
                   >This field cannot be longer than 500 characters.</small
                 >
@@ -61,10 +61,10 @@
           <input type="text" class="form-control" name="url" id="field_url" data-cy="url" formControlName="url" />
           @if (urlRef.invalid && (urlRef.dirty || urlRef.touched)) {
             <div>
-              @if (editForm.get('url')?.errors?.required) {
+              @if (urlRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
-              @if (editForm.get('url')?.errors?.maxlength) {
+              @if (urlRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '1000' }"
                   >This field cannot be longer than 1000 characters.</small
                 >
@@ -86,7 +86,7 @@
           />
           @if (originalTextRef.invalid && (originalTextRef.dirty || originalTextRef.touched)) {
             <div>
-              @if (editForm.get('originalText')?.errors?.maxlength) {
+              @if (originalTextRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '10000' }"
                   >This field cannot be longer than 10000 characters.</small
                 >
@@ -126,12 +126,12 @@
           </div>
           @if (collectedAtRef.invalid && (collectedAtRef.dirty || collectedAtRef.touched)) {
             <div>
-              @if (editForm.get('collectedAt')?.errors?.required) {
+              @if (collectedAtRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
               <small
                 class="form-text text-danger"
-                [hidden]="!editForm.get('collectedAt')?.errors?.datetimelocal"
+                [hidden]="!collectedAtRef.errors?.datetimelocal"
                 jhiTranslate="entity.validation.datetimelocal"
                 >This field should be a date and time.</small
               >
@@ -140,19 +140,19 @@
         </div>
 
         @let isDuplicateRef = editForm.get('isDuplicate')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_isDuplicate" jhiTranslate="cIjhipsterApp.newsItem.isDuplicate">Is Duplicate</label>
+        <div class="mb-3 form-check">
           <input
             type="checkbox"
-            class="form-check"
+            class="form-check-input"
             name="isDuplicate"
             id="field_isDuplicate"
             data-cy="isDuplicate"
             formControlName="isDuplicate"
           />
+          <label class="form-check-label" for="field_isDuplicate" jhiTranslate="cIjhipsterApp.newsItem.isDuplicate">Is Duplicate</label>
           @if (isDuplicateRef.invalid && (isDuplicateRef.dirty || isDuplicateRef.touched)) {
             <div>
-              @if (editForm.get('isDuplicate')?.errors?.required) {
+              @if (isDuplicateRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
             </div>
@@ -162,7 +162,7 @@
         <div class="mb-3">
           <label class="form-label" for="field_dataSource" jhiTranslate="cIjhipsterApp.newsItem.dataSource">Data Source</label>
           <select
-            class="form-control"
+            class="form-select"
             id="field_dataSource"
             data-cy="dataSource"
             name="dataSource"
@@ -188,7 +188,7 @@
         <div class="mb-3">
           <label class="form-label" for="field_competitor" jhiTranslate="cIjhipsterApp.newsItem.competitor">Competitor</label>
           <select
-            class="form-control"
+            class="form-select"
             id="field_competitor"
             data-cy="competitor"
             name="competitor"
@@ -214,7 +214,7 @@
         <div class="mb-3">
           <label class="form-label" for="field_collectionRun" jhiTranslate="cIjhipsterApp.newsItem.collectionRun">Collection Run</label>
           <select
-            class="form-control"
+            class="form-select"
             id="field_collectionRun"
             data-cy="collectionRun"
             name="collectionRun"

@@ -1,7 +1,6 @@
 import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -24,26 +23,22 @@ import { CompetitorService } from '../service/competitor.service';
 import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-competitor',
   templateUrl: './competitor.html',
   imports: [
     RouterLink,
-    FormsModule,
     FontAwesomeModule,
     AlertError,
     Alert,
     SortDirective,
     SortByDirective,
     TranslateDirective,
-    TranslateModule,
     Filter,
     NgbPagination,
     ItemCount,
   ],
 })
-export class Competitor implements OnInit {
-  subscription: Subscription | null = null;
+export class Competitor {
   readonly competitors = signal<ICompetitor[]>([]);
 
   sortState = sortStateSignal({});
@@ -58,6 +53,12 @@ export class Competitor implements OnInit {
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isLoading = this.competitorService.competitorsResource.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
+  protected readonly activatedRouteState = toSignal(
+    combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data]).pipe(
+      map(([queryParamMap, data]) => ({ queryParamMap, data })),
+    ),
+    { initialValue: { queryParamMap: this.activatedRoute.snapshot.queryParamMap, data: this.activatedRoute.snapshot.data } },
+  );
   protected readonly sortService = inject(SortService);
   protected readonly filterOptions = toSignal(this.filters.filterChanges);
   protected modalService = inject(NgbModal);
@@ -77,6 +78,14 @@ export class Competitor implements OnInit {
     });
     effect(() => {
       this.competitors.set(this.fillComponentAttributesFromResponseBody([...this.competitorService.competitors()]));
+    });
+    effect(() => {
+      const activatedRouteState = this.activatedRouteState();
+      untracked(() => {
+        // Only watch for route changes. Other signals should be ignored.
+        this.fillComponentAttributeFromRoute(activatedRouteState.queryParamMap, activatedRouteState.data);
+        this.load();
+      });
     });
 
     effect(() => {

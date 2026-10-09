@@ -1,10 +1,9 @@
 import { HttpResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { TranslateModule } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
 import { ICollectionRun } from 'app/entities/collection-run/collection-run.model';
@@ -13,19 +12,17 @@ import { ICompetitor } from 'app/entities/competitor/competitor.model';
 import { CompetitorService } from 'app/entities/competitor/service/competitor.service';
 import { IDataSource } from 'app/entities/data-source/data-source.model';
 import { DataSourceService } from 'app/entities/data-source/service/data-source.service';
-import { AlertError } from 'app/shared/alert/alert-error';
+import { AlertError } from 'app/shared/alert';
 import { TranslateDirective } from 'app/shared/language';
-
 import { INewsItem } from '../news-item.model';
 import { NewsItemService } from '../service/news-item.service';
 
 import { NewsItemFormGroup, NewsItemFormService } from './news-item-form.service';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-news-item-update',
   templateUrl: './news-item-update.html',
-  imports: [TranslateDirective, TranslateModule, FontAwesomeModule, AlertError, ReactiveFormsModule],
+  imports: [TranslateDirective, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
 export class NewsItemUpdate implements OnInit {
   readonly isSaving = signal(false);

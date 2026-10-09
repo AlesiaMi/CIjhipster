@@ -1,20 +1,18 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap/modal';
-import { TranslateModule } from '@ngx-translate/core';
 
-import { ITEM_DELETED_EVENT } from 'app/config/navigation.constants';
-import { AlertError } from 'app/shared/alert/alert-error';
+import { ITEM_DELETED_EVENT } from 'app/config';
+import { AlertError } from 'app/shared/alert';
 import { TranslateDirective } from 'app/shared/language';
 import { ICollectionRun } from '../collection-run.model';
 import { CollectionRunService } from '../service/collection-run.service';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './collection-run-delete-dialog.html',
-  imports: [TranslateDirective, TranslateModule, FormsModule, FontAwesomeModule, AlertError],
+  imports: [TranslateDirective, FormsModule, FontAwesomeModule, AlertError],
 })
 export class CollectionRunDeleteDialog {
   collectionRun?: ICollectionRun;

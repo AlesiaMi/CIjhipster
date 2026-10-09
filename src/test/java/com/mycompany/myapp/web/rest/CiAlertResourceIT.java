@@ -8,7 +8,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.myapp.IntegrationTest;
 import com.mycompany.myapp.domain.AnalysisResult;
 import com.mycompany.myapp.domain.AnalystProfile;
@@ -21,7 +20,6 @@ import com.mycompany.myapp.service.dto.CiAlertDTO;
 import com.mycompany.myapp.service.mapper.CiAlertMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,6 +37,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for the {@link CiAlertResource} REST controller.
@@ -62,16 +61,16 @@ class CiAlertResourceIT {
     private static final AlertStatus UPDATED_STATUS = AlertStatus.READ;
 
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final Instant UPDATED_CREATED_AT = Instant.ofEpochMilli(1782126205341L);
 
     private static final Instant DEFAULT_READ_AT = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_READ_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final Instant UPDATED_READ_AT = Instant.ofEpochMilli(1782126205341L);
 
     private static final String ENTITY_API_URL = "/api/ci-alerts";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static final Random random = new Random();
-    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2L * Integer.MAX_VALUE));
+    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + 2L * Integer.MAX_VALUE);
 
     @Autowired
     private ObjectMapper om;
@@ -119,7 +118,7 @@ class CiAlertResourceIT {
             em.persist(analysisResult);
             em.flush();
         } else {
-            analysisResult = TestUtil.findAll(em, AnalysisResult.class).get(0);
+            analysisResult = TestUtil.findAll(em, AnalysisResult.class).getFirst();
         }
         ciAlert.setAnalysisResult(analysisResult);
         // Add required entity
@@ -129,7 +128,7 @@ class CiAlertResourceIT {
             em.persist(analystProfile);
             em.flush();
         } else {
-            analystProfile = TestUtil.findAll(em, AnalystProfile.class).get(0);
+            analystProfile = TestUtil.findAll(em, AnalystProfile.class).getFirst();
         }
         ciAlert.setAnalystProfile(analystProfile);
         return ciAlert;
@@ -156,7 +155,7 @@ class CiAlertResourceIT {
             em.persist(analysisResult);
             em.flush();
         } else {
-            analysisResult = TestUtil.findAll(em, AnalysisResult.class).get(0);
+            analysisResult = TestUtil.findAll(em, AnalysisResult.class).getFirst();
         }
         updatedCiAlert.setAnalysisResult(analysisResult);
         // Add required entity
@@ -166,7 +165,7 @@ class CiAlertResourceIT {
             em.persist(analystProfile);
             em.flush();
         } else {
-            analystProfile = TestUtil.findAll(em, AnalystProfile.class).get(0);
+            analystProfile = TestUtil.findAll(em, AnalystProfile.class).getFirst();
         }
         updatedCiAlert.setAnalystProfile(analystProfile);
         return updatedCiAlert;
@@ -612,7 +611,7 @@ class CiAlertResourceIT {
             ciAlertRepository.saveAndFlush(ciAlert);
             analysisResult = AnalysisResultResourceIT.createEntity(em);
         } else {
-            analysisResult = TestUtil.findAll(em, AnalysisResult.class).get(0);
+            analysisResult = TestUtil.findAll(em, AnalysisResult.class).getFirst();
         }
         em.persist(analysisResult);
         em.flush();
@@ -634,7 +633,7 @@ class CiAlertResourceIT {
             ciAlertRepository.saveAndFlush(ciAlert);
             analystProfile = AnalystProfileResourceIT.createEntity(em);
         } else {
-            analystProfile = TestUtil.findAll(em, AnalystProfile.class).get(0);
+            analystProfile = TestUtil.findAll(em, AnalystProfile.class).getFirst();
         }
         em.persist(analystProfile);
         em.flush();

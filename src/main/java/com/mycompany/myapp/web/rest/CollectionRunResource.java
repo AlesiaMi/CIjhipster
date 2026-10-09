@@ -71,7 +71,7 @@ public class CollectionRunResource {
      * {@code POST  /collection-runs} : Create a new collectionRun.
      *
      * @param collectionRunDTO the collectionRunDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new collectionRunDTO, or with status {@code 400 (Bad Request)} if the collectionRun has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new collectionRunDTO, or with status {@code 400 (Bad Request)} if the collectionRun already has an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
@@ -139,7 +139,7 @@ public class CollectionRunResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody CollectionRunDTO collectionRunDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update CollectionRun partially : {}, {}", id, collectionRunDTO);
+        LOG.debug("REST request to partially update CollectionRun : {}, {}", id, collectionRunDTO);
         if (collectionRunDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

@@ -38,28 +38,24 @@
             <th scope="col" jhiSortBy="id">
               <div class="d-flex">
                 <span jhiTranslate="global.field.id">ID</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="value">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.keyword.value">Value</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="isActive">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.keyword.isActive">Is Active</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
             <th scope="col" jhiSortBy="createdAt">
               <div class="d-flex">
                 <span jhiTranslate="cIjhipsterApp.keyword.createdAt">Created At</span>
-
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -100,7 +96,7 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
                   </a>
 
-                  <button type="submit" (click)="delete(keyword)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                  <button type="button" (click)="delete(keyword)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="times" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
                   </button>

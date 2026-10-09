@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpResponse } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { Subject, from, of } from 'rxjs';
 
 import { ICollectionRun } from 'app/entities/collection-run/collection-run.model';
@@ -31,8 +31,8 @@ describe('NewsItem Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
       providers: [
+        provideTranslateService(),
         provideHttpClientTesting(),
         {
           provide: ActivatedRoute,
@@ -61,10 +61,10 @@ describe('NewsItem Management Update Component', () => {
       newsItem.dataSource = dataSource;
 
       const dataSourceCollection: IDataSource[] = [{ id: 1785 }];
-      vitest.spyOn(dataSourceService, 'query').mockReturnValue(of(new HttpResponse({ body: dataSourceCollection })));
+      vi.spyOn(dataSourceService, 'query').mockReturnValue(of(new HttpResponse({ body: dataSourceCollection })));
       const additionalDataSources = [dataSource];
       const expectedCollection: IDataSource[] = [...additionalDataSources, ...dataSourceCollection];
-      vitest.spyOn(dataSourceService, 'addDataSourceToCollectionIfMissing').mockReturnValue(expectedCollection);
+      vi.spyOn(dataSourceService, 'addDataSourceToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ newsItem });
       comp.ngOnInit();
@@ -83,10 +83,10 @@ describe('NewsItem Management Update Component', () => {
       newsItem.competitor = competitor;
 
       const competitorCollection: ICompetitor[] = [{ id: 6672 }];
-      vitest.spyOn(competitorService, 'query').mockReturnValue(of(new HttpResponse({ body: competitorCollection })));
+      vi.spyOn(competitorService, 'query').mockReturnValue(of(new HttpResponse({ body: competitorCollection })));
       const additionalCompetitors = [competitor];
       const expectedCollection: ICompetitor[] = [...additionalCompetitors, ...competitorCollection];
-      vitest.spyOn(competitorService, 'addCompetitorToCollectionIfMissing').mockReturnValue(expectedCollection);
+      vi.spyOn(competitorService, 'addCompetitorToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ newsItem });
       comp.ngOnInit();
@@ -105,10 +105,10 @@ describe('NewsItem Management Update Component', () => {
       newsItem.collectionRun = collectionRun;
 
       const collectionRunCollection: ICollectionRun[] = [{ id: 26304 }];
-      vitest.spyOn(collectionRunService, 'query').mockReturnValue(of(new HttpResponse({ body: collectionRunCollection })));
+      vi.spyOn(collectionRunService, 'query').mockReturnValue(of(new HttpResponse({ body: collectionRunCollection })));
       const additionalCollectionRuns = [collectionRun];
       const expectedCollection: ICollectionRun[] = [...additionalCollectionRuns, ...collectionRunCollection];
-      vitest.spyOn(collectionRunService, 'addCollectionRunToCollectionIfMissing').mockReturnValue(expectedCollection);
+      vi.spyOn(collectionRunService, 'addCollectionRunToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ newsItem });
       comp.ngOnInit();
@@ -145,9 +145,9 @@ describe('NewsItem Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<INewsItem>();
       const newsItem = { id: 25999 };
-      vitest.spyOn(newsItemFormService, 'getNewsItem').mockReturnValue(newsItem);
-      vitest.spyOn(newsItemService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(newsItemFormService, 'getNewsItem').mockReturnValue(newsItem);
+      vi.spyOn(newsItemService, 'update').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ newsItem });
       comp.ngOnInit();
 
@@ -168,9 +168,9 @@ describe('NewsItem Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<INewsItem>();
       const newsItem = { id: 25999 };
-      vitest.spyOn(newsItemFormService, 'getNewsItem').mockReturnValue({ id: null });
-      vitest.spyOn(newsItemService, 'create').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(newsItemFormService, 'getNewsItem').mockReturnValue({ id: null });
+      vi.spyOn(newsItemService, 'create').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ newsItem: null });
       comp.ngOnInit();
 
@@ -191,8 +191,8 @@ describe('NewsItem Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<INewsItem>();
       const newsItem = { id: 25999 };
-      vitest.spyOn(newsItemService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(newsItemService, 'update').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ newsItem });
       comp.ngOnInit();
 
@@ -213,7 +213,7 @@ describe('NewsItem Management Update Component', () => {
       it('should forward to dataSourceService', () => {
         const entity = { id: 1785 };
         const entity2 = { id: 2244 };
-        vitest.spyOn(dataSourceService, 'compareDataSource');
+        vi.spyOn(dataSourceService, 'compareDataSource');
         comp.compareDataSource(entity, entity2);
         expect(dataSourceService.compareDataSource).toHaveBeenCalledWith(entity, entity2);
       });
@@ -223,7 +223,7 @@ describe('NewsItem Management Update Component', () => {
       it('should forward to competitorService', () => {
         const entity = { id: 6672 };
         const entity2 = { id: 15804 };
-        vitest.spyOn(competitorService, 'compareCompetitor');
+        vi.spyOn(competitorService, 'compareCompetitor');
         comp.compareCompetitor(entity, entity2);
         expect(competitorService.compareCompetitor).toHaveBeenCalledWith(entity, entity2);
       });
@@ -233,7 +233,7 @@ describe('NewsItem Management Update Component', () => {
       it('should forward to collectionRunService', () => {
         const entity = { id: 26304 };
         const entity2 = { id: 22231 };
-        vitest.spyOn(collectionRunService, 'compareCollectionRun');
+        vi.spyOn(collectionRunService, 'compareCollectionRun');
         comp.compareCollectionRun(entity, entity2);
         expect(collectionRunService.compareCollectionRun).toHaveBeenCalledWith(entity, entity2);
       });

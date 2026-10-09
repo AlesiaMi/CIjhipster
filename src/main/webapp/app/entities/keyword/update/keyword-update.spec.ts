@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpResponse } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { Subject, from, of } from 'rxjs';
 
 import { ICompetitor } from 'app/entities/competitor/competitor.model';
@@ -25,8 +25,8 @@ describe('Keyword Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
       providers: [
+        provideTranslateService(),
         provideHttpClientTesting(),
         {
           provide: ActivatedRoute,
@@ -53,10 +53,10 @@ describe('Keyword Management Update Component', () => {
       keyword.competitor = competitor;
 
       const competitorCollection: ICompetitor[] = [{ id: 6672 }];
-      vitest.spyOn(competitorService, 'query').mockReturnValue(of(new HttpResponse({ body: competitorCollection })));
+      vi.spyOn(competitorService, 'query').mockReturnValue(of(new HttpResponse({ body: competitorCollection })));
       const additionalCompetitors = [competitor];
       const expectedCollection: ICompetitor[] = [...additionalCompetitors, ...competitorCollection];
-      vitest.spyOn(competitorService, 'addCompetitorToCollectionIfMissing').mockReturnValue(expectedCollection);
+      vi.spyOn(competitorService, 'addCompetitorToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ keyword });
       comp.ngOnInit();
@@ -87,9 +87,9 @@ describe('Keyword Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<IKeyword>();
       const keyword = { id: 5188 };
-      vitest.spyOn(keywordFormService, 'getKeyword').mockReturnValue(keyword);
-      vitest.spyOn(keywordService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(keywordFormService, 'getKeyword').mockReturnValue(keyword);
+      vi.spyOn(keywordService, 'update').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ keyword });
       comp.ngOnInit();
 
@@ -110,9 +110,9 @@ describe('Keyword Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<IKeyword>();
       const keyword = { id: 5188 };
-      vitest.spyOn(keywordFormService, 'getKeyword').mockReturnValue({ id: null });
-      vitest.spyOn(keywordService, 'create').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(keywordFormService, 'getKeyword').mockReturnValue({ id: null });
+      vi.spyOn(keywordService, 'create').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ keyword: null });
       comp.ngOnInit();
 
@@ -133,8 +133,8 @@ describe('Keyword Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<IKeyword>();
       const keyword = { id: 5188 };
-      vitest.spyOn(keywordService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(keywordService, 'update').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ keyword });
       comp.ngOnInit();
 
@@ -155,7 +155,7 @@ describe('Keyword Management Update Component', () => {
       it('should forward to competitorService', () => {
         const entity = { id: 6672 };
         const entity2 = { id: 15804 };
-        vitest.spyOn(competitorService, 'compareCompetitor');
+        vi.spyOn(competitorService, 'compareCompetitor');
         comp.compareCompetitor(entity, entity2);
         expect(competitorService.compareCompetitor).toHaveBeenCalledWith(entity, entity2);
       });

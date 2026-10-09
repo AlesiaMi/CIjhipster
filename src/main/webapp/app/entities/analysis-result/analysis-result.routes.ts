@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
-import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
-import { Authority } from 'app/shared/jhipster/constants';
+import { ASC } from 'app/config';
+import { userRouteAccessService } from 'app/core/auth';
+import { Authority } from 'app/shared/jhipster/constants/authority.constants';
 import AnalysisResultResolve from './route/analysis-result-routing-resolve.service';
 
 const analysisResultRoute: Routes = [
@@ -12,7 +12,7 @@ const analysisResultRoute: Routes = [
     data: {
       defaultSort: `id,${ASC}`,
     },
-    canActivate: [UserRouteAccessService],
+    canActivate: [userRouteAccessService],
   },
   {
     path: ':id/view',
@@ -20,7 +20,7 @@ const analysisResultRoute: Routes = [
     resolve: {
       analysisResult: AnalysisResultResolve,
     },
-    canActivate: [UserRouteAccessService],
+    canActivate: [userRouteAccessService],
   },
   {
     path: 'new',

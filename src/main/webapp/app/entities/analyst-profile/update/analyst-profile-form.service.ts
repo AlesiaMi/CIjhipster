@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import dayjs from 'dayjs/esm';
 
-import { DATE_TIME_FORMAT } from 'app/config/input.constants';
+import { DATE_TIME_FORMAT } from 'app/config';
 import { IAnalystProfile, NewAnalystProfile } from '../analyst-profile.model';
 
 /**
@@ -42,13 +42,14 @@ type AnalystProfileFormGroupContent = {
 
 export type AnalystProfileFormGroup = FormGroup<AnalystProfileFormGroupContent>;
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class AnalystProfileFormService {
   createAnalystProfileFormGroup(analystProfile?: AnalystProfileFormGroupInput): AnalystProfileFormGroup {
     const analystProfileRawValue = this.convertAnalystProfileToAnalystProfileRawValue({
       ...this.getFormDefaults(),
       ...(analystProfile ?? { id: null }),
     });
+
     return new FormGroup<AnalystProfileFormGroupContent>({
       id: new FormControl(
         { value: analystProfileRawValue.id, disabled: true },

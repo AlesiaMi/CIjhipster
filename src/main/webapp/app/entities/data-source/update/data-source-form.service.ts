@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import dayjs from 'dayjs/esm';
 
-import { DATE_TIME_FORMAT } from 'app/config/input.constants';
+import { DATE_TIME_FORMAT } from 'app/config';
 import { IDataSource, NewDataSource } from '../data-source.model';
 
 /**
@@ -44,13 +44,14 @@ type DataSourceFormGroupContent = {
 
 export type DataSourceFormGroup = FormGroup<DataSourceFormGroupContent>;
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class DataSourceFormService {
   createDataSourceFormGroup(dataSource?: DataSourceFormGroupInput): DataSourceFormGroup {
     const dataSourceRawValue = this.convertDataSourceToDataSourceRawValue({
       ...this.getFormDefaults(),
       ...(dataSource ?? { id: null }),
     });
+
     return new FormGroup<DataSourceFormGroupContent>({
       id: new FormControl(
         { value: dataSourceRawValue.id, disabled: true },

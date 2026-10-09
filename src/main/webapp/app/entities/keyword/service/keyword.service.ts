@@ -1,12 +1,11 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Service, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
 
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { createRequestOption } from 'app/core/request/request-util';
-import { isPresent } from 'app/core/util/operators';
+import { serverApiUrl } from 'app/config';
+import { createRequestOption } from 'app/core/request';
 import { IKeyword, NewKeyword } from '../keyword.model';
 
 export type PartialUpdateKeyword = Partial<IKeyword> & Pick<IKeyword, 'id'>;
@@ -21,7 +20,7 @@ export type NewRestKeyword = RestOf<NewKeyword>;
 
 export type PartialUpdateRestKeyword = RestOf<PartialUpdateKeyword>;
 
-@Injectable()
+@Service()
 export class KeywordsService {
   readonly keywordsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
@@ -40,8 +39,7 @@ export class KeywordsService {
   readonly keywords = computed(() =>
     (this.keywordsResource.hasValue() ? this.keywordsResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/keywords');
+  protected readonly resourceUrl = `${serverApiUrl}api/keywords`;
 
   protected convertValueFromServer(restKeyword: RestKeyword): IKeyword {
     return {
@@ -51,7 +49,7 @@ export class KeywordsService {
   }
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class KeywordService extends KeywordsService {
   protected readonly http = inject(HttpClient);
 
@@ -103,7 +101,7 @@ export class KeywordService extends KeywordsService {
     keywordCollection: Type[],
     ...keywordsToCheck: (Type | null | undefined)[]
   ): Type[] {
-    const keywords: Type[] = keywordsToCheck.filter(isPresent);
+    const keywords: Type[] = keywordsToCheck.filter(keywordItem => keywordItem !== null && keywordItem !== undefined);
     if (keywords.length > 0) {
       const keywordCollectionIdentifiers = keywordCollection.map(keywordItem => this.getKeywordIdentifier(keywordItem));
       const keywordsToAdd = keywords.filter(keywordItem => {

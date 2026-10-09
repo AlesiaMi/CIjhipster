@@ -1,52 +1,48 @@
 import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
-import { TranslateModule } from '@ngx-translate/core';
-import { Subscription, combineLatest, filter, finalize, tap } from 'rxjs';
-import { EntityImportService, ImportError } from 'app/shared/import/import.service';
-import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
-import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
-import { Alert } from 'app/shared/alert/alert';
-import { AlertError } from 'app/shared/alert/alert-error';
-import { FormatMediumDatetimePipe } from 'app/shared/date';
-import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
-import { TranslateDirective } from 'app/shared/language';
-import { ItemCount } from 'app/shared/pagination';
-import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
-import { NewsItemDeleteDialog } from '../delete/news-item-delete-dialog';
-import { INewsItem } from '../news-item.model';
-import { NewsItemService } from '../service/news-item.service';
+import { combineLatest, filter, finalize, map, take, tap } from 'rxjs';
+
+import { DEFAULT_SORT_DATA, ITEMS_PER_PAGE, ITEM_DELETED_EVENT, PAGE_HEADER, SORT, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config';
+
 import { AccountService } from 'app/core/auth/account.service';
 import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 
+import { Alert, AlertError } from 'app/shared/alert';
+import { FormatMediumDatetimePipe } from 'app/shared/date';
+import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
+import { EntityImportService, ImportError } from 'app/shared/import/import.service';
+import { TranslateDirective } from 'app/shared/language';
+import { ItemCount } from 'app/shared/pagination';
+import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
+
+import { NewsItemDeleteDialog } from '../delete/news-item-delete-dialog';
+import { INewsItem } from '../news-item.model';
+import { NewsItemService } from '../service/news-item.service';
+
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-news-item',
   templateUrl: './news-item.html',
   imports: [
     RouterLink,
-    FormsModule,
     FontAwesomeModule,
     AlertError,
     Alert,
     SortDirective,
     SortByDirective,
     TranslateDirective,
-    TranslateModule,
     FormatMediumDatetimePipe,
     Filter,
     NgbPagination,
     ItemCount,
   ],
 })
-export class NewsItem implements OnInit {
-  subscription: Subscription | null = null;
+export class NewsItem {
   readonly newsItems = signal<INewsItem[]>([]);
 
   sortState = sortStateSignal({});
@@ -57,16 +53,42 @@ export class NewsItem implements OnInit {
   readonly page = signal(1);
 
   readonly router = inject(Router);
+
   protected readonly newsItemService = inject(NewsItemService);
+
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isLoading = this.newsItemService.newsItemsResource.isLoading;
+
   protected readonly activatedRoute = inject(ActivatedRoute);
+
+  protected readonly activatedRouteState = toSignal(
+    combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data]).pipe(
+      map(([queryParamMap, data]) => ({
+        queryParamMap,
+        data,
+      })),
+    ),
+    {
+      initialValue: {
+        queryParamMap: this.activatedRoute.snapshot.queryParamMap,
+        data: this.activatedRoute.snapshot.data,
+      },
+    },
+  );
+
   protected readonly sortService = inject(SortService);
+
   protected readonly filterOptions = toSignal(this.filters.filterChanges);
+
   protected modalService = inject(NgbModal);
+
   protected readonly managerClientContext = inject(ManagerClientContextService);
+
   protected readonly accountService = inject(AccountService);
+
   protected readonly entityImportService = inject(EntityImportService);
+
+  private readonly managerContextReady = signal(false);
 
   readonly canEdit = computed(() => this.accountService.hasAnyAuthority('ROLE_ADMIN'));
 
@@ -74,22 +96,52 @@ export class NewsItem implements OnInit {
   readonly bulkImport = signal(false);
   readonly importErrors = signal<ImportError[]>([]);
   readonly importSuccess = signal<string | null>(null);
+
   constructor() {
+    // Инициализация контекста менеджера перед загрузкой данных.
+    this.managerClientContext
+      .initialize()
+      .pipe(take(1))
+      .subscribe(() => {
+        this.managerContextReady.set(true);
+      });
+
+    // Обновление общего количества элементов из HTTP-заголовков.
     effect(() => {
       const headers = this.newsItemService.newsItemsResource.headers();
+
       if (headers) {
         this.fillComponentAttributesFromResponseHeader(headers);
       }
     });
+
+    // Обновление списка новостей при получении данных.
     effect(() => {
       this.newsItems.set(this.fillComponentAttributesFromResponseBody([...this.newsItemService.newsItems()]));
     });
 
+    // Загрузка данных при изменении маршрута.
+    // Ожидаем инициализации контекста менеджера.
+    effect(() => {
+      const activatedRouteState = this.activatedRouteState();
+
+      if (!this.managerContextReady()) {
+        return;
+      }
+
+      untracked(() => {
+        this.fillComponentAttributeFromRoute(activatedRouteState.queryParamMap, activatedRouteState.data);
+
+        this.load();
+      });
+    });
+
+    // Обработка изменений фильтров.
     effect(() => {
       const filterOptions = this.filterOptions();
+
       if (filterOptions) {
         untracked(() => {
-          // Only watch for filter changes. Other signals should be ignored.
           this.handleNavigation(1, this.sortState(), filterOptions);
         });
       }
@@ -98,21 +150,15 @@ export class NewsItem implements OnInit {
 
   trackId = (item: INewsItem): number => this.newsItemService.getNewsItemIdentifier(item);
 
-  ngOnInit(): void {
-    this.managerClientContext.initialize().subscribe(() => {
-      this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
-        .pipe(
-          tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
-          tap(() => this.load()),
-        )
-        .subscribe();
-    });
-  }
-
   delete(newsItem: INewsItem): void {
-    const modalRef = this.modalService.open(NewsItemDeleteDialog, { size: 'lg', backdrop: 'static' });
+    const modalRef = this.modalService.open(NewsItemDeleteDialog, {
+      size: 'lg',
+      backdrop: 'static',
+    });
+
     modalRef.componentInstance.newsItem = newsItem;
-    // unsubscribe not needed because closed completes on modal close
+
+    // Подписка завершается после закрытия модального окна.
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
@@ -128,7 +174,9 @@ export class NewsItem implements OnInit {
   importFile(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.item(0);
+
     input.value = '';
+
     if (!file) {
       return;
     }
@@ -136,12 +184,14 @@ export class NewsItem implements OnInit {
     this.importErrors.set([]);
     this.importSuccess.set(null);
     this.isImporting.set(true);
+
     this.entityImportService
       .importFile('news-item', file, this.bulkImport())
       .pipe(finalize(() => this.isImporting.set(false)))
       .subscribe({
         next: result => {
           this.importSuccess.set(`Импортировано новостей: ${result.imported}`);
+
           this.load();
         },
 
@@ -172,8 +222,11 @@ export class NewsItem implements OnInit {
 
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
     const page = params.get(PAGE_HEADER);
+
     this.page.set(+(page ?? 1));
+
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
+
     this.filters.initializeFromParams(params);
   }
 
@@ -186,16 +239,23 @@ export class NewsItem implements OnInit {
   }
 
   protected queryBackend(): void {
+    if (!this.managerContextReady()) {
+      return;
+    }
+
     const pageToLoad: number = this.page();
+
     const queryObject: any = {
       page: pageToLoad - 1,
       size: this.itemsPerPage(),
       eagerload: true,
       sort: this.sortService.buildSortParam(this.sortState()),
     };
+
     for (const filterOption of this.filters.filterOptions) {
       queryObject[filterOption.name] = filterOption.values;
     }
+
     this.newsItemService.newsItemsParams.set(queryObject);
   }
 

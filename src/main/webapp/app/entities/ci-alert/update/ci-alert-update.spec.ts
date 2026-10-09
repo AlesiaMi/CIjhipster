@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpResponse } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { Subject, from, of } from 'rxjs';
 
 import { IAnalysisResult } from 'app/entities/analysis-result/analysis-result.model';
@@ -28,8 +28,8 @@ describe('CiAlert Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
       providers: [
+        provideTranslateService(),
         provideHttpClientTesting(),
         {
           provide: ActivatedRoute,
@@ -57,10 +57,10 @@ describe('CiAlert Management Update Component', () => {
       ciAlert.analysisResult = analysisResult;
 
       const analysisResultCollection: IAnalysisResult[] = [{ id: 28488 }];
-      vitest.spyOn(analysisResultService, 'query').mockReturnValue(of(new HttpResponse({ body: analysisResultCollection })));
+      vi.spyOn(analysisResultService, 'query').mockReturnValue(of(new HttpResponse({ body: analysisResultCollection })));
       const additionalAnalysisResults = [analysisResult];
       const expectedCollection: IAnalysisResult[] = [...additionalAnalysisResults, ...analysisResultCollection];
-      vitest.spyOn(analysisResultService, 'addAnalysisResultToCollectionIfMissing').mockReturnValue(expectedCollection);
+      vi.spyOn(analysisResultService, 'addAnalysisResultToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ ciAlert });
       comp.ngOnInit();
@@ -79,10 +79,10 @@ describe('CiAlert Management Update Component', () => {
       ciAlert.analystProfile = analystProfile;
 
       const analystProfileCollection: IAnalystProfile[] = [{ id: 27303 }];
-      vitest.spyOn(analystProfileService, 'query').mockReturnValue(of(new HttpResponse({ body: analystProfileCollection })));
+      vi.spyOn(analystProfileService, 'query').mockReturnValue(of(new HttpResponse({ body: analystProfileCollection })));
       const additionalAnalystProfiles = [analystProfile];
       const expectedCollection: IAnalystProfile[] = [...additionalAnalystProfiles, ...analystProfileCollection];
-      vitest.spyOn(analystProfileService, 'addAnalystProfileToCollectionIfMissing').mockReturnValue(expectedCollection);
+      vi.spyOn(analystProfileService, 'addAnalystProfileToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ ciAlert });
       comp.ngOnInit();
@@ -116,9 +116,9 @@ describe('CiAlert Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<ICiAlert>();
       const ciAlert = { id: 1978 };
-      vitest.spyOn(ciAlertFormService, 'getCiAlert').mockReturnValue(ciAlert);
-      vitest.spyOn(ciAlertService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(ciAlertFormService, 'getCiAlert').mockReturnValue(ciAlert);
+      vi.spyOn(ciAlertService, 'update').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ ciAlert });
       comp.ngOnInit();
 
@@ -139,9 +139,9 @@ describe('CiAlert Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<ICiAlert>();
       const ciAlert = { id: 1978 };
-      vitest.spyOn(ciAlertFormService, 'getCiAlert').mockReturnValue({ id: null });
-      vitest.spyOn(ciAlertService, 'create').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(ciAlertFormService, 'getCiAlert').mockReturnValue({ id: null });
+      vi.spyOn(ciAlertService, 'create').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ ciAlert: null });
       comp.ngOnInit();
 
@@ -162,8 +162,8 @@ describe('CiAlert Management Update Component', () => {
       // GIVEN
       const saveSubject = new Subject<ICiAlert>();
       const ciAlert = { id: 1978 };
-      vitest.spyOn(ciAlertService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+      vi.spyOn(ciAlertService, 'update').mockReturnValue(saveSubject);
+      vi.spyOn(comp, 'previousState');
       activatedRoute.data = of({ ciAlert });
       comp.ngOnInit();
 
@@ -184,7 +184,7 @@ describe('CiAlert Management Update Component', () => {
       it('should forward to analysisResultService', () => {
         const entity = { id: 28488 };
         const entity2 = { id: 32267 };
-        vitest.spyOn(analysisResultService, 'compareAnalysisResult');
+        vi.spyOn(analysisResultService, 'compareAnalysisResult');
         comp.compareAnalysisResult(entity, entity2);
         expect(analysisResultService.compareAnalysisResult).toHaveBeenCalledWith(entity, entity2);
       });
@@ -194,7 +194,7 @@ describe('CiAlert Management Update Component', () => {
       it('should forward to analystProfileService', () => {
         const entity = { id: 27303 };
         const entity2 = { id: 15537 };
-        vitest.spyOn(analystProfileService, 'compareAnalystProfile');
+        vi.spyOn(analystProfileService, 'compareAnalystProfile');
         comp.compareAnalystProfile(entity, entity2);
         expect(analystProfileService.compareAnalystProfile).toHaveBeenCalledWith(entity, entity2);
       });

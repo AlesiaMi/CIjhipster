@@ -7,10 +7,10 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.myapp.IntegrationTest;
 import com.mycompany.myapp.domain.AnalystProfile;
 import com.mycompany.myapp.domain.Competitor;
+import com.mycompany.myapp.domain.User;
 import com.mycompany.myapp.repository.CompetitorRepository;
 import com.mycompany.myapp.service.dto.CompetitorDTO;
 import com.mycompany.myapp.service.mapper.CompetitorMapper;
@@ -26,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for the {@link CompetitorResource} REST controller.
@@ -54,7 +55,7 @@ class CompetitorResourceIT {
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static final Random random = new Random();
-    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2L * Integer.MAX_VALUE));
+    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + 2L * Integer.MAX_VALUE);
 
     @Autowired
     private ObjectMapper om;
@@ -497,13 +498,35 @@ class CompetitorResourceIT {
 
     @Test
     @Transactional
+    void getAllCompetitorsByOwnerIsEqualToSomething() throws Exception {
+        User owner;
+        if (TestUtil.findAll(em, User.class).isEmpty()) {
+            competitorRepository.saveAndFlush(competitor);
+            owner = UserResourceIT.createEntity();
+        } else {
+            owner = TestUtil.findAll(em, User.class).getFirst();
+        }
+        em.persist(owner);
+        em.flush();
+        competitor.setOwner(owner);
+        competitorRepository.saveAndFlush(competitor);
+        Long ownerId = owner.getId();
+        // Get all the competitorList where owner equals to ownerId
+        defaultCompetitorShouldBeFound("ownerId.equals=" + ownerId);
+
+        // Get all the competitorList where owner equals to (ownerId + 1)
+        defaultCompetitorShouldNotBeFound("ownerId.equals=" + (ownerId + 1));
+    }
+
+    @Test
+    @Transactional
     void getAllCompetitorsByAnalystProfilesIsEqualToSomething() throws Exception {
         AnalystProfile analystProfiles;
         if (TestUtil.findAll(em, AnalystProfile.class).isEmpty()) {
             competitorRepository.saveAndFlush(competitor);
             analystProfiles = AnalystProfileResourceIT.createEntity(em);
         } else {
-            analystProfiles = TestUtil.findAll(em, AnalystProfile.class).get(0);
+            analystProfiles = TestUtil.findAll(em, AnalystProfile.class).getFirst();
         }
         em.persist(analystProfiles);
         em.flush();

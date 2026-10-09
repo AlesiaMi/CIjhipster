@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import dayjs from 'dayjs/esm';
 
-import { DATE_TIME_FORMAT } from 'app/config/input.constants';
+import { DATE_TIME_FORMAT } from 'app/config';
 import { IKeyword, NewKeyword } from '../keyword.model';
 
 /**
@@ -40,13 +40,14 @@ type KeywordFormGroupContent = {
 
 export type KeywordFormGroup = FormGroup<KeywordFormGroupContent>;
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class KeywordFormService {
   createKeywordFormGroup(keyword?: KeywordFormGroupInput): KeywordFormGroup {
     const keywordRawValue = this.convertKeywordToKeywordRawValue({
       ...this.getFormDefaults(),
       ...(keyword ?? { id: null }),
     });
+
     return new FormGroup<KeywordFormGroupContent>({
       id: new FormControl(
         { value: keywordRawValue.id, disabled: true },

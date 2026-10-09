@@ -4,11 +4,10 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
 
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { createRequestOption } from 'app/core/request/request-util';
-import { isPresent } from 'app/core/util/operators';
-import { IAnalysisResult, NewAnalysisResult } from '../analysis-result.model';
+import { serverApiUrl } from 'app/config';
 import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
+import { createRequestOption } from 'app/core/request';
+import { IAnalysisResult, NewAnalysisResult } from '../analysis-result.model';
 
 export type PartialUpdateAnalysisResult = Partial<IAnalysisResult> & Pick<IAnalysisResult, 'id'>;
 
@@ -17,38 +16,46 @@ type RestOf<T extends IAnalysisResult | NewAnalysisResult> = Omit<T, 'analyzedAt
 };
 
 export type RestAnalysisResult = RestOf<IAnalysisResult>;
-
 export type NewRestAnalysisResult = RestOf<NewAnalysisResult>;
-
 export type PartialUpdateRestAnalysisResult = RestOf<PartialUpdateAnalysisResult>;
 
 @Injectable()
 export class AnalysisResultsService {
+  protected readonly managerClientContext = inject(ManagerClientContextService);
+
   readonly analysisResultsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
   );
+
   readonly analysisResultsResource = httpResource<RestAnalysisResult[]>(() => {
     const params = this.analysisResultsParams();
+
     if (!params) {
       return undefined;
     }
+
+    // Не запрашиваем данные до инициализации контекста менеджера.
     if (!this.managerClientContext.initialized()) {
       return undefined;
     }
 
+    // Менеджер должен выбрать клиента.
     if (this.managerClientContext.isManager() && this.managerClientContext.selectedClientUserId() === null) {
       return undefined;
     }
 
-    return { url: this.resourceUrl, params: this.managerClientContext.withClientUserId(params) };
+    return {
+      url: this.resourceUrl,
+      params: this.managerClientContext.withClientUserId(params),
+    };
   });
 
   readonly analysisResults = computed(() =>
     (this.analysisResultsResource.hasValue() ? this.analysisResultsResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/analysis-results');
-  protected readonly managerClientContext = inject(ManagerClientContextService);
+
+  protected readonly resourceUrl = `${serverApiUrl}api/analysis-results`;
+
   protected convertValueFromServer(restAnalysisResult: RestAnalysisResult): IAnalysisResult {
     return {
       ...restAnalysisResult,
@@ -89,10 +96,7 @@ export class AnalysisResultService extends AnalysisResultsService {
   query(req?: any): Observable<HttpResponse<IAnalysisResult[]>> {
     const options = createRequestOption(this.managerClientContext.withClientUserId(req ?? {}));
     return this.http
-      .get<RestAnalysisResult[]>(this.resourceUrl, {
-        params: options,
-        observe: 'response',
-      })
+      .get<RestAnalysisResult[]>(this.resourceUrl, { params: options, observe: 'response' })
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
 
@@ -112,21 +116,29 @@ export class AnalysisResultService extends AnalysisResultsService {
     analysisResultCollection: Type[],
     ...analysisResultsToCheck: (Type | null | undefined)[]
   ): Type[] {
-    const analysisResults: Type[] = analysisResultsToCheck.filter(isPresent);
+    const analysisResults: Type[] = analysisResultsToCheck.filter(
+      analysisResultItem => analysisResultItem !== null && analysisResultItem !== undefined,
+    );
+
     if (analysisResults.length > 0) {
       const analysisResultCollectionIdentifiers = analysisResultCollection.map(analysisResultItem =>
         this.getAnalysisResultIdentifier(analysisResultItem),
       );
+
       const analysisResultsToAdd = analysisResults.filter(analysisResultItem => {
         const analysisResultIdentifier = this.getAnalysisResultIdentifier(analysisResultItem);
+
         if (analysisResultCollectionIdentifiers.includes(analysisResultIdentifier)) {
           return false;
         }
+
         analysisResultCollectionIdentifiers.push(analysisResultIdentifier);
         return true;
       });
+
       return [...analysisResultsToAdd, ...analysisResultCollection];
     }
+
     return analysisResultCollection;
   }
 

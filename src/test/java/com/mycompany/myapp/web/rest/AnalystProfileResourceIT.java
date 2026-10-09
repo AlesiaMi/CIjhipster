@@ -8,7 +8,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.myapp.IntegrationTest;
 import com.mycompany.myapp.domain.AnalystProfile;
 import com.mycompany.myapp.domain.Competitor;
@@ -20,7 +19,6 @@ import com.mycompany.myapp.service.dto.AnalystProfileDTO;
 import com.mycompany.myapp.service.mapper.AnalystProfileMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -38,6 +36,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for the {@link AnalystProfileResource} REST controller.
@@ -58,13 +57,13 @@ class AnalystProfileResourceIT {
     private static final Boolean UPDATED_NOTIFICATION_ENABLED = true;
 
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final Instant UPDATED_CREATED_AT = Instant.ofEpochMilli(1782126205341L);
 
     private static final String ENTITY_API_URL = "/api/analyst-profiles";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static final Random random = new Random();
-    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2L * Integer.MAX_VALUE));
+    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + 2L * Integer.MAX_VALUE);
 
     @Autowired
     private ObjectMapper om;
@@ -517,7 +516,7 @@ class AnalystProfileResourceIT {
             analystProfileRepository.saveAndFlush(analystProfile);
             competitors = CompetitorResourceIT.createEntity();
         } else {
-            competitors = TestUtil.findAll(em, Competitor.class).get(0);
+            competitors = TestUtil.findAll(em, Competitor.class).getFirst();
         }
         em.persist(competitors);
         em.flush();

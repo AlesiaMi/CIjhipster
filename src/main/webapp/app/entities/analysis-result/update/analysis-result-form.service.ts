@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import dayjs from 'dayjs/esm';
 
-import { DATE_TIME_FORMAT } from 'app/config/input.constants';
+import { DATE_TIME_FORMAT } from 'app/config';
 import { IAnalysisResult, NewAnalysisResult } from '../analysis-result.model';
 
 /**
@@ -46,13 +46,14 @@ type AnalysisResultFormGroupContent = {
 
 export type AnalysisResultFormGroup = FormGroup<AnalysisResultFormGroupContent>;
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class AnalysisResultFormService {
   createAnalysisResultFormGroup(analysisResult?: AnalysisResultFormGroupInput): AnalysisResultFormGroup {
     const analysisResultRawValue = this.convertAnalysisResultToAnalysisResultRawValue({
       ...this.getFormDefaults(),
       ...(analysisResult ?? { id: null }),
     });
+
     return new FormGroup<AnalysisResultFormGroupContent>({
       id: new FormControl(
         { value: analysisResultRawValue.id, disabled: true },

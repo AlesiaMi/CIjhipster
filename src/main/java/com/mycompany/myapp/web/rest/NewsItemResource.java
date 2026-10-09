@@ -104,7 +104,7 @@ public class NewsItemResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody NewsItemDTO newsItemDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update NewsItem partially : {}, {}", id, newsItemDTO);
+        LOG.debug("REST request to partially update NewsItem : {}, {}", id, newsItemDTO);
         if (newsItemDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

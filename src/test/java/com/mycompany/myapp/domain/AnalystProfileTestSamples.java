@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class AnalystProfileTestSamples {
 
     private static final Random random = new Random();
-    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2L * Integer.MAX_VALUE));
+    private static final AtomicLong longCount = new AtomicLong(random.nextInt() + 2L * Integer.MAX_VALUE);
 
     public static AnalystProfile getAnalystProfileSample1() {
         return new AnalystProfile().id(1L).displayName("displayName1").telegramChatId("telegramChatId1");

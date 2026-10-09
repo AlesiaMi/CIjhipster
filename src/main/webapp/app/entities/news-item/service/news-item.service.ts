@@ -1,12 +1,11 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Service, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
 
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { createRequestOption } from 'app/core/request/request-util';
-import { isPresent } from 'app/core/util/operators';
+import { serverApiUrl } from 'app/config';
+import { createRequestOption } from 'app/core/request';
 import { INewsItem, NewNewsItem } from '../news-item.model';
 import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 
@@ -23,7 +22,7 @@ export type NewRestNewsItem = RestOf<NewNewsItem>;
 
 export type PartialUpdateRestNewsItem = RestOf<PartialUpdateNewsItem>;
 
-@Injectable()
+@Service()
 export class NewsItemsService {
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly managerClientContext = inject(ManagerClientContextService);
@@ -63,7 +62,7 @@ export class NewsItemsService {
   }
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class NewsItemService extends NewsItemsService {
   protected readonly http = inject(HttpClient);
 
@@ -124,7 +123,7 @@ export class NewsItemService extends NewsItemsService {
     newsItemCollection: Type[],
     ...newsItemsToCheck: (Type | null | undefined)[]
   ): Type[] {
-    const newsItems: Type[] = newsItemsToCheck.filter(isPresent);
+    const newsItems: Type[] = newsItemsToCheck.filter(newsItemItem => newsItemItem !== null && newsItemItem !== undefined);
     if (newsItems.length > 0) {
       const newsItemCollectionIdentifiers = newsItemCollection.map(newsItemItem => this.getNewsItemIdentifier(newsItemItem));
       const newsItemsToAdd = newsItems.filter(newsItemItem => {

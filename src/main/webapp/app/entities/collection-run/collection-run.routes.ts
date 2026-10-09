@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
-import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
+import { ASC } from 'app/config';
+import { userRouteAccessService } from 'app/core/auth';
 
 import CollectionRunResolve from './route/collection-run-routing-resolve.service';
 import { Authority } from 'app/shared/jhipster/constants';
@@ -13,13 +13,15 @@ const collectionRunRoute: Routes = [
     data: {
       defaultSort: `id,${ASC}`,
     },
-    canActivate: [UserRouteAccessService],
+    canActivate: [userRouteAccessService],
   },
   {
     path: ':id/view',
     loadComponent: () => import('./detail/collection-run-detail').then(m => m.CollectionRunDetail),
-    resolve: { collectionRun: CollectionRunResolve },
-    canActivate: [UserRouteAccessService],
+    resolve: {
+      collectionRun: CollectionRunResolve,
+    },
+    canActivate: [userRouteAccessService],
   },
   {
     path: 'new',

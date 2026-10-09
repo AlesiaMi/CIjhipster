@@ -1,17 +1,17 @@
 import { HttpResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
 import { AnalysisStatus } from 'app/entities/enumerations/analysis-status.model';
 import { Sentiment } from 'app/entities/enumerations/sentiment.model';
 import { INewsItem } from 'app/entities/news-item/news-item.model';
 import { NewsItemService } from 'app/entities/news-item/service/news-item.service';
-import { AlertError } from 'app/shared/alert/alert-error';
+import { AlertError } from 'app/shared/alert';
 import { TranslateDirective } from 'app/shared/language';
 import { IAnalysisResult } from '../analysis-result.model';
 import { AnalysisResultService } from '../service/analysis-result.service';
@@ -19,10 +19,9 @@ import { AnalysisResultService } from '../service/analysis-result.service';
 import { AnalysisResultFormGroup, AnalysisResultFormService } from './analysis-result-form.service';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-analysis-result-update',
   templateUrl: './analysis-result-update.html',
-  imports: [TranslateDirective, TranslateModule, FontAwesomeModule, AlertError, ReactiveFormsModule],
+  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
 export class AnalysisResultUpdate implements OnInit {
   readonly isSaving = signal(false);

@@ -1,12 +1,11 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Service, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
 
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { createRequestOption } from 'app/core/request/request-util';
-import { isPresent } from 'app/core/util/operators';
+import { serverApiUrl } from 'app/config';
+import { createRequestOption } from 'app/core/request';
 import { ICollectionRun, NewCollectionRun } from '../collection-run.model';
 
 export type PartialUpdateCollectionRun = Partial<ICollectionRun> & Pick<ICollectionRun, 'id'>;
@@ -22,7 +21,7 @@ export type NewRestCollectionRun = RestOf<NewCollectionRun>;
 
 export type PartialUpdateRestCollectionRun = RestOf<PartialUpdateCollectionRun>;
 
-@Injectable()
+@Service()
 export class CollectionRunsService {
   readonly collectionRunsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
@@ -38,8 +37,7 @@ export class CollectionRunsService {
   readonly collectionRuns = computed(() =>
     (this.collectionRunsResource.hasValue() ? this.collectionRunsResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/collection-runs');
+  protected readonly resourceUrl = `${serverApiUrl}api/collection-runs`;
 
   protected convertValueFromServer(restCollectionRun: RestCollectionRun): ICollectionRun {
     return {
@@ -50,7 +48,7 @@ export class CollectionRunsService {
   }
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class CollectionRunService extends CollectionRunsService {
   protected readonly http = inject(HttpClient);
 
@@ -106,7 +104,9 @@ export class CollectionRunService extends CollectionRunsService {
     collectionRunCollection: Type[],
     ...collectionRunsToCheck: (Type | null | undefined)[]
   ): Type[] {
-    const collectionRuns: Type[] = collectionRunsToCheck.filter(isPresent);
+    const collectionRuns: Type[] = collectionRunsToCheck.filter(
+      collectionRunItem => collectionRunItem !== null && collectionRunItem !== undefined,
+    );
     if (collectionRuns.length > 0) {
       const collectionRunCollectionIdentifiers = collectionRunCollection.map(collectionRunItem =>
         this.getCollectionRunIdentifier(collectionRunItem),

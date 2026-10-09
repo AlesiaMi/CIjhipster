@@ -1,10 +1,9 @@
 import { Routes } from '@angular/router';
 
-import { ASC } from 'app/config/navigation.constants';
-import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
+import { ASC } from 'app/config';
+import { userRouteAccessService } from 'app/core/auth';
 import { DataSourceEditRouteAccessService } from 'app/core/manager/manager-permission-route-access.service';
 import DataSourceResolve from './route/data-source-routing-resolve.service';
-
 const dataSourceRoute: Routes = [
   {
     path: '',
@@ -12,7 +11,7 @@ const dataSourceRoute: Routes = [
     data: {
       defaultSort: `id,${ASC}`,
     },
-    canActivate: [UserRouteAccessService],
+    canActivate: [userRouteAccessService],
   },
   {
     path: ':id/view',
@@ -20,7 +19,7 @@ const dataSourceRoute: Routes = [
     resolve: {
       dataSource: DataSourceResolve,
     },
-    canActivate: [UserRouteAccessService],
+    canActivate: [userRouteAccessService],
   },
   {
     path: 'new',
@@ -28,7 +27,7 @@ const dataSourceRoute: Routes = [
     resolve: {
       dataSource: DataSourceResolve,
     },
-    canActivate: [UserRouteAccessService, DataSourceEditRouteAccessService],
+    canActivate: [userRouteAccessService, DataSourceEditRouteAccessService],
   },
   {
     path: ':id/edit',
@@ -36,7 +35,7 @@ const dataSourceRoute: Routes = [
     resolve: {
       dataSource: DataSourceResolve,
     },
-    canActivate: [UserRouteAccessService, DataSourceEditRouteAccessService],
+    canActivate: [userRouteAccessService, DataSourceEditRouteAccessService],
   },
 ];
 

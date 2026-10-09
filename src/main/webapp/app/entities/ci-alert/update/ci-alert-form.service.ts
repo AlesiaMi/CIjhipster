@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import dayjs from 'dayjs/esm';
 
-import { DATE_TIME_FORMAT } from 'app/config/input.constants';
+import { DATE_TIME_FORMAT } from 'app/config';
 import { ICiAlert, NewCiAlert } from '../ci-alert.model';
 
 /**
@@ -45,13 +45,14 @@ type CiAlertFormGroupContent = {
 
 export type CiAlertFormGroup = FormGroup<CiAlertFormGroupContent>;
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class CiAlertFormService {
   createCiAlertFormGroup(ciAlert?: CiAlertFormGroupInput): CiAlertFormGroup {
     const ciAlertRawValue = this.convertCiAlertToCiAlertRawValue({
       ...this.getFormDefaults(),
       ...(ciAlert ?? { id: null }),
     });
+
     return new FormGroup<CiAlertFormGroupContent>({
       id: new FormControl(
         { value: ciAlertRawValue.id, disabled: true },

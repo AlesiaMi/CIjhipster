@@ -1,13 +1,16 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { HttpResponse } from '@angular/common/http';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { TranslateModule } from '@ngx-translate/core';
-import { Observable, finalize } from 'rxjs';
+import { TranslatePipe } from '@ngx-translate/core';
+import { Observable, finalize, map } from 'rxjs';
 
 import { RunStatus } from 'app/entities/enumerations/run-status.model';
-import { AlertError } from 'app/shared/alert/alert-error';
+import { UserService } from 'app/entities/user/service/user.service';
+import { IUser } from 'app/entities/user/user.model';
+import { AlertError } from 'app/shared/alert';
 import { TranslateDirective } from 'app/shared/language';
 import { ICollectionRun } from '../collection-run.model';
 import { CollectionRunService } from '../service/collection-run.service';
@@ -15,10 +18,9 @@ import { CollectionRunService } from '../service/collection-run.service';
 import { CollectionRunFormGroup, CollectionRunFormService } from './collection-run-form.service';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-collection-run-update',
   templateUrl: './collection-run-update.html',
-  imports: [TranslateDirective, TranslateModule, FontAwesomeModule, AlertError, ReactiveFormsModule],
+  imports: [TranslateDirective, TranslatePipe, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
 export class CollectionRunUpdate implements OnInit {
   readonly isSaving = signal(false);

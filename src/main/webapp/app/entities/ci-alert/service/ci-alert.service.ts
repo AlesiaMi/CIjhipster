@@ -1,12 +1,11 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Service, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
 
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { createRequestOption } from 'app/core/request/request-util';
-import { isPresent } from 'app/core/util/operators';
+import { serverApiUrl } from 'app/config';
+import { createRequestOption } from 'app/core/request';
 import { ICiAlert, NewCiAlert } from '../ci-alert.model';
 
 export type PartialUpdateCiAlert = Partial<ICiAlert> & Pick<ICiAlert, 'id'>;
@@ -22,7 +21,7 @@ export type NewRestCiAlert = RestOf<NewCiAlert>;
 
 export type PartialUpdateRestCiAlert = RestOf<PartialUpdateCiAlert>;
 
-@Injectable()
+@Service()
 export class CiAlertsService {
   readonly ciAlertsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
@@ -41,8 +40,7 @@ export class CiAlertsService {
   readonly ciAlerts = computed(() =>
     (this.ciAlertsResource.hasValue() ? this.ciAlertsResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/ci-alerts');
+  protected readonly resourceUrl = `${serverApiUrl}api/ci-alerts`;
 
   protected convertValueFromServer(restCiAlert: RestCiAlert): ICiAlert {
     return {
@@ -53,7 +51,7 @@ export class CiAlertsService {
   }
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class CiAlertService extends CiAlertsService {
   protected readonly http = inject(HttpClient);
 
@@ -105,7 +103,7 @@ export class CiAlertService extends CiAlertsService {
     ciAlertCollection: Type[],
     ...ciAlertsToCheck: (Type | null | undefined)[]
   ): Type[] {
-    const ciAlerts: Type[] = ciAlertsToCheck.filter(isPresent);
+    const ciAlerts: Type[] = ciAlertsToCheck.filter(ciAlertItem => ciAlertItem !== null && ciAlertItem !== undefined);
     if (ciAlerts.length > 0) {
       const ciAlertCollectionIdentifiers = ciAlertCollection.map(ciAlertItem => this.getCiAlertIdentifier(ciAlertItem));
       const ciAlertsToAdd = ciAlerts.filter(ciAlertItem => {

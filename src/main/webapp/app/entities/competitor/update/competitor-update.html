@@ -34,10 +34,10 @@
           />
           @if (competitorNameRef.invalid && (competitorNameRef.dirty || competitorNameRef.touched)) {
             <div>
-              @if (editForm.get('competitorName')?.errors?.required) {
+              @if (competitorNameRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
-              @if (editForm.get('competitorName')?.errors?.maxlength) {
+              @if (competitorNameRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
                   >This field cannot be longer than 255 characters.</small
                 >
@@ -59,7 +59,7 @@
           />
           @if (websiteUrlRef.invalid && (websiteUrlRef.dirty || websiteUrlRef.touched)) {
             <div>
-              @if (editForm.get('websiteUrl')?.errors?.maxlength) {
+              @if (websiteUrlRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '500' }"
                   >This field cannot be longer than 500 characters.</small
                 >
@@ -74,7 +74,7 @@
           <input type="text" class="form-control" name="industry" id="field_industry" data-cy="industry" formControlName="industry" />
           @if (industryRef.invalid && (industryRef.dirty || industryRef.touched)) {
             <div>
-              @if (editForm.get('industry')?.errors?.maxlength) {
+              @if (industryRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
                   >This field cannot be longer than 255 characters.</small
                 >
@@ -96,7 +96,7 @@
           />
           @if (descriptionRef.invalid && (descriptionRef.dirty || descriptionRef.touched)) {
             <div>
-              @if (editForm.get('description')?.errors?.maxlength) {
+              @if (descriptionRef.errors?.maxlength) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '2000' }"
                   >This field cannot be longer than 2000 characters.</small
                 >
@@ -106,12 +106,19 @@
         </div>
 
         @let isActiveRef = editForm.get('isActive')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_isActive" jhiTranslate="cIjhipsterApp.competitor.isActive">Is Active</label>
-          <input type="checkbox" class="form-check" name="isActive" id="field_isActive" data-cy="isActive" formControlName="isActive" />
+        <div class="mb-3 form-check">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            name="isActive"
+            id="field_isActive"
+            data-cy="isActive"
+            formControlName="isActive"
+          />
+          <label class="form-check-label" for="field_isActive" jhiTranslate="cIjhipsterApp.competitor.isActive">Is Active</label>
           @if (isActiveRef.invalid && (isActiveRef.dirty || isActiveRef.touched)) {
             <div>
-              @if (editForm.get('isActive')?.errors?.required) {
+              @if (isActiveRef.errors?.required) {
                 <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
               }
             </div>
@@ -121,7 +128,7 @@
         <div class="mb-3">
           <label for="field_analystProfileses" jhiTranslate="cIjhipsterApp.competitor.analystProfiles">Analyst Profiles</label>
           <select
-            class="form-control"
+            class="form-select"
             id="field_analystProfileses"
             data-cy="analystProfiles"
             multiple

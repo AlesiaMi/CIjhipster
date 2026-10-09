@@ -128,10 +128,10 @@
             }
           </div>
 
-          @if (languages && languages.length > 0) {
+          @if (languages.length > 0) {
             <div class="mb-3">
-              <label for="langKey" jhiTranslate="settings.form.language">Language</label>
-              <select class="form-control" id="langKey" name="langKey" formControlName="langKey" data-cy="langKey">
+              <label class="form-label" for="langKey" jhiTranslate="settings.form.language">Language</label>
+              <select class="form-select" id="langKey" name="langKey" formControlName="langKey" data-cy="langKey">
                 @for (language of languages; track $index) {
                   <option [value]="language">{{ language | findLanguageFromKey }}</option>
                 }

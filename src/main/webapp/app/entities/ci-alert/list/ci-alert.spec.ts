@@ -1,12 +1,12 @@
-import { MockInstance, afterEach, beforeEach, describe, expect, it, vitest } from 'vitest';
+import { MockInstance, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed, inject } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { Subject, of } from 'rxjs';
 
 import { sampleWithRequiredData } from '../ci-alert.test-samples';
@@ -14,7 +14,7 @@ import { CiAlertService } from '../service/ci-alert.service';
 
 import { CiAlert } from './ci-alert';
 
-vitest.useFakeTimers();
+vi.useFakeTimers();
 
 describe('CiAlert Management Component', () => {
   let httpMock: HttpTestingController;
@@ -25,8 +25,8 @@ describe('CiAlert Management Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
       providers: [
+        provideTranslateService(),
         provideHttpClientTesting(),
         {
           provide: ActivatedRoute,
@@ -59,7 +59,7 @@ describe('CiAlert Management Component', () => {
     fixture = TestBed.createComponent(CiAlert);
     comp = fixture.componentInstance;
     service = TestBed.inject(CiAlertService);
-    routerNavigateSpy = vitest.spyOn(comp.router, 'navigate');
+    routerNavigateSpy = vi.spyOn(comp.router, 'navigate');
 
     const library = TestBed.inject(FaIconLibrary);
     library.addIcons(faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes);
@@ -76,7 +76,7 @@ describe('CiAlert Management Component', () => {
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
     req.flush([{ id: 1978 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
-    await vitest.runAllTimersAsync();
+    await vi.runAllTimersAsync();
 
     // THEN
     expect(comp.isLoading()).toEqual(false);
@@ -87,14 +87,14 @@ describe('CiAlert Management Component', () => {
     // WHEN
     TestBed.tick();
     const req = httpMock.expectOne({ method: 'GET' });
-    await vitest.runAllTimersAsync();
+    await vi.runAllTimersAsync();
 
     comp.page.set(3);
     comp.load();
-    await vitest.runAllTimersAsync();
+    await vi.runAllTimersAsync();
     const req2 = httpMock.expectOne({ method: 'GET' });
     req2.flush([{ id: 1978 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
-    await vitest.runAllTimersAsync();
+    await vi.runAllTimersAsync();
 
     // THEN
     expect(req.cancelled).toBeTruthy();
@@ -107,7 +107,7 @@ describe('CiAlert Management Component', () => {
     TestBed.tick();
     const errorReq = httpMock.expectOne({ method: 'GET' });
     errorReq.flush('error', { status: 500, statusText: 'Server Error' });
-    await vitest.runAllTimersAsync();
+    await vi.runAllTimersAsync();
 
     // THEN - loading state was reset and list is empty
     expect(comp.isLoading()).toBe(false);
@@ -118,7 +118,7 @@ describe('CiAlert Management Component', () => {
     TestBed.tick();
     const successReq = httpMock.expectOne({ method: 'GET' });
     successReq.flush([{ id: 1978 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
-    await vitest.runAllTimersAsync();
+    await vi.runAllTimersAsync();
 
     // THEN - subscription is still alive and second load succeeds
     expect(comp.ciAlerts()[0]).toEqual(expect.objectContaining({ id: 1978 }));
@@ -127,7 +127,7 @@ describe('CiAlert Management Component', () => {
   describe('trackId', () => {
     it('should forward to ciAlertService', () => {
       const entity = { id: 1978 };
-      vitest.spyOn(service, 'getCiAlertIdentifier');
+      vi.spyOn(service, 'getCiAlertIdentifier');
       const id = comp.trackId(entity);
       expect(service.getCiAlertIdentifier).toHaveBeenCalledWith(entity);
       expect(id).toBe(entity.id);
@@ -163,7 +163,7 @@ describe('CiAlert Management Component', () => {
     httpMock.expectOne({ method: 'GET' });
 
     // THEN
-    expect(service.ciAlertsParams()).toMatchObject(expect.objectContaining({ sort: ['id,desc'] }));
+    expect(service.ciAlertsParams()).toMatchObject({ sort: ['id,desc'] });
   });
 
   it('should calculate the filter attribute', () => {
@@ -172,7 +172,7 @@ describe('CiAlert Management Component', () => {
     httpMock.expectOne({ method: 'GET' });
 
     // THEN
-    expect(service.ciAlertsParams()).toMatchObject(expect.objectContaining({ 'someId.in': ['dc4279ea-cfb9-11ec-9d64-0242ac120002'] }));
+    expect(service.ciAlertsParams()).toMatchObject({ 'someId.in': ['dc4279ea-cfb9-11ec-9d64-0242ac120002'] });
   });
 
   describe('delete', () => {
@@ -183,13 +183,13 @@ describe('CiAlert Management Component', () => {
       deleteModalMock = { componentInstance: {}, closed: new Subject() };
       // NgbModal is not a singleton using TestBed.inject.
       // ngbModal = TestBed.inject(NgbModal);
-      ngbModal = (comp as any).modalService;
-      vitest.spyOn(ngbModal, 'open').mockReturnValue(deleteModalMock);
+      ngbModal = (comp as unknown as { modalService: NgbModal }).modalService;
+      vi.spyOn(ngbModal, 'open').mockReturnValue(deleteModalMock);
     });
 
-    it('on confirm should call load', inject([], () => {
+    it('on confirm should call load', () => {
       // GIVEN
-      vitest.spyOn(comp, 'load');
+      vi.spyOn(comp, 'load');
 
       // WHEN
       comp.delete(sampleWithRequiredData);
@@ -198,11 +198,11 @@ describe('CiAlert Management Component', () => {
       // THEN
       expect(ngbModal.open).toHaveBeenCalled();
       expect(comp.load).toHaveBeenCalled();
-    }));
+    });
 
-    it('on dismiss should call load', inject([], () => {
+    it('on dismiss should call load', () => {
       // GIVEN
-      vitest.spyOn(comp, 'load');
+      vi.spyOn(comp, 'load');
 
       // WHEN
       comp.delete(sampleWithRequiredData);
@@ -211,6 +211,6 @@ describe('CiAlert Management Component', () => {
       // THEN
       expect(ngbModal.open).toHaveBeenCalled();
       expect(comp.load).not.toHaveBeenCalled();
-    }));
+    });
   });
 });

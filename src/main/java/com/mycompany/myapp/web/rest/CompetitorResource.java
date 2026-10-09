@@ -69,7 +69,7 @@ public class CompetitorResource {
      * {@code POST  /competitors} : Create a new competitor.
      *
      * @param competitorDTO the competitorDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new competitorDTO, or with status {@code 400 (Bad Request)} if the competitor has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new competitorDTO, or with status {@code 400 (Bad Request)} if the competitor already has an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
@@ -135,7 +135,7 @@ public class CompetitorResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody CompetitorDTO competitorDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update Competitor partially : {}, {}", id, competitorDTO);
+        LOG.debug("REST request to partially update Competitor : {}, {}", id, competitorDTO);
         if (competitorDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }

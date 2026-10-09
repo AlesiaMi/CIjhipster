@@ -61,7 +61,7 @@ public class AnalystProfileResource {
      * {@code POST  /analyst-profiles} : Create a new analystProfile.
      *
      * @param analystProfileDTO the analystProfileDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new analystProfileDTO, or with status {@code 400 (Bad Request)} if the analystProfile has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new analystProfileDTO, or with status {@code 400 (Bad Request)} if the analystProfile already has an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
@@ -129,7 +129,7 @@ public class AnalystProfileResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody AnalystProfileDTO analystProfileDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update AnalystProfile partially : {}, {}", id, analystProfileDTO);
+        LOG.debug("REST request to partially update AnalystProfile : {}, {}", id, analystProfileDTO);
         if (analystProfileDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
