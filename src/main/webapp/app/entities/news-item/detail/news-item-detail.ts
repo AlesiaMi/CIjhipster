@@ -16,8 +16,8 @@ import { AccountService } from 'app/core/auth/account.service';
 })
 export class NewsItemDetail {
   readonly newsItem = input<INewsItem | null>(null);
-  protected readonly accountService = inject(AccountService);
   readonly canEdit = computed(() => this.accountService.hasAnyAuthority('ROLE_ADMIN'));
+  protected readonly accountService = inject(AccountService);
 
   previousState(): void {
     globalThis.history.back();

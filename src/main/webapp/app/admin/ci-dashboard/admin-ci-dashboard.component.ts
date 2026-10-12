@@ -93,8 +93,6 @@ interface AdminUserDashboard {
   styleUrls: ['./admin-ci-dashboard.component.scss'],
 })
 export class AdminCiDashboardComponent implements OnInit {
-  private readonly http = inject(HttpClient);
-
   dashboard: AdminDashboard = {
     usersCount: 0,
     competitorsCount: 0,
@@ -115,6 +113,7 @@ export class AdminCiDashboardComponent implements OnInit {
   userErrorMessage = '';
 
   searchText = '';
+  private readonly http = inject(HttpClient);
 
   ngOnInit(): void {
     this.loadDashboard();
@@ -133,7 +132,6 @@ export class AdminCiDashboardComponent implements OnInit {
       )
       .subscribe({
         next: data => {
-          console.log('ADMIN DASHBOARD DATA:', data);
           this.dashboard = data;
         },
         error: error => {
@@ -179,11 +177,11 @@ export class AdminCiDashboardComponent implements OnInit {
     const value = this.searchText.trim().toLowerCase();
 
     if (!value) {
-      return this.dashboard.users ?? [];
+      return this.dashboard.users;
     }
 
-    return (this.dashboard.users ?? []).filter(user => {
-      const login = user.login?.toLowerCase() ?? '';
+    return this.dashboard.users.filter(user => {
+      const login = user.login.toLowerCase();
       const email = user.email?.toLowerCase() ?? '';
 
       return login.includes(value) || email.includes(value);
@@ -234,7 +232,8 @@ export class AdminCiDashboardComponent implements OnInit {
     this.loadDashboard();
 
     if (this.selectedUser) {
-      const user = this.dashboard.users.find(item => item.id === this.selectedUser?.id);
+      const selectedUserId = this.selectedUser.id;
+      const user = this.dashboard.users.find(item => item.id === selectedUserId);
 
       if (user) {
         this.openUser(user);

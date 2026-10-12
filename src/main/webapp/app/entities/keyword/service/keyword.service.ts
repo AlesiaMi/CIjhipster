@@ -1,5 +1,5 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Service, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
@@ -20,7 +20,7 @@ export type NewRestKeyword = RestOf<NewKeyword>;
 
 export type PartialUpdateRestKeyword = RestOf<PartialUpdateKeyword>;
 
-@Service()
+@Injectable()
 export class KeywordsService {
   readonly keywordsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
@@ -49,7 +49,7 @@ export class KeywordsService {
   }
 }
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class KeywordService extends KeywordsService {
   protected readonly http = inject(HttpClient);
 

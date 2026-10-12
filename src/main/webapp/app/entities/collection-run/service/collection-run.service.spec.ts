@@ -6,7 +6,9 @@ import { ICollectionRun } from '../collection-run.model';
 import { sampleWithFullData, sampleWithNewData, sampleWithPartialData, sampleWithRequiredData } from '../collection-run.test-samples';
 
 import { CollectionRunService, RestCollectionRun } from './collection-run.service';
-
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { provideTranslateService } from '@ngx-translate/core';
 const requireRestSample: RestCollectionRun = {
   ...sampleWithRequiredData,
   startedAt: sampleWithRequiredData.startedAt?.toJSON(),
@@ -20,7 +22,7 @@ describe('CollectionRun Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), provideTranslateService()],
     });
     expectedResult = null;
     service = TestBed.inject(CollectionRunService);

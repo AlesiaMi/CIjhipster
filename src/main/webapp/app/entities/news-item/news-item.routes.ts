@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { ASC } from 'app/config/navigation.constants';
-import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
+import { userRouteAccessService } from 'app/core/auth/user-route-access.service';
 import { Authority } from 'app/shared/jhipster/constants';
 import NewsItemResolve from './route/news-item-routing-resolve.service';
 
@@ -29,7 +29,7 @@ const newsItemRoute: Routes = [
       newsItem: NewsItemResolve,
     },
     data: { authorities: [Authority.ADMIN] },
-    canActivate: [UserRouteAccessService],
+    canActivate: [userRouteAccessService],
   },
   {
     path: ':id/edit',
@@ -38,7 +38,7 @@ const newsItemRoute: Routes = [
       newsItem: NewsItemResolve,
     },
     data: { authorities: [Authority.ADMIN] },
-    canActivate: [UserRouteAccessService],
+    canActivate: [userRouteAccessService],
   },
 ];
 

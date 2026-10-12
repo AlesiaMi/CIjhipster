@@ -1,4 +1,4 @@
-import { Service } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import dayjs from 'dayjs/esm';
@@ -6,20 +6,10 @@ import dayjs from 'dayjs/esm';
 import { DATE_TIME_FORMAT } from 'app/config';
 import { ICollectionRun, NewCollectionRun } from '../collection-run.model';
 
-/**
- * A partial Type with required key is used as form input.
- */
 type PartialWithRequiredKeyOf<T extends { id: unknown }> = Partial<Omit<T, 'id'>> & { id: T['id'] };
 
-/**
- * Type for createFormGroup and resetForm argument.
- * It accepts ICollectionRun for edit and NewCollectionRunFormGroupInput for create.
- */
 type CollectionRunFormGroupInput = ICollectionRun | PartialWithRequiredKeyOf<NewCollectionRun>;
 
-/**
- * Type that converts some properties for forms.
- */
 type FormValueOf<T extends ICollectionRun | NewCollectionRun> = Omit<T, 'startedAt' | 'finishedAt'> & {
   startedAt?: string | null;
   finishedAt?: string | null;
@@ -39,11 +29,12 @@ type CollectionRunFormGroupContent = {
   foundCount: FormControl<CollectionRunFormRawValue['foundCount']>;
   processedCount: FormControl<CollectionRunFormRawValue['processedCount']>;
   errorMessage: FormControl<CollectionRunFormRawValue['errorMessage']>;
+  owner: FormControl<CollectionRunFormRawValue['owner']>;
 };
 
 export type CollectionRunFormGroup = FormGroup<CollectionRunFormGroupContent>;
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class CollectionRunFormService {
   createCollectionRunFormGroup(collectionRun?: CollectionRunFormGroupInput): CollectionRunFormGroup {
     const collectionRunRawValue = this.convertCollectionRunToCollectionRunRawValue({
@@ -53,24 +44,35 @@ export class CollectionRunFormService {
 
     return new FormGroup<CollectionRunFormGroupContent>({
       id: new FormControl(
-        { value: collectionRunRawValue.id, disabled: true },
+        {
+          value: collectionRunRawValue.id,
+          disabled: true,
+        },
         {
           nonNullable: true,
           validators: [Validators.required],
         },
       ),
+
       startedAt: new FormControl(collectionRunRawValue.startedAt, {
         validators: [Validators.required],
       }),
+
       finishedAt: new FormControl(collectionRunRawValue.finishedAt),
+
       status: new FormControl(collectionRunRawValue.status, {
         validators: [Validators.required],
       }),
+
       foundCount: new FormControl(collectionRunRawValue.foundCount),
+
       processedCount: new FormControl(collectionRunRawValue.processedCount),
+
       errorMessage: new FormControl(collectionRunRawValue.errorMessage, {
         validators: [Validators.maxLength(4000)],
       }),
+
+      owner: new FormControl<CollectionRunFormRawValue['owner']>(collectionRunRawValue.owner ?? null),
     });
   }
 
@@ -79,10 +81,18 @@ export class CollectionRunFormService {
   }
 
   resetForm(form: CollectionRunFormGroup, collectionRun: CollectionRunFormGroupInput): void {
-    const collectionRunRawValue = this.convertCollectionRunToCollectionRunRawValue({ ...this.getFormDefaults(), ...collectionRun });
+    const collectionRunRawValue = this.convertCollectionRunToCollectionRunRawValue({
+      ...this.getFormDefaults(),
+      ...collectionRun,
+    });
+
     form.reset({
       ...collectionRunRawValue,
-      id: { value: collectionRunRawValue.id, disabled: true },
+      owner: collectionRunRawValue.owner ?? null,
+      id: {
+        value: collectionRunRawValue.id,
+        disabled: true,
+      },
     });
   }
 

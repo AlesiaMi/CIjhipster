@@ -117,7 +117,7 @@ export class CollectionRun {
         }, 500);
       },
 
-      error: err => {
+      error(err) {
         console.error(err);
 
         alert('Ошибка при запуске сбора.');

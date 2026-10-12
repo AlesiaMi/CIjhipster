@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 import { ASC } from 'app/config';
 import { userRouteAccessService } from 'app/core/auth';
-import { Authority } from 'app/shared/jhipster/constants/authority.constants';
+import { Authority } from 'app/shared/jhipster/constants';
 import AnalysisResultResolve from './route/analysis-result-routing-resolve.service';
 
 const analysisResultRoute: Routes = [
@@ -29,7 +29,7 @@ const analysisResultRoute: Routes = [
       analysisResult: AnalysisResultResolve,
     },
     data: { authorities: [Authority.ADMIN] },
-    canActivate: [UserRouteAccessService],
+    canActivate: [userRouteAccessService],
   },
   {
     path: ':id/edit',
@@ -38,7 +38,7 @@ const analysisResultRoute: Routes = [
       analysisResult: AnalysisResultResolve,
     },
     data: { authorities: [Authority.ADMIN] },
-    canActivate: [UserRouteAccessService],
+    canActivate: [userRouteAccessService],
   },
 ];
 

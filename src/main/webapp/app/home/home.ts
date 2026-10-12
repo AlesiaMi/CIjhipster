@@ -11,8 +11,8 @@ import { TranslateDirective } from 'app/shared/language';
   imports: [TranslateDirective, RouterLink],
 })
 export default class Home implements OnInit {
+  readonly account = inject(AccountService).account;
   private readonly accountService = inject(AccountService);
-  public readonly account = this.accountService.account;
   private readonly router = inject(Router);
 
   ngOnInit(): void {

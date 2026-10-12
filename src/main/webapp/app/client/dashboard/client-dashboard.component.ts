@@ -1,18 +1,63 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+
 import { ManagerClient, ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
 
-@Component({
-  standalone: true,
-  selector: 'jhi-client-dashboard',
-  imports: [CommonModule, FormsModule],
-  templateUrl: './client-dashboard.component.html',
-  styleUrls: ['./client-dashboard.component.scss'],
-})
-export class ClientDashboardComponent implements OnInit {
-  dashboard: any = {
+interface DashboardNewsItem {
+  id: number;
+  publishedAt?: string | null;
+  title?: string | null;
+  url?: string | null;
+  dataSource?: {
+    sourceName?: string | null;
+  } | null;
+}
+
+interface DashboardAnalysis {
+  id: number;
+  topic?: string | null;
+  sentiment?: string | null;
+  summary?: string | null;
+  modelName?: string | null;
+}
+
+interface DashboardAlert {
+  id: number;
+  title?: string | null;
+  severity?: string | null;
+  message?: string | null;
+  status?: string | null;
+}
+
+interface CollectionRunSummary {
+  id: number;
+  status?: string | null;
+  foundCount?: number | null;
+  processedCount?: number | null;
+  finishedAt?: string | null;
+}
+
+interface DashboardData {
+  newsCount?: number;
+  analysisCount?: number;
+  competitorCount?: number;
+  alertsCount?: number;
+  highAlertsCount?: number;
+  sourcesCount?: number;
+
+  positiveCount?: number;
+  negativeCount?: number;
+  neutralCount?: number;
+  unknownCount?: number;
+
+  latestAnalysis?: DashboardAnalysis[];
+  latestAlerts?: DashboardAlert[];
+}
+
+function createEmptyDashboard(): DashboardData {
+  return {
     newsCount: 0,
     analysisCount: 0,
     competitorCount: 0,
@@ -28,9 +73,20 @@ export class ClientDashboardComponent implements OnInit {
     latestAnalysis: [],
     latestAlerts: [],
   };
+}
 
-  latestNewsItems: any[] = [];
-  collectionRuns: any[] = [];
+@Component({
+  standalone: true,
+  selector: 'jhi-client-dashboard',
+  imports: [CommonModule, FormsModule],
+  templateUrl: './client-dashboard.component.html',
+  styleUrls: ['./client-dashboard.component.scss'],
+})
+export class ClientDashboardComponent implements OnInit {
+  dashboard: DashboardData = createEmptyDashboard();
+
+  latestNewsItems: DashboardNewsItem[] = [];
+  collectionRuns: CollectionRunSummary[] = [];
 
   loading = true;
 
@@ -45,6 +101,7 @@ export class ClientDashboardComponent implements OnInit {
 
   private readonly http = inject(HttpClient);
   private readonly managerClientContext = inject(ManagerClientContextService);
+
   ngOnInit(): void {
     this.loadManagerClients();
   }
@@ -56,18 +113,14 @@ export class ClientDashboardComponent implements OnInit {
     this.managerClientContext.initialize().subscribe({
       next: () => {
         this.isManager = this.managerClientContext.isManager();
-
         this.managerClients = this.managerClientContext.clients();
-
         this.selectedClientUserId = this.managerClientContext.selectedClientUserId();
 
         this.clientsLoading = false;
 
         if (this.isManager && this.selectedClientUserId === null) {
           this.clientMessage = 'Нет доступных клиентов.';
-
           this.loading = false;
-
           return;
         }
 
@@ -77,11 +130,11 @@ export class ClientDashboardComponent implements OnInit {
       error: () => {
         this.clientsLoading = false;
         this.loading = false;
-
         this.clientMessage = 'Не удалось загрузить список клиентов.';
       },
     });
   }
+
   onClientChange(): void {
     this.managerClientContext.selectClient(this.selectedClientUserId);
     this.collectionMessage = '';
@@ -102,7 +155,7 @@ export class ClientDashboardComponent implements OnInit {
 
     const dashboardParams = this.getClientParams();
 
-    this.http.get<any>('/api/dashboard', { params: dashboardParams }).subscribe({
+    this.http.get<DashboardData>('/api/dashboard', { params: dashboardParams }).subscribe({
       next: data => {
         this.dashboard = data;
       },
@@ -111,7 +164,7 @@ export class ClientDashboardComponent implements OnInit {
       },
     });
 
-    this.http.get<any[]>('/api/dashboard/latest-news', { params: dashboardParams }).subscribe({
+    this.http.get<DashboardNewsItem[]>('/api/dashboard/latest-news', { params: dashboardParams }).subscribe({
       next: data => {
         this.latestNewsItems = data;
       },
@@ -126,7 +179,7 @@ export class ClientDashboardComponent implements OnInit {
       collectionParams = collectionParams.set('clientUserId', this.selectedClientUserId.toString());
     }
 
-    this.http.get<any[]>('/api/collection-runs', { params: collectionParams }).subscribe({
+    this.http.get<CollectionRunSummary[]>('/api/collection-runs', { params: collectionParams }).subscribe({
       next: data => {
         this.collectionRuns = data;
         this.loading = false;
@@ -152,7 +205,6 @@ export class ClientDashboardComponent implements OnInit {
     }
 
     const client = this.getSelectedClient();
-
     return client?.permissions.includes('COLLECTION_RUN') ?? false;
   }
 
@@ -166,7 +218,7 @@ export class ClientDashboardComponent implements OnInit {
 
     const params = this.getClientParams();
 
-    this.http.post<void>('/api/collection-job/run-rss', {}, { params }).subscribe({
+    this.http.post<unknown>('/api/collection-job/run-rss', {}, { params }).subscribe({
       next: () => {
         this.collectionMessage = 'Сбор новостей запущен.';
 
@@ -176,7 +228,8 @@ export class ClientDashboardComponent implements OnInit {
 
         this.collectionRunning = false;
       },
-      error: error => {
+
+      error: (error: HttpErrorResponse) => {
         if (error.status === 409) {
           this.collectionMessage = 'Сбор новостей уже выполняется.';
         } else if (error.status === 403) {
@@ -230,20 +283,20 @@ export class ClientDashboardComponent implements OnInit {
     return this.dashboard.competitorCount ?? 0;
   }
 
-  getLatestNews(): any[] {
+  getLatestNews(): DashboardNewsItem[] {
     return this.latestNewsItems;
   }
 
-  getLatestAnalysis(): any[] {
+  getLatestAnalysis(): DashboardAnalysis[] {
     return this.dashboard.latestAnalysis ?? [];
   }
 
-  getLatestAlerts(): any[] {
+  getLatestAlerts(): DashboardAlert[] {
     return this.dashboard.latestAlerts ?? [];
   }
 
-  getLastRun(): any {
-    return this.collectionRuns.length ? this.collectionRuns[0] : null;
+  getLastRun(): CollectionRunSummary | null {
+    return this.collectionRuns.at(0) ?? null;
   }
 
   getPositivePercent(): number {
@@ -276,7 +329,7 @@ export class ClientDashboardComponent implements OnInit {
     return Math.round((this.getNegativeCount() / total) * 100);
   }
 
-  sentimentClass(sentiment: string): string {
+  sentimentClass(sentiment: string | null | undefined): string {
     switch (sentiment) {
       case 'POSITIVE':
         return 'bg-success';
@@ -292,7 +345,7 @@ export class ClientDashboardComponent implements OnInit {
     }
   }
 
-  severityClass(severity: string): string {
+  severityClass(severity: string | null | undefined): string {
     switch (severity) {
       case 'CRITICAL':
         return 'bg-danger';
@@ -319,23 +372,7 @@ export class ClientDashboardComponent implements OnInit {
   }
 
   private resetDashboard(): void {
-    this.dashboard = {
-      newsCount: 0,
-      analysisCount: 0,
-      competitorCount: 0,
-      alertsCount: 0,
-      highAlertsCount: 0,
-      sourcesCount: 0,
-
-      positiveCount: 0,
-      negativeCount: 0,
-      neutralCount: 0,
-      unknownCount: 0,
-
-      latestAnalysis: [],
-      latestAlerts: [],
-    };
-
+    this.dashboard = createEmptyDashboard();
     this.latestNewsItems = [];
     this.collectionRuns = [];
   }

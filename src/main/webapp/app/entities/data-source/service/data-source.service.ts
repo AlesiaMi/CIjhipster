@@ -1,5 +1,5 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Service, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
@@ -22,9 +22,9 @@ export type NewRestDataSource = RestOf<NewDataSource>;
 
 export type PartialUpdateRestDataSource = RestOf<PartialUpdateDataSource>;
 
-@Service()
+@Injectable()
 export class DataSourcesService {
-  protected readonly managerClientContext = inject(ManagerClientContextService);
+  readonly managerClientContext = inject(ManagerClientContextService);
   readonly dataSourcesParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
   );
@@ -62,7 +62,7 @@ export class DataSourcesService {
   }
 }
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class DataSourceService extends DataSourcesService {
   protected readonly http = inject(HttpClient);
 

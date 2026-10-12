@@ -28,7 +28,7 @@ const competitorRoute: Routes = [
     resolve: {
       competitor: CompetitorResolve,
     },
-    canActivate: [UserRouteAccessService, CompetitorEditRouteAccessService],
+    canActivate: [userRouteAccessService, CompetitorEditRouteAccessService],
   },
   {
     path: ':id/edit',
