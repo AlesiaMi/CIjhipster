@@ -22,11 +22,6 @@ const STORAGE_KEY = 'promai.manager.clientUserId';
 
 @Injectable({ providedIn: 'root' })
 export class ManagerClientContextService {
-  private readonly http = inject(HttpClient);
-  private readonly accountService = inject(AccountService);
-
-  private initialization$?: Observable<void>;
-
   readonly initialized = signal(false);
   readonly loading = signal(false);
 
@@ -46,6 +41,11 @@ export class ManagerClientContextService {
     return this.clients().find(client => client.userId === selectedId) ?? null;
   });
 
+  private readonly http = inject(HttpClient);
+  private readonly accountService = inject(AccountService);
+
+  private initialization$?: Observable<void>;
+
   initialize(): Observable<void> {
     if (this.initialized()) {
       return of(undefined);
@@ -59,7 +59,7 @@ export class ManagerClientContextService {
 
     this.initialization$ = this.accountService.identity().pipe(
       switchMap(account => {
-        const isManager = account?.authorities.includes('ROLE_MANAGER') ?? false;
+        const isManager = Boolean(account?.authorities.includes('ROLE_MANAGER'));
 
         this.isManager.set(isManager);
 
@@ -81,15 +81,16 @@ export class ManagerClientContextService {
         this.clients.set(clients);
 
         const storedValue = globalThis.sessionStorage.getItem(STORAGE_KEY);
+        const storedId = storedValue === null ? null : Number(storedValue);
 
-        const storedId = storedValue !== null ? Number(storedValue) : null;
+        const selectedClient = clients.find(client => client.userId === storedId) ?? clients.at(0);
 
-        const selectedId = clients.find(client => client.userId === storedId)?.userId ?? clients[0]?.userId ?? null;
+        const selectedId = selectedClient?.userId ?? null;
 
         this.selectedClientUserId.set(selectedId);
 
-        if (selectedId !== null) {
-          globalThis.sessionStorage.setItem(STORAGE_KEY, selectedId.toString());
+        if (selectedClient) {
+          globalThis.sessionStorage.setItem(STORAGE_KEY, String(selectedClient.userId));
         } else {
           globalThis.sessionStorage.removeItem(STORAGE_KEY);
         }
@@ -101,7 +102,7 @@ export class ManagerClientContextService {
         this.initialized.set(true);
       }),
 
-      catchError(error => {
+      catchError((error: unknown) => {
         this.initialization$ = undefined;
         return throwError(() => error);
       }),
@@ -126,9 +127,7 @@ export class ManagerClientContextService {
 
     if (userId === null) {
       this.selectedClientUserId.set(null);
-
       globalThis.sessionStorage.removeItem(STORAGE_KEY);
-
       return;
     }
 
@@ -139,7 +138,6 @@ export class ManagerClientContextService {
     }
 
     this.selectedClientUserId.set(userId);
-
     globalThis.sessionStorage.setItem(STORAGE_KEY, userId.toString());
   }
 
@@ -160,8 +158,10 @@ export class ManagerClientContextService {
       ...params,
     };
 
-    if (this.isManager() && this.selectedClientUserId() !== null) {
-      result['clientUserId'] = this.selectedClientUserId()!;
+    const selectedId = this.selectedClientUserId();
+
+    if (this.isManager() && selectedId !== null) {
+      result['clientUserId'] = selectedId;
     }
 
     return result;

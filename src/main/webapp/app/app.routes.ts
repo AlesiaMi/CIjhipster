@@ -45,7 +45,7 @@ const routes: Routes = [
       authorities: [Authority.USER, Authority.MANAGER, Authority.ADMIN],
       pageTitle: 'Дашборд конкурентной разведки',
     },
-    canActivate: [UserRouteAccessService],
+    canActivate: [userRouteAccessService],
   },
   ...errorRoute,
 ];
