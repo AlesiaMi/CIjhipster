@@ -1,5 +1,5 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Service, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
@@ -22,13 +22,10 @@ export type NewRestNewsItem = RestOf<NewNewsItem>;
 
 export type PartialUpdateRestNewsItem = RestOf<PartialUpdateNewsItem>;
 
-@Service()
+@Injectable()
 export class NewsItemsService {
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-  protected readonly managerClientContext = inject(ManagerClientContextService);
-
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/news-items');
-
+  readonly managerClientContext = inject(ManagerClientContextService);
+  readonly resourceUrl = `${serverApiUrl}api/news-items`;
   readonly newsItemsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
   );
@@ -62,7 +59,7 @@ export class NewsItemsService {
   }
 }
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class NewsItemService extends NewsItemsService {
   protected readonly http = inject(HttpClient);
 

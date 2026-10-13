@@ -6,7 +6,6 @@ import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/rou
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
-import { TranslateModule } from '@ngx-translate/core';
 import { combineLatest, filter, finalize, map, tap } from 'rxjs';
 
 import { EntityImportService, ImportError } from 'app/shared/import/import.service';
@@ -36,7 +35,6 @@ import { DataSourceService } from '../service/data-source.service';
     SortDirective,
     SortByDirective,
     TranslateDirective,
-    TranslateModule,
     FormatMediumDatetimePipe,
     Filter,
     NgbPagination,
@@ -45,7 +43,12 @@ import { DataSourceService } from '../service/data-source.service';
 })
 export class DataSource {
   readonly dataSources = signal<IDataSource[]>([]);
+  readonly canEdit = computed(() => this.managerClientContext.hasPermission('SOURCES_EDIT'));
 
+  readonly isImporting = signal(false);
+  readonly bulkImport = signal(false);
+  readonly importErrors = signal<ImportError[]>([]);
+  readonly importSuccess = signal<string | null>(null);
   sortState = sortStateSignal({});
   filters: IFilterOptions = new FilterOptions();
 
@@ -80,13 +83,6 @@ export class DataSource {
 
   protected readonly managerClientContext = inject(ManagerClientContextService);
   protected readonly entityImportService = inject(EntityImportService);
-
-  readonly canEdit = computed(() => this.managerClientContext.hasPermission('SOURCES_EDIT'));
-
-  readonly isImporting = signal(false);
-  readonly bulkImport = signal(false);
-  readonly importErrors = signal<ImportError[]>([]);
-  readonly importSuccess = signal<string | null>(null);
 
   constructor() {
     // Инициализация контекста менеджера

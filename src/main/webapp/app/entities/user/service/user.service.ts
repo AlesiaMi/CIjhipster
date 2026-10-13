@@ -1,5 +1,5 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Service, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
@@ -7,7 +7,7 @@ import { serverApiUrl } from 'app/config';
 import { createRequestOption } from 'app/core/request';
 import { IUser } from '../user.model';
 
-@Service()
+@Injectable()
 export class UsersService {
   readonly usersParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(undefined);
   readonly usersResource = httpResource<IUser[]>(() => {
@@ -25,7 +25,7 @@ export class UsersService {
   protected readonly resourceUrl = `${serverApiUrl}api/users`;
 }
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class UserService extends UsersService {
   protected readonly http = inject(HttpClient);
 

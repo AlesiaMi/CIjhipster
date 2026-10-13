@@ -44,7 +44,12 @@ import { NewsItemService } from '../service/news-item.service';
 })
 export class NewsItem {
   readonly newsItems = signal<INewsItem[]>([]);
+  readonly canEdit = computed(() => this.accountService.hasAnyAuthority('ROLE_ADMIN'));
 
+  readonly isImporting = signal(false);
+  readonly bulkImport = signal(false);
+  readonly importErrors = signal<ImportError[]>([]);
+  readonly importSuccess = signal<string | null>(null);
   sortState = sortStateSignal({});
   filters: IFilterOptions = new FilterOptions();
 
@@ -89,13 +94,6 @@ export class NewsItem {
   protected readonly entityImportService = inject(EntityImportService);
 
   private readonly managerContextReady = signal(false);
-
-  readonly canEdit = computed(() => this.accountService.hasAnyAuthority('ROLE_ADMIN'));
-
-  readonly isImporting = signal(false);
-  readonly bulkImport = signal(false);
-  readonly importErrors = signal<ImportError[]>([]);
-  readonly importSuccess = signal<string | null>(null);
 
   constructor() {
     // Инициализация контекста менеджера перед загрузкой данных.

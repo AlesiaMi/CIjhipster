@@ -21,7 +21,7 @@ export type PartialUpdateRestAnalysisResult = RestOf<PartialUpdateAnalysisResult
 
 @Injectable()
 export class AnalysisResultsService {
-  protected readonly managerClientContext = inject(ManagerClientContextService);
+  readonly managerClientContext = inject(ManagerClientContextService);
 
   readonly analysisResultsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,

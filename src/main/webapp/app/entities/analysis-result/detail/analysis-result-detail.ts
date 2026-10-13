@@ -17,8 +17,8 @@ import { IAnalysisResult } from '../analysis-result.model';
 export class AnalysisResultDetail {
   readonly analysisResult = input<IAnalysisResult | null>(null);
 
-  protected readonly accountService = inject(AccountService);
   readonly canEdit = computed(() => this.accountService.hasAnyAuthority('ROLE_ADMIN'));
+  protected readonly accountService = inject(AccountService);
 
   previousState(): void {
     globalThis.history.back();

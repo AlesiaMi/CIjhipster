@@ -7,7 +7,6 @@ import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/rou
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
-import { TranslateModule } from '@ngx-translate/core';
 import { combineLatest, filter, map, tap } from 'rxjs';
 
 import { DEFAULT_SORT_DATA, ITEMS_PER_PAGE, ITEM_DELETED_EVENT, PAGE_HEADER, SORT, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config';
@@ -37,7 +36,6 @@ import { AnalysisResultService } from '../service/analysis-result.service';
     SortDirective,
     SortByDirective,
     TranslateDirective,
-    TranslateModule,
     FormatMediumDatetimePipe,
     Filter,
     NgbPagination,
@@ -54,18 +52,12 @@ export class AnalysisResult implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
 
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly managerClientContext = inject(ManagerClientContextService);
-  private readonly accountService = inject(AccountService);
-
-  private readonly contextReady = signal(false);
-
   readonly canEdit = computed(() => this.accountService.hasAnyAuthority('ROLE_ADMIN'));
 
   readonly router = inject(Router);
-  protected readonly analysisResultService = inject(AnalysisResultService);
 
-  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly analysisResultService = inject(AnalysisResultService);
+
   readonly isLoading = this.analysisResultService.analysisResultsResource.isLoading;
 
   protected readonly activatedRoute = inject(ActivatedRoute);
@@ -85,6 +77,12 @@ export class AnalysisResult implements OnInit {
   protected readonly sortService = inject(SortService);
   protected readonly filterOptions = toSignal(this.filters.filterChanges);
   protected modalService = inject(NgbModal);
+
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly managerClientContext = inject(ManagerClientContextService);
+  private readonly accountService = inject(AccountService);
+
+  private readonly contextReady = signal(false);
 
   constructor() {
     effect(() => {
@@ -131,7 +129,7 @@ export class AnalysisResult implements OnInit {
         next: () => {
           this.contextReady.set(true);
         },
-        error: error => {
+        error(error) {
           console.error('Failed to initialize manager client context', error);
         },
       });
