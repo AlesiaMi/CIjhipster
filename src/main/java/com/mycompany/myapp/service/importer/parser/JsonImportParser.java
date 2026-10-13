@@ -1,8 +1,5 @@
 package com.mycompany.myapp.service.importer.parser;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.myapp.service.importer.ImportParseException;
 import com.mycompany.myapp.service.importer.model.ImportFormat;
 import com.mycompany.myapp.service.importer.model.ImportRecord;
@@ -15,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 public class JsonImportParser implements ImportParser {
@@ -51,7 +51,7 @@ public class JsonImportParser implements ImportParser {
             return records;
         } catch (ImportParseException exception) {
             throw exception;
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw new ImportParseException("Invalid JSON: " + exception.getOriginalMessage(), exception);
         } catch (IOException exception) {
             throw new ImportParseException("Unable to read JSON file", exception);
@@ -59,7 +59,7 @@ public class JsonImportParser implements ImportParser {
     }
 
     private void flattenObject(JsonNode object, String prefix, Map<String, String> values, int rowNumber) {
-        Iterator<Map.Entry<String, JsonNode>> fields = object.fields();
+        Iterator<Map.Entry<String, JsonNode>> fields = object.properties().iterator();
         while (fields.hasNext()) {
             Map.Entry<String, JsonNode> field = fields.next();
             String path = prefix.isEmpty() ? field.getKey() : prefix + "." + field.getKey();
