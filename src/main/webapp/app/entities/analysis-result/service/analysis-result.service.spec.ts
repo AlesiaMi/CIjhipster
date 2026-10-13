@@ -6,7 +6,9 @@ import { IAnalysisResult } from '../analysis-result.model';
 import { sampleWithFullData, sampleWithNewData, sampleWithPartialData, sampleWithRequiredData } from '../analysis-result.test-samples';
 
 import { AnalysisResultService, RestAnalysisResult } from './analysis-result.service';
-
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { provideTranslateService } from '@ngx-translate/core';
 const requireRestSample: RestAnalysisResult = {
   ...sampleWithRequiredData,
   analyzedAt: sampleWithRequiredData.analyzedAt?.toJSON(),
@@ -19,7 +21,7 @@ describe('AnalysisResult Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), provideTranslateService()],
     });
     expectedResult = null;
     service = TestBed.inject(AnalysisResultService);

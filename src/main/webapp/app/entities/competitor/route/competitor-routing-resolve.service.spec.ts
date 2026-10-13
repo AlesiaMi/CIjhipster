@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideTranslateService } from '@ngx-translate/core';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, ActivatedRouteSnapshot, Router, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, ActivatedRouteSnapshot, Router, convertToParamMap, provideRouter } from '@angular/router';
 
 import { lastValueFrom, of, throwError } from 'rxjs';
 
@@ -17,6 +19,10 @@ describe('Competitor routing resolve service', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        provideTranslateService(),
         {
           provide: ActivatedRoute,
           useValue: {

@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { provideTranslateService } from '@ngx-translate/core';
 import { TestBed } from '@angular/core/testing';
 
 import { IDataSource } from '../data-source.model';
@@ -20,8 +23,9 @@ describe('DataSource Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), provideTranslateService()],
     });
+
     expectedResult = null;
     service = TestBed.inject(DataSourceService);
     httpMock = TestBed.inject(HttpTestingController);

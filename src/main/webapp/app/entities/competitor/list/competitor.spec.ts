@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
-import { faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faDatabase, faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { provideTranslateService } from '@ngx-translate/core';
 import { Subject, of } from 'rxjs';
@@ -13,10 +13,26 @@ import { sampleWithRequiredData } from '../competitor.test-samples';
 import { CompetitorService } from '../service/competitor.service';
 
 import { Competitor } from './competitor';
+import { provideHttpClient } from '@angular/common/http';
+import { signal } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
+import type { ManagerRequestParams } from 'app/core/manager/manager-client-context.service';
 
 vi.useFakeTimers();
 
 describe('Competitor Management Component', () => {
+  const mockManagerClientContext = {
+    initialized: signal(true),
+    isManager: signal(false),
+    selectedClientUserId: signal<number | null>(null),
+
+    initialize: vi.fn(() => of(undefined)),
+
+    hasPermission: vi.fn(() => true),
+
+    withClientUserId: vi.fn((params: ManagerRequestParams = {}): ManagerRequestParams => params),
+  };
   let httpMock: HttpTestingController;
   let comp: Competitor;
   let fixture: ComponentFixture<Competitor>;
@@ -26,8 +42,14 @@ describe('Competitor Management Component', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideTranslateService(),
+        provideHttpClient(),
         provideHttpClientTesting(),
+        provideRouter([]),
+        provideTranslateService(),
+        {
+          provide: ManagerClientContextService,
+          useValue: mockManagerClientContext,
+        },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -62,7 +84,7 @@ describe('Competitor Management Component', () => {
     routerNavigateSpy = vi.spyOn(comp.router, 'navigate');
 
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes);
+    library.addIcons(faDatabase, faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes);
     httpMock = TestBed.inject(HttpTestingController);
   });
 

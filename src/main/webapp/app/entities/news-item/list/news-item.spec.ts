@@ -2,7 +2,9 @@ import { MockInstance, afterEach, beforeEach, describe, expect, it, vi } from 'v
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-
+import { provideHttpClient } from '@angular/common/http';
+import { signal } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
@@ -13,10 +15,23 @@ import { sampleWithRequiredData } from '../news-item.test-samples';
 import { NewsItemService } from '../service/news-item.service';
 
 import { NewsItem } from './news-item';
+import { AccountService } from 'app/core/auth/account.service';
+import { ManagerClientContextService, type ManagerRequestParams } from 'app/core/manager/manager-client-context.service';
 
 vi.useFakeTimers();
 
 describe('NewsItem Management Component', () => {
+  const mockManagerClientContext = {
+    initialized: signal(true),
+    isManager: signal(false),
+    selectedClientUserId: signal<number | null>(null),
+
+    initialize: vi.fn(() => of(undefined)),
+
+    hasPermission: vi.fn(() => true),
+
+    withClientUserId: vi.fn((params: ManagerRequestParams = {}): ManagerRequestParams => params),
+  };
   let httpMock: HttpTestingController;
   let comp: NewsItem;
   let fixture: ComponentFixture<NewsItem>;
@@ -26,8 +41,14 @@ describe('NewsItem Management Component', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideTranslateService(),
+        provideHttpClient(),
         provideHttpClientTesting(),
+        provideRouter([]),
+        provideTranslateService(),
+        {
+          provide: ManagerClientContextService,
+          useValue: mockManagerClientContext,
+        },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -56,6 +77,7 @@ describe('NewsItem Management Component', () => {
       ],
     });
 
+    vi.spyOn(TestBed.inject(AccountService), 'hasAnyAuthority').mockReturnValue(false);
     fixture = TestBed.createComponent(NewsItem);
     comp = fixture.componentInstance;
     service = TestBed.inject(NewsItemService);
