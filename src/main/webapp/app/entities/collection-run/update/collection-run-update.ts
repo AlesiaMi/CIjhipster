@@ -1,4 +1,3 @@
-import { HttpResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -12,6 +11,7 @@ import { UserService } from 'app/entities/user/service/user.service';
 import { IUser } from 'app/entities/user/user.model';
 import { AlertError } from 'app/shared/alert';
 import { TranslateDirective } from 'app/shared/language';
+
 import { ICollectionRun } from '../collection-run.model';
 import { CollectionRunService } from '../service/collection-run.service';
 
@@ -24,22 +24,35 @@ import { CollectionRunFormGroup, CollectionRunFormService } from './collection-r
 })
 export class CollectionRunUpdate implements OnInit {
   readonly isSaving = signal(false);
+
+  readonly usersSharedCollection = signal<Pick<IUser, 'id' | 'login'>[]>([]);
+
   collectionRun: ICollectionRun | null = null;
+
   runStatusValues = Object.keys(RunStatus);
 
-  protected collectionRunService = inject(CollectionRunService);
-  protected collectionRunFormService = inject(CollectionRunFormService);
-  protected activatedRoute = inject(ActivatedRoute);
+  protected readonly collectionRunService = inject(CollectionRunService);
+
+  protected readonly collectionRunFormService = inject(CollectionRunFormService);
+
+  protected readonly activatedRoute = inject(ActivatedRoute);
+
+  protected readonly userService = inject(UserService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: CollectionRunFormGroup = this.collectionRunFormService.createCollectionRunFormGroup();
 
+  compareUser = (o1: Pick<IUser, 'id'> | null, o2: Pick<IUser, 'id'> | null): boolean => this.userService.compareUser(o1, o2);
+
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ collectionRun }) => {
       this.collectionRun = collectionRun;
+
       if (collectionRun) {
         this.updateForm(collectionRun);
       }
+
+      this.loadRelationshipsOptions();
     });
   }
 
@@ -49,7 +62,9 @@ export class CollectionRunUpdate implements OnInit {
 
   save(): void {
     this.isSaving.set(true);
+
     const collectionRun = this.collectionRunFormService.getCollectionRun(this.editForm);
+
     if (collectionRun.id === null) {
       this.subscribeToSaveResponse(this.collectionRunService.create(collectionRun));
     } else {
@@ -78,6 +93,21 @@ export class CollectionRunUpdate implements OnInit {
 
   protected updateForm(collectionRun: ICollectionRun): void {
     this.collectionRun = collectionRun;
+
     this.collectionRunFormService.resetForm(this.editForm, collectionRun);
+
+    this.usersSharedCollection.update(users => this.userService.addUserToCollectionIfMissing(users, collectionRun.owner));
+  }
+
+  protected loadRelationshipsOptions(): void {
+    this.userService
+      .query()
+      .pipe(
+        map(response => response.body ?? []),
+        map(users => this.userService.addUserToCollectionIfMissing<Pick<IUser, 'id' | 'login'>>(users, this.collectionRun?.owner)),
+      )
+      .subscribe(users => {
+        this.usersSharedCollection.set(users);
+      });
   }
 }

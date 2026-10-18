@@ -6,10 +6,9 @@ import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/rou
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
-import { TranslateModule } from '@ngx-translate/core';
 import { combineLatest, filter, finalize, map, tap } from 'rxjs';
 
-import { EntityImportService, ImportError } from 'app/shared/import/import.service';
+import { EntityImportService, ImportError, ImportProgress } from 'app/shared/import/import.service';
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { Alert } from 'app/shared/alert/alert';
@@ -36,7 +35,6 @@ import { DataSourceService } from '../service/data-source.service';
     SortDirective,
     SortByDirective,
     TranslateDirective,
-    TranslateModule,
     FormatMediumDatetimePipe,
     Filter,
     NgbPagination,
@@ -45,7 +43,14 @@ import { DataSourceService } from '../service/data-source.service';
 })
 export class DataSource {
   readonly dataSources = signal<IDataSource[]>([]);
+  readonly canEdit = computed(() => this.managerClientContext.hasPermission('SOURCES_EDIT'));
 
+  readonly isImporting = signal(false);
+  readonly bulkImport = signal(false);
+  readonly importErrors = signal<ImportError[]>([]);
+  readonly importSuccess = signal<string | null>(null);
+  readonly importProgress = signal<ImportProgress | null>(null);
+  readonly importSocketUnavailable = signal(false);
   sortState = sortStateSignal({});
   filters: IFilterOptions = new FilterOptions();
 
@@ -80,13 +85,6 @@ export class DataSource {
 
   protected readonly managerClientContext = inject(ManagerClientContextService);
   protected readonly entityImportService = inject(EntityImportService);
-
-  readonly canEdit = computed(() => this.managerClientContext.hasPermission('SOURCES_EDIT'));
-
-  readonly isImporting = signal(false);
-  readonly bulkImport = signal(false);
-  readonly importErrors = signal<ImportError[]>([]);
-  readonly importSuccess = signal<string | null>(null);
 
   constructor() {
     // Инициализация контекста менеджера
@@ -162,38 +160,52 @@ export class DataSource {
 
     input.value = '';
 
-    if (!file) {
+    if (!file || this.isImporting()) {
       return;
     }
 
     this.importErrors.set([]);
     this.importSuccess.set(null);
+    this.importProgress.set(null);
+    this.importSocketUnavailable.set(false);
     this.isImporting.set(true);
 
-    this.entityImportService
-      .importFile('data-source', file, this.bulkImport())
-      .pipe(finalize(() => this.isImporting.set(false)))
-      .subscribe({
-        next: result => {
-          this.importSuccess.set(`Импортировано источников: ${result.imported}`);
-          this.load();
-        },
+    const activity$ = this.bulkImport()
+      ? this.entityImportService.importBulkWithProgress('data-source', file)
+      : this.entityImportService.importFile('data-source', file).pipe(
+          map(result => ({
+            kind: 'result' as const,
+            result,
+          })),
+        );
 
-        error: (error: HttpErrorResponse) => {
-          const importErrors = error.error?.errors;
+    activity$.pipe(finalize(() => this.isImporting.set(false))).subscribe({
+      next: activity => {
+        if (activity.kind === 'progress') {
+          this.importProgress.set(activity.progress);
+          return;
+        }
 
-          if (Array.isArray(importErrors)) {
-            this.importErrors.set(importErrors as ImportError[]);
-            return;
-          }
+        if (activity.kind === 'connection-lost') {
+          this.importSocketUnavailable.set(true);
+          return;
+        }
 
-          this.importErrors.set([
-            {
-              message: 'Не удалось импортировать файл.',
-            },
-          ]);
-        },
-      });
+        this.importSuccess.set(`Импортировано источников: ${activity.result.imported}`);
+        this.load();
+      },
+
+      error: (error: HttpErrorResponse) => {
+        const importErrors = error.error?.errors;
+
+        if (Array.isArray(importErrors)) {
+          this.importErrors.set(importErrors as ImportError[]);
+          return;
+        }
+
+        this.importErrors.set([{ message: 'Не удалось импортировать файл.' }]);
+      },
+    });
   }
 
   navigateToWithComponentValues(event: SortState): void {

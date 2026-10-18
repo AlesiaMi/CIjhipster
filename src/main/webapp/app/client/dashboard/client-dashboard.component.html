@@ -261,7 +261,7 @@
             <tr>
               <td>{{ item.publishedAt }}</td>
               <td>{{ item.title }}</td>
-              <td>{{ item.dataSource?.sourceName }}</td>
+              <td>{{ item.competitorName || item.dataSource?.sourceName || '—' }}</td>
 
               <td>
                 @if (item.url) {

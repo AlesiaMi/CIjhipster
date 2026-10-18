@@ -30,14 +30,14 @@ const collectionRunRoute: Routes = [
       collectionRun: CollectionRunResolve,
     },
     data: { authorities: [Authority.ADMIN] },
-    canActivate: [UserRouteAccessService],
+    canActivate: [userRouteAccessService],
   },
   {
     path: ':id/edit',
     loadComponent: () => import('./update/collection-run-update').then(m => m.CollectionRunUpdate),
     resolve: { collectionRun: CollectionRunResolve },
     data: { authorities: [Authority.ADMIN] },
-    canActivate: [UserRouteAccessService],
+    canActivate: [userRouteAccessService],
   },
 ];
 

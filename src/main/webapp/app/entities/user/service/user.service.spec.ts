@@ -6,7 +6,9 @@ import { IUser } from '../user.model';
 import { sampleWithFullData, sampleWithPartialData, sampleWithRequiredData } from '../user.test-samples';
 
 import { UserService } from './user.service';
-
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { provideTranslateService } from '@ngx-translate/core';
 const requireRestSample: IUser = {
   ...sampleWithRequiredData,
 };
@@ -18,7 +20,7 @@ describe('User Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), provideTranslateService()],
     });
     expectedResult = null;
     service = TestBed.inject(UserService);

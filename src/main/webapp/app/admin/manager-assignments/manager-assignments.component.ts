@@ -40,10 +40,6 @@ interface EditableAssignment extends ManagerAssignment {
   imports: [CommonModule, FormsModule, FontAwesomeModule],
 })
 export class ManagerAssignmentsComponent implements OnInit {
-  private readonly http = inject(HttpClient);
-
-  private readonly userManagementService = inject(UserManagementService);
-
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
@@ -88,6 +84,9 @@ export class ManagerAssignmentsComponent implements OnInit {
   newClientUserId: number | null = null;
 
   newPermissions: ManagerPermission[] = ['VIEW'];
+
+  private readonly http = inject(HttpClient);
+  private readonly userManagementService = inject(UserManagementService);
 
   ngOnInit(): void {
     this.loadUsers();

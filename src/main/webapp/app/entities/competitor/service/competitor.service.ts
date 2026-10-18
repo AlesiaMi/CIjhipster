@@ -1,5 +1,5 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Service, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
@@ -11,13 +11,9 @@ import { ICompetitor, NewCompetitor } from '../competitor.model';
 
 export type PartialUpdateCompetitor = Partial<ICompetitor> & Pick<ICompetitor, 'id'>;
 
-@Service()
+@Injectable()
 export class CompetitorsService {
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-
-  protected readonly managerClientContext = inject(ManagerClientContextService);
-
-  protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/competitors');
+  readonly managerClientContext = inject(ManagerClientContextService);
 
   readonly competitorsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
@@ -44,7 +40,7 @@ export class CompetitorsService {
   protected readonly resourceUrl = `${serverApiUrl}api/competitors`;
 }
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class CompetitorService extends CompetitorsService {
   protected readonly http = inject(HttpClient);
 

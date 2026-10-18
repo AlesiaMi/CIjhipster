@@ -6,7 +6,9 @@ import { IKeyword } from '../keyword.model';
 import { sampleWithFullData, sampleWithNewData, sampleWithPartialData, sampleWithRequiredData } from '../keyword.test-samples';
 
 import { KeywordService, RestKeyword } from './keyword.service';
-
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { provideTranslateService } from '@ngx-translate/core';
 const requireRestSample: RestKeyword = {
   ...sampleWithRequiredData,
   createdAt: sampleWithRequiredData.createdAt?.toJSON(),
@@ -19,7 +21,7 @@ describe('Keyword Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), provideTranslateService()],
     });
     expectedResult = null;
     service = TestBed.inject(KeywordService);

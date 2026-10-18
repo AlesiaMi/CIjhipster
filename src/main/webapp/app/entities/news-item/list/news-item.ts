@@ -16,7 +16,7 @@ import { ManagerClientContextService } from 'app/core/manager/manager-client-con
 import { Alert, AlertError } from 'app/shared/alert';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
-import { EntityImportService, ImportError } from 'app/shared/import/import.service';
+import { EntityImportService, ImportError, ImportProgress } from 'app/shared/import/import.service';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
@@ -44,7 +44,14 @@ import { NewsItemService } from '../service/news-item.service';
 })
 export class NewsItem {
   readonly newsItems = signal<INewsItem[]>([]);
+  readonly canEdit = computed(() => this.accountService.hasAnyAuthority('ROLE_ADMIN'));
 
+  readonly isImporting = signal(false);
+  readonly bulkImport = signal(false);
+  readonly importErrors = signal<ImportError[]>([]);
+  readonly importSuccess = signal<string | null>(null);
+  readonly importProgress = signal<ImportProgress | null>(null);
+  readonly importSocketUnavailable = signal(false);
   sortState = sortStateSignal({});
   filters: IFilterOptions = new FilterOptions();
 
@@ -89,13 +96,6 @@ export class NewsItem {
   protected readonly entityImportService = inject(EntityImportService);
 
   private readonly managerContextReady = signal(false);
-
-  readonly canEdit = computed(() => this.accountService.hasAnyAuthority('ROLE_ADMIN'));
-
-  readonly isImporting = signal(false);
-  readonly bulkImport = signal(false);
-  readonly importErrors = signal<ImportError[]>([]);
-  readonly importSuccess = signal<string | null>(null);
 
   constructor() {
     // Инициализация контекста менеджера перед загрузкой данных.
@@ -177,39 +177,52 @@ export class NewsItem {
 
     input.value = '';
 
-    if (!file) {
+    if (!file || this.isImporting()) {
       return;
     }
 
     this.importErrors.set([]);
     this.importSuccess.set(null);
+    this.importProgress.set(null);
+    this.importSocketUnavailable.set(false);
     this.isImporting.set(true);
 
-    this.entityImportService
-      .importFile('news-item', file, this.bulkImport())
-      .pipe(finalize(() => this.isImporting.set(false)))
-      .subscribe({
-        next: result => {
-          this.importSuccess.set(`Импортировано новостей: ${result.imported}`);
+    const activity$ = this.bulkImport()
+      ? this.entityImportService.importBulkWithProgress('news-item', file)
+      : this.entityImportService.importFile('news-item', file).pipe(
+          map(result => ({
+            kind: 'result' as const,
+            result,
+          })),
+        );
 
-          this.load();
-        },
+    activity$.pipe(finalize(() => this.isImporting.set(false))).subscribe({
+      next: activity => {
+        if (activity.kind === 'progress') {
+          this.importProgress.set(activity.progress);
+          return;
+        }
 
-        error: (error: HttpErrorResponse) => {
-          const importErrors = error.error?.errors;
+        if (activity.kind === 'connection-lost') {
+          this.importSocketUnavailable.set(true);
+          return;
+        }
 
-          if (Array.isArray(importErrors)) {
-            this.importErrors.set(importErrors as ImportError[]);
-            return;
-          }
+        this.importSuccess.set(`Импортировано новостей: ${activity.result.imported}`);
+        this.load();
+      },
 
-          this.importErrors.set([
-            {
-              message: 'Не удалось импортировать файл.',
-            },
-          ]);
-        },
-      });
+      error: (error: HttpErrorResponse) => {
+        const importErrors = error.error?.errors;
+
+        if (Array.isArray(importErrors)) {
+          this.importErrors.set(importErrors as ImportError[]);
+          return;
+        }
+
+        this.importErrors.set([{ message: 'Не удалось импортировать файл.' }]);
+      },
+    });
   }
 
   navigateToWithComponentValues(event: SortState): void {

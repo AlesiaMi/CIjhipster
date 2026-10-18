@@ -7,6 +7,10 @@ import { of } from 'rxjs';
 import { NewsItemService } from '../service/news-item.service';
 
 import { NewsItemDeleteDialog } from './news-item-delete-dialog';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
+import { provideTranslateService } from '@ngx-translate/core';
 
 describe('NewsItem Management Delete Component', () => {
   let comp: NewsItemDeleteDialog;
@@ -16,7 +20,7 @@ describe('NewsItem Management Delete Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [NgbActiveModal],
+      providers: [NgbActiveModal, provideHttpClient(), provideHttpClientTesting(), provideRouter([]), provideTranslateService()],
     });
     fixture = TestBed.createComponent(NewsItemDeleteDialog);
     comp = fixture.componentInstance;

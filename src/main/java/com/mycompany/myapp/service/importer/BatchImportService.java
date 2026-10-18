@@ -12,10 +12,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class BatchImportService {
 
     private final EntityManager entityManager;
+    private final ImportProgressService progressService;
     private final int batchSize;
 
-    public BatchImportService(EntityManager entityManager, @Value("${import-settings.batch-size:50}") int batchSize) {
+    public BatchImportService(
+        EntityManager entityManager,
+        ImportProgressService progressService,
+        @Value("${import-settings.batch-size:50}") int batchSize
+    ) {
         this.entityManager = entityManager;
+        this.progressService = progressService;
         this.batchSize = batchSize;
     }
 
@@ -35,12 +41,14 @@ public class BatchImportService {
                 if ((i + 1) % batchSize == 0) {
                     entityManager.flush();
                     entityManager.clear();
+                    progressService.reportBatch(i + 1);
                 }
             }
 
             if (entities.size() % batchSize != 0) {
                 entityManager.flush();
                 entityManager.clear();
+                progressService.reportBatch(entities.size());
             }
 
             return entities.size();

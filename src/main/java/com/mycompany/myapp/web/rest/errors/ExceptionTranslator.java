@@ -64,7 +64,12 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity<Object> handleAnyException(Throwable ex, NativeWebRequest request) {
-        LOG.debug("Converting Exception to Problem Details:", ex);
+        if (toStatus(ex).is5xxServerError()) {
+            LOG.error("Unhandled server exception during HTTP request", ex);
+        } else {
+            LOG.debug("Converting Exception to Problem Details:", ex);
+        }
+
         ProblemDetailWithCause pdCause = wrapAndCustomizeProblem(ex, request);
         return handleExceptionInternal((Exception) ex, pdCause, buildHeaders(ex), HttpStatusCode.valueOf(pdCause.getStatus()), request);
     }

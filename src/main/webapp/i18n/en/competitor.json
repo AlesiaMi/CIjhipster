@@ -23,7 +23,8 @@
       "industry": "Industry",
       "description": "Description",
       "isActive": "Is Active",
-      "analystProfiles": "Analyst Profiles"
+      "analystProfiles": "Analyst Profiles",
+      "owner": "Owner"
     }
   }
 }

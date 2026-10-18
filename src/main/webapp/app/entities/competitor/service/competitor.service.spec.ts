@@ -6,7 +6,9 @@ import { ICompetitor } from '../competitor.model';
 import { sampleWithFullData, sampleWithNewData, sampleWithPartialData, sampleWithRequiredData } from '../competitor.test-samples';
 
 import { CompetitorService } from './competitor.service';
-
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { provideTranslateService } from '@ngx-translate/core';
 const requireRestSample: ICompetitor = {
   ...sampleWithRequiredData,
 };
@@ -18,7 +20,7 @@ describe('Competitor Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), provideTranslateService()],
     });
     expectedResult = null;
     service = TestBed.inject(CompetitorService);

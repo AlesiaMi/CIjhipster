@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ElementRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Navigation, Router } from '@angular/router';
+import { ActivatedRoute, Navigation, Router, provideRouter } from '@angular/router';
 
 import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
@@ -21,6 +21,7 @@ describe('Login', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
+        provideRouter([]),
         provideTranslateService(),
         {
           provide: ActivatedRoute,
@@ -29,7 +30,9 @@ describe('Login', () => {
         {
           provide: AccountService,
           useValue: {
-            isAuthenticated: vi.fn(),
+            isAuthenticated: vi.fn(() => false),
+            identity: vi.fn(() => of(null)),
+            hasAnyAuthority: vi.fn(() => false),
           },
         },
         {
@@ -45,8 +48,10 @@ describe('Login', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(Login);
     comp = fixture.componentInstance;
+
     mockRouter = TestBed.inject(Router);
-    vi.spyOn(mockRouter, 'navigate');
+    vi.spyOn(mockRouter, 'navigate').mockResolvedValue(true);
+
     mockLoginService = TestBed.inject(LoginService);
     mockAccountService = TestBed.inject(AccountService);
   });
@@ -74,16 +79,17 @@ describe('Login', () => {
       expect(mockAccountService.isAuthenticated).toHaveBeenCalled();
     });
 
-    it('should navigate to home page on Init if authenticated=true', () => {
+    it('should navigate to dashboard on Init if authenticated=true', () => {
       // GIVEN
       mockAccountService.identity = vi.fn(() => of(null));
-      mockAccountService.isAuthenticated = () => true;
+      mockAccountService.isAuthenticated = vi.fn(() => true);
+      vi.spyOn(mockAccountService, 'hasAnyAuthority').mockReturnValue(false);
 
       // WHEN
       comp.ngOnInit();
 
       // THEN
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['']);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
     });
   });
 
@@ -93,6 +99,7 @@ describe('Login', () => {
       const node = {
         focus: vi.fn(),
       };
+
       vi.spyOn(comp, 'username').mockReturnValue(new ElementRef(node));
 
       // WHEN
@@ -104,19 +111,18 @@ describe('Login', () => {
   });
 
   describe('login', () => {
-    it('should authenticate the user and navigate to home page', () => {
+    it('should authenticate the user and navigate to dashboard', () => {
       // GIVEN
       const credentials = {
-        username: 'admin',
-        password: 'admin',
+        username: 'user',
+        password: 'user',
         rememberMe: true,
       };
 
-      comp.loginForm.patchValue({
-        username: 'admin',
-        password: 'admin',
-        rememberMe: true,
-      });
+      comp.loginForm.patchValue(credentials);
+
+      vi.spyOn(mockRouter, 'currentNavigation').mockReturnValue(null);
+      vi.spyOn(mockAccountService, 'hasAnyAuthority').mockReturnValue(false);
 
       // WHEN
       comp.login();
@@ -124,10 +130,34 @@ describe('Login', () => {
       // THEN
       expect(comp.authenticationError()).toEqual(false);
       expect(mockLoginService.login).toHaveBeenCalledWith(credentials);
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['']);
+      expect(mockAccountService.hasAnyAuthority).toHaveBeenCalledWith('ROLE_ADMIN');
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
     });
 
-    it('should authenticate the user but not navigate to home page if authentication process is already routing to cached url from localstorage', () => {
+    it('should navigate administrator to manager assignments after login', () => {
+      // GIVEN
+      const credentials = {
+        username: 'admin',
+        password: 'admin',
+        rememberMe: true,
+      };
+
+      comp.loginForm.patchValue(credentials);
+
+      vi.spyOn(mockRouter, 'currentNavigation').mockReturnValue(null);
+      vi.spyOn(mockAccountService, 'hasAnyAuthority').mockReturnValue(true);
+
+      // WHEN
+      comp.login();
+
+      // THEN
+      expect(comp.authenticationError()).toEqual(false);
+      expect(mockLoginService.login).toHaveBeenCalledWith(credentials);
+      expect(mockAccountService.hasAnyAuthority).toHaveBeenCalledWith('ROLE_ADMIN');
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/admin/manager-assignments']);
+    });
+
+    it('should authenticate the user but not navigate if routing to a cached URL', () => {
       // GIVEN
       vi.spyOn(mockRouter, 'currentNavigation').mockReturnValue({} as Navigation);
 
@@ -141,7 +171,7 @@ describe('Login', () => {
 
     it('should stay on login form and show error message on login error', () => {
       // GIVEN
-      mockLoginService.login = vi.fn(() => throwError(Error));
+      mockLoginService.login = vi.fn(() => throwError(() => new Error('Login failed')));
 
       // WHEN
       comp.login();

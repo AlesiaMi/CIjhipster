@@ -13,10 +13,27 @@ import { sampleWithRequiredData } from '../analysis-result.test-samples';
 import { AnalysisResultService } from '../service/analysis-result.service';
 
 import { AnalysisResult } from './analysis-result';
+import { provideHttpClient } from '@angular/common/http';
+import { signal } from '@angular/core';
+import { provideRouter } from '@angular/router';
+
+import { AccountService } from 'app/core/auth/account.service';
+import { ManagerClientContextService, type ManagerRequestParams } from 'app/core/manager/manager-client-context.service';
 
 vi.useFakeTimers();
 
 describe('AnalysisResult Management Component', () => {
+  const mockManagerClientContext = {
+    initialized: signal(true),
+    isManager: signal(false),
+    selectedClientUserId: signal<number | null>(null),
+
+    initialize: vi.fn(() => of(undefined)),
+
+    hasPermission: vi.fn(() => true),
+
+    withClientUserId: vi.fn((params: ManagerRequestParams = {}): ManagerRequestParams => params),
+  };
   let httpMock: HttpTestingController;
   let comp: AnalysisResult;
   let fixture: ComponentFixture<AnalysisResult>;
@@ -26,8 +43,14 @@ describe('AnalysisResult Management Component', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideTranslateService(),
+        provideHttpClient(),
         provideHttpClientTesting(),
+        provideRouter([]),
+        provideTranslateService(),
+        {
+          provide: ManagerClientContextService,
+          useValue: mockManagerClientContext,
+        },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -56,6 +79,7 @@ describe('AnalysisResult Management Component', () => {
       ],
     });
 
+    vi.spyOn(TestBed.inject(AccountService), 'hasAnyAuthority').mockReturnValue(false);
     fixture = TestBed.createComponent(AnalysisResult);
     comp = fixture.componentInstance;
     service = TestBed.inject(AnalysisResultService);

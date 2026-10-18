@@ -1,5 +1,5 @@
 import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
-import { Service, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
@@ -21,7 +21,7 @@ export type NewRestCollectionRun = RestOf<NewCollectionRun>;
 
 export type PartialUpdateRestCollectionRun = RestOf<PartialUpdateCollectionRun>;
 
-@Service()
+@Injectable()
 export class CollectionRunsService {
   readonly collectionRunsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
     undefined,
@@ -48,7 +48,7 @@ export class CollectionRunsService {
   }
 }
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class CollectionRunService extends CollectionRunsService {
   protected readonly http = inject(HttpClient);
 
@@ -88,8 +88,8 @@ export class CollectionRunService extends CollectionRunsService {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
   }
 
-  runCollection(): Observable<void> {
-    return this.http.post<void>(`${this.resourceUrl}/run`, {});
+  runCollection(): Observable<unknown> {
+    return this.http.post<unknown>(`${this.resourceUrl}/run`, {});
   }
 
   getCollectionRunIdentifier(collectionRun: Pick<ICollectionRun, 'id'>): number {

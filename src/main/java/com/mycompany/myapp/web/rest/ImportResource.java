@@ -3,6 +3,7 @@ package com.mycompany.myapp.web.rest;
 import com.mycompany.myapp.service.importer.ImportService;
 import com.mycompany.myapp.service.importer.model.ImportResult;
 import java.util.Set;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -32,13 +33,14 @@ public class ImportResource {
         @PathVariable String entityType,
         @RequestParam("file") MultipartFile file,
         @RequestParam(name = "clientUserId", required = false) Long clientUserId,
-        @RequestParam(name = "bulk", defaultValue = "false") boolean bulk
+        @RequestParam(name = "bulk", defaultValue = "false") boolean bulk,
+        @RequestParam(name = "importId", required = false) UUID importId
     ) {
         LOG.debug("REST request to import entity type {} from file {}", entityType, file.getOriginalFilename());
 
         long startedAt = System.nanoTime();
 
-        ImportResult result = importService.importFile(entityType, file, clientUserId, bulk);
+        ImportResult result = importService.importFile(entityType, file, clientUserId, bulk, importId);
 
         long totalMs = (System.nanoTime() - startedAt) / 1_000_000;
         LOG.info(

@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { HttpResponse } from '@angular/common/http';
+import { HttpResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
-
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 import { Subject, from, of } from 'rxjs';
 
@@ -14,6 +13,7 @@ import { DataSourceService } from '../service/data-source.service';
 
 import { DataSourceFormService } from './data-source-form.service';
 import { DataSourceUpdate } from './data-source-update';
+import { ManagerClientContextService, type ManagerRequestParams } from 'app/core/manager/manager-client-context.service';
 
 describe('DataSource Management Update Component', () => {
   let comp: DataSourceUpdate;
@@ -26,8 +26,17 @@ describe('DataSource Management Update Component', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideTranslateService(),
+        provideHttpClient(),
         provideHttpClientTesting(),
+        provideRouter([]),
+        provideTranslateService(),
+        {
+          provide: ManagerClientContextService,
+          useValue: {
+            initialize: vi.fn(() => of(undefined)),
+            withClientUserId: vi.fn((params: ManagerRequestParams = {}): ManagerRequestParams => params),
+          },
+        },
         {
           provide: ActivatedRoute,
           useValue: {

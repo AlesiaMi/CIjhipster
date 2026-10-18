@@ -7,6 +7,10 @@ import { of } from 'rxjs';
 import { AnalysisResultService } from '../service/analysis-result.service';
 
 import { AnalysisResultDeleteDialog } from './analysis-result-delete-dialog';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
+import { provideTranslateService } from '@ngx-translate/core';
 
 describe('AnalysisResult Management Delete Component', () => {
   let comp: AnalysisResultDeleteDialog;
@@ -16,7 +20,7 @@ describe('AnalysisResult Management Delete Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [NgbActiveModal],
+      providers: [NgbActiveModal, provideHttpClient(), provideHttpClientTesting(), provideRouter([]), provideTranslateService()],
     });
     fixture = TestBed.createComponent(AnalysisResultDeleteDialog);
     comp = fixture.componentInstance;
