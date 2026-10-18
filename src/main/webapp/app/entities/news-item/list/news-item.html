@@ -58,6 +58,54 @@
 
   <jhi-alert />
 
+  @if (isImporting() && bulkImport()) {
+    <div class="alert alert-info" role="status" aria-live="polite" data-cy="importProgress">
+      <div class="d-flex align-items-center justify-content-between">
+        <strong>Пакетный импорт новостей выполняется</strong>
+
+        @if (importProgress(); as progress) {
+          <strong>{{ progress.percent }}%</strong>
+        }
+      </div>
+
+      @if (importProgress(); as progress) {
+        <p class="mb-2 mt-2">{{ progress.message }}</p>
+
+        @if (progress.phase === 'SAVING' || progress.phase === 'COMMITTING' || progress.phase === 'COMPLETED') {
+          <div
+            class="progress"
+            role="progressbar"
+            [attr.aria-valuenow]="progress.percent"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-label="Прогресс импорта новостей"
+          >
+            <div class="progress-bar progress-bar-striped progress-bar-animated" [style.width.%]="progress.percent"></div>
+          </div>
+
+          <small class="d-block mt-2"> Обработано {{ progress.processed }} из {{ progress.total }} записей. </small>
+        } @else {
+          <div class="spinner-border spinner-border-sm" aria-hidden="true"></div>
+        }
+
+        @if (progress.phase === 'COMMITTING') {
+          <small class="d-block mt-2"> Ожидается подтверждение сохранения в базе данных. </small>
+        }
+      } @else {
+        <div class="mt-2">
+          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+          Подключение к серверу и подготовка импорта...
+        </div>
+      }
+
+      @if (importSocketUnavailable()) {
+        <div class="alert alert-warning mt-3 mb-0">
+          Соединение с каналом прогресса недоступно. Сам импорт продолжается. Ожидаем ответ сервера.
+        </div>
+      }
+    </div>
+  }
+
   @if (importSuccess()) {
     <div class="alert alert-success" data-cy="importSuccess">
       {{ importSuccess() }}

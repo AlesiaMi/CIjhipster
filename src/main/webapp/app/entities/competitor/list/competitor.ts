@@ -14,7 +14,7 @@ import { ManagerClientContextService } from 'app/core/manager/manager-client-con
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
-import { EntityImportService, ImportError } from 'app/shared/import/import.service';
+import { EntityImportService, ImportError, ImportProgress } from 'app/shared/import/import.service';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
@@ -47,6 +47,8 @@ export class Competitor {
   readonly bulkImport = signal(false);
   readonly importErrors = signal<ImportError[]>([]);
   readonly importSuccess = signal<string | null>(null);
+  readonly importProgress = signal<ImportProgress | null>(null);
+  readonly importSocketUnavailable = signal(false);
   sortState = sortStateSignal({});
   filters: IFilterOptions = new FilterOptions();
 
@@ -164,38 +166,56 @@ export class Competitor {
 
     input.value = '';
 
-    if (!file) {
+    if (!file || this.isImporting()) {
       return;
     }
 
     this.importErrors.set([]);
     this.importSuccess.set(null);
+    this.importProgress.set(null);
+    this.importSocketUnavailable.set(false);
     this.isImporting.set(true);
 
-    this.entityImportService
-      .importFile('competitor', file, this.bulkImport())
-      .pipe(finalize(() => this.isImporting.set(false)))
-      .subscribe({
-        next: result => {
-          this.importSuccess.set(`Импортировано конкурентов: ${result.imported}`);
-          this.load();
-        },
+    const activity$ = this.bulkImport()
+      ? this.entityImportService.importBulkWithProgress('competitor', file)
+      : this.entityImportService.importFile('competitor', file).pipe(
+          map(result => ({
+            kind: 'result' as const,
+            result,
+          })),
+        );
 
-        error: (error: HttpErrorResponse) => {
-          const importErrors = error.error?.errors;
+    activity$.pipe(finalize(() => this.isImporting.set(false))).subscribe({
+      next: activity => {
+        if (activity.kind === 'progress') {
+          this.importProgress.set(activity.progress);
+          return;
+        }
 
-          if (Array.isArray(importErrors)) {
-            this.importErrors.set(importErrors as ImportError[]);
-            return;
-          }
+        if (activity.kind === 'connection-lost') {
+          this.importSocketUnavailable.set(true);
+          return;
+        }
 
-          this.importErrors.set([
-            {
-              message: 'Не удалось импортировать файл.',
-            },
-          ]);
-        },
-      });
+        this.importSuccess.set(`Импортировано конкурентов: ${activity.result.imported}`);
+        this.load();
+      },
+
+      error: (error: HttpErrorResponse) => {
+        const importErrors = error.error?.errors;
+
+        if (Array.isArray(importErrors)) {
+          this.importErrors.set(importErrors as ImportError[]);
+          return;
+        }
+
+        this.importErrors.set([
+          {
+            message: 'Не удалось импортировать файл.',
+          },
+        ]);
+      },
+    });
   }
 
   navigateToWithComponentValues(event: SortState): void {
