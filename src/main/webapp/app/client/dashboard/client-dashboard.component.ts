@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { ManagerClient, ManagerClientContextService } from 'app/core/manager/manager-client-context.service';
@@ -10,6 +10,7 @@ interface DashboardNewsItem {
   publishedAt?: string | null;
   title?: string | null;
   url?: string | null;
+  competitorName?: string | null;
   dataSource?: {
     sourceName?: string | null;
   } | null;
@@ -100,6 +101,7 @@ export class ClientDashboardComponent implements OnInit {
   clientMessage = '';
 
   private readonly http = inject(HttpClient);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly managerClientContext = inject(ManagerClientContextService);
 
   ngOnInit(): void {
@@ -109,6 +111,7 @@ export class ClientDashboardComponent implements OnInit {
   loadManagerClients(): void {
     this.clientsLoading = true;
     this.clientMessage = '';
+    this.cdr.markForCheck();
 
     this.managerClientContext.initialize().subscribe({
       next: () => {
@@ -121,9 +124,11 @@ export class ClientDashboardComponent implements OnInit {
         if (this.isManager && this.selectedClientUserId === null) {
           this.clientMessage = 'Нет доступных клиентов.';
           this.loading = false;
+          this.cdr.markForCheck();
           return;
         }
 
+        this.cdr.markForCheck();
         this.loadDashboard();
       },
 
@@ -131,6 +136,7 @@ export class ClientDashboardComponent implements OnInit {
         this.clientsLoading = false;
         this.loading = false;
         this.clientMessage = 'Не удалось загрузить список клиентов.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -142,34 +148,46 @@ export class ClientDashboardComponent implements OnInit {
 
     if (this.selectedClientUserId !== null) {
       this.loadDashboard();
+    } else {
+      this.loading = false;
     }
+
+    this.cdr.markForCheck();
   }
 
   loadDashboard(): void {
     if (this.isManager && this.selectedClientUserId === null) {
       this.loading = false;
+      this.cdr.markForCheck();
       return;
     }
 
     this.loading = true;
+    this.cdr.markForCheck();
 
     const dashboardParams = this.getClientParams();
 
     this.http.get<DashboardData>('/api/dashboard', { params: dashboardParams }).subscribe({
       next: data => {
         this.dashboard = data;
+        this.cdr.markForCheck();
       },
-      error: () => {
+      error: error => {
+        console.error('Ошибка загрузки дашборда:', error);
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
 
     this.http.get<DashboardNewsItem[]>('/api/dashboard/latest-news', { params: dashboardParams }).subscribe({
       next: data => {
         this.latestNewsItems = data;
+        this.cdr.markForCheck();
       },
-      error: () => {
+      error: error => {
+        console.error('Ошибка загрузки последних новостей:', error);
         this.latestNewsItems = [];
+        this.cdr.markForCheck();
       },
     });
 
@@ -183,10 +201,13 @@ export class ClientDashboardComponent implements OnInit {
       next: data => {
         this.collectionRuns = data;
         this.loading = false;
+        this.cdr.markForCheck();
       },
-      error: () => {
+      error: error => {
+        console.error('Ошибка загрузки истории сборов:', error);
         this.collectionRuns = [];
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }
@@ -215,18 +236,19 @@ export class ClientDashboardComponent implements OnInit {
 
     this.collectionRunning = true;
     this.collectionMessage = '';
+    this.cdr.markForCheck();
 
     const params = this.getClientParams();
 
     this.http.post<unknown>('/api/collection-job/run-rss', {}, { params }).subscribe({
       next: () => {
         this.collectionMessage = 'Сбор новостей запущен.';
+        this.collectionRunning = false;
+        this.cdr.markForCheck();
 
         setTimeout(() => {
           this.loadDashboard();
         }, 2000);
-
-        this.collectionRunning = false;
       },
 
       error: (error: HttpErrorResponse) => {
@@ -239,6 +261,7 @@ export class ClientDashboardComponent implements OnInit {
         }
 
         this.collectionRunning = false;
+        this.cdr.markForCheck();
       },
     });
   }
