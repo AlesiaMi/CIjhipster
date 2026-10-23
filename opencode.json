@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "cijhipster": {
+      "type": "local",
+      "command": [
+        "bash",
+        "-c",
+        "export CIJHIPSTER_TOKEN=\"$(cat \"$HOME/.config/cijhipster-mcp/jwt\")\"; exec npm exec --prefix ./mcp-bridge -- tsx ./mcp-bridge/mcp-server.ts"
+      ],
+      "environment": {
+        "CIJHIPSTER_API_URL": "http://localhost:8088"
+      },
+      "enabled": true
+    }
+  }
+}

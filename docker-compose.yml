@@ -44,7 +44,7 @@ services:
     restart: unless-stopped
 
     environment:
-      SPRING_PROFILES_ACTIVE: prod,secret-samples
+      SPRING_PROFILES_ACTIVE: prod,secret-samples,api-docs
 
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/CIjhipster
       SPRING_DATASOURCE_USERNAME: CIjhipster
