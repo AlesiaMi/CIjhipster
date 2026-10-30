@@ -1,0 +1,33 @@
+services:
+  mcp-server:
+    build:
+      context: ./mcp-bridge
+      dockerfile: Dockerfile
+
+    container_name: cijhipster-mcp
+    restart: unless-stopped
+
+    ports:
+      - '127.0.0.1:8765:8765'
+
+    environment:
+      CIJHIPSTER_API_URL: http://backend:8080
+
+      CIJHIPSTER_MCP_TRANSPORT: http
+      MCP_HTTP_PORT: '8765'
+
+      CIJHIPSTER_TOKEN_FILE: /run/credentials/jwt
+      CIJHIPSTER_MCP_KEY_FILE: /run/credentials/mcp-access-key
+
+      CIJHIPSTER_MCP_ENABLE_WRITES: 'true'
+      CIJHIPSTER_MCP_TEST_COMPETITOR_ID: '10005851'
+
+    volumes:
+      - ${HOME}/.config/cijhipster-mcp:/run/credentials:ro
+
+    depends_on:
+      - backend
+
+  backend:
+    environment:
+      CIJHIPSTER_MCP_SQL_TRACE_ENABLED: 'true'
