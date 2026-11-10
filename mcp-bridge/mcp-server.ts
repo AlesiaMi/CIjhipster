@@ -486,12 +486,7 @@ export function createCiJhipsterServer(): McpServer {  const server = new McpSer
             parameters: operation.parameters ?? [],
           };
 
-          if (
-            query &&
-            !JSON.stringify(item)
-              .toLowerCase()
-              .includes(query)
-          ) {
+          if (query && !JSON.stringify(item).toLowerCase().includes(query)) {
             continue;
           }
 
@@ -617,15 +612,20 @@ export function createCiJhipsterServer(): McpServer {  const server = new McpSer
 
         const startedAt = performance.now();
 
+        
         console.error(JSON.stringify({
           event: 'mcp_api_request',
           timestamp: new Date().toISOString(),
+          requestId: sqlTraceId ?? null,
           method: 'GET',
-          path: url.pathname,
-          queryKeys: [
-            ...url.searchParams.keys(),
-          ],
+          endpoint: url.pathname,
+          queryParams: Object.fromEntries(
+            [...url.searchParams.entries()].filter(([key]) =>
+              !/token|password|secret|authorization|api[_-]?key/i.test(key)
+            )
+          ),
         }));
+
 
         let response: Response;
 
